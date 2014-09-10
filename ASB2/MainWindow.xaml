@@ -1,0 +1,55 @@
+﻿    <Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:Properties="clr-namespace:ASB2.Properties" x:Class="ASB2.MainWindow"
+        xmlns:add="clr-namespace:ASB2"
+        Loaded="MainWindow_Loaded"
+        Closed="MainWindow_Closed"
+        Title="ASB2 - 実行待機中" Height="275" Width="515" WindowStartupLocation="CenterScreen" ResizeMode="CanMinimize">
+    <Window.CommandBindings>
+        <!-- [ファイル]-[終了]用コマンド -->
+        <CommandBinding Command="ApplicationCommands.Close" Executed="MainWindowClosed"/>
+        <!-- [設定]-[設定]用コマンド -->
+        <CommandBinding Command="ApplicationCommands.New" Executed="ApplicationSettinged"/>
+        <!-- [ヘルプ]-[バージョン情報]用コマンド -->
+        <CommandBinding Command="ApplicationCommands.Help" Executed="ApplicationVersioned"/>
+    </Window.CommandBindings>
+    <Grid>
+        <Menu VerticalAlignment="Top">
+            <MenuItem Header="ファイル">
+                <MenuItem Header="終了" Command="ApplicationCommands.Close"/>
+            </MenuItem>
+            <MenuItem Header="設定">
+                <MenuItem Header="設定" Command="ApplicationCommands.New"/>
+            </MenuItem>
+            <MenuItem Header="ヘルプ">
+                <MenuItem Header="バージョン情報" Command="ApplicationCommands.Help"/>
+            </MenuItem>
+        </Menu>
+
+        <TextBlock HorizontalAlignment="Left" Margin="23,30,0,0" TextWrapping="Wrap" Text="一時ファイルを作成するパスとファイル名：" VerticalAlignment="Top" Width="241" FontSize="14"/>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="23,53,0,0" VerticalAlignment="Top" Width="241" Text="{Binding Path=TmpFileNameFullPath, Mode=TwoWay}" IsReadOnly="True"/>
+        <Button Content="参照" HorizontalAlignment="Left" Margin="278,53,0,0" VerticalAlignment="Top" Width="85" Height="23" FontSize="14" Click="Button_Click_1"/>
+        <Button Content="デフォルトに戻す" HorizontalAlignment="Left" Margin="378,53,0,0" VerticalAlignment="Top" Width="110" Height="23" FontSize="14" Click="Button_Click_2"/>
+        <TextBlock HorizontalAlignment="Left" Margin="23,90,0,0" TextWrapping="Wrap" Text="作成する一時ファイルのサイズ：" VerticalAlignment="Top" Width="182" FontSize="14"/>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="205,90,0,0" TextWrapping="Wrap" Text="{Binding Path=TmpFileSizeText, Mode=TwoWay}"
+                 VerticalAlignment="Top" Width="58" RenderTransformOrigin="0.533,1.652"
+                 add:NumericBehaviors.IsNumeric="True"
+                 add:NumericBehaviors.Minimum="1"
+                 add:NumericBehaviors.Maximum="999"
+                 add:NumericBehaviors.Default="{Binding Path=TmpFileSizeText, Mode=OneTime}"
+                 MaxLength="3"/>
+        <TextBlock HorizontalAlignment="Left" Margin="268,90,0,0" TextWrapping="Wrap" Text="GiB" VerticalAlignment="Top" FontSize="14"/>
+        <CheckBox Content="ループ" HorizontalAlignment="Left" Margin="310,91,0,0" VerticalAlignment="Top" FontSize="14"
+                  IsChecked="{Binding Path=IsLoop, Mode=TwoWay}"/>
+        <CheckBox Content="ベリファイ" HorizontalAlignment="Left" Margin="378,91,0,0" VerticalAlignment="Top" FontSize="14"
+                  IsChecked="{Binding Path=IsVerify, Mode=TwoWay}"/>
+        <Button Content="{Binding Path=ButtonName, Mode=TwoWay}" HorizontalAlignment="Left" Margin="23,128,0,0" VerticalAlignment="Top" Width="85" Height="23" FontSize="14" Click="Button_Click_3"/>
+        <ProgressBar Name="progressBar1" HorizontalAlignment="Left" Height="22" Margin="122,129,0,0" VerticalAlignment="Top" Width="241"/>
+        <TextBox HorizontalAlignment="Left" Height="23" Margin="378,129,0,0" TextWrapping="Wrap" Text="{Binding Path=ProgressPercentText, Mode=OneWay}" VerticalAlignment="Top" Width="55"/>
+        <TextBlock HorizontalAlignment="Left" Margin="23,156,0,0" TextWrapping="Wrap" Text="{Binding Path=LoopNumText, Mode=OneWay}" VerticalAlignment="Top" FontSize="14"/>
+        <TextBlock HorizontalAlignment="Left" Margin="120,156,0,0" TextWrapping="Wrap" Text="{Binding Path=TotalWriteText, Mode=OneWay}" VerticalAlignment="Top" FontSize="14" Height="29"/>
+        <TextBlock HorizontalAlignment="Left" Margin="23,189,0,0" TextWrapping="Wrap" Text="{Binding Path=SpeedText, Mode=OneWay}" VerticalAlignment="Top" RenderTransformOrigin="-2.727,-0.133" FontSize="14"/>
+        <TextBlock HorizontalAlignment="Left" Margin="220,189,0,0" TextWrapping="Wrap" Text="{Binding Path=AverageSpeedText, Mode=OneWay}" VerticalAlignment="Top" FontSize="14"/>
+    </Grid>
+</Window>
