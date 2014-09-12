@@ -4,6 +4,11 @@
  * 以下は参考にしたファイルのコメント
  */
 
+#ifndef _XOR514_H_
+#define _XOR514_H_
+
+#pragma once
+
 /* xor.c : coded by isaku@pb4.so-net.ne.jp 2008/12～2009/1,  2010/10, 2012/6
 乱数 Xorshift のＳＳＥ２を使った高速化(整数版)
 
@@ -58,43 +63,35 @@ Core i7 2600(turbo boost off)
 #include <cstdint>
 #include <emmintrin.h>
 
-
-#ifndef __INTEL_COMPILER
-	#include <boost/noncopyable.hpp>
-#endif
-
 #ifdef __GNUC__
-	#define align32 __attribute__((aligned(32)))
+    #define align32 __attribute__((aligned(32)))
 #else
-	#define align32 _declspec(align(32))
+    #define align32 _declspec(align(32))
 #endif
 
 namespace memwork {
-	namespace myrandom {
-		class Xor514
-#ifndef __INTEL_COMPILER
-			: private boost::noncopyable
-#endif
-		{
-#ifdef __INTEL_COMPILER
-			static constexpr std::uint32_t XOR514HEAD = 16;
-			static constexpr std::uint32_t U0MAX = 20;
-			Xor514() = delete;
-			Xor514(const Xor514 &) = delete;
-			Xor514 & operator=(const Xor514 &) = delete;
-#else
-			static const std::uint32_t XOR514HEAD = 16;
-			static const std::uint32_t U0MAX = 20;
-			Xor514();
-#endif
-			align32 union xor514_t { std::uint32_t u[20];
-									 __m128i m[5];		    };
-			xor514_t p;
-			void xor514sub();
+    namespace myrandom {
+        class Xor514 final
+        {
+            static std::uint32_t constexpr XOR514HEAD = 16;
+            static std::uint32_t constexpr U0MAX = 20;
+            
+            align32 union xor514_t {
+                std::uint32_t u[20];
+                __m128i m[5];
+            };
+            xor514_t p;
+            void xor514sub();
 
-		public:
-			explicit Xor514(std::uint32_t seed);
-			__m128i rand128();
-		};
-	}
+        public:
+            explicit Xor514(std::uint32_t seed);
+            __m128i rand128();
+
+            Xor514() = delete;
+            Xor514(Xor514 const &) = delete;
+            Xor514 & operator=(Xor514 const &) = delete;
+        };
+    }
 }
+
+#endif  // _XOR514_H_
