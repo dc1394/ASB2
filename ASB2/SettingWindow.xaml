@@ -9,16 +9,15 @@
     </Window.Resources>
 
     <Grid>
-        <Grid>
-            <!-- 行定義 -->
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*" />
-                <RowDefinition Height="0.6*" />
-                <RowDefinition Height="0.6*" />
-                <RowDefinition Height="0.6*" />
-            </Grid.RowDefinitions>
+        <!-- 行定義 -->
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="0.6*" />
+            <RowDefinition Height="0.6*" />
+            <RowDefinition Height="0.6*" />
+        </Grid.RowDefinitions>
 
-            <GroupBox FontSize="14"
+        <GroupBox FontSize="14"
                       ForceCursor="True"
                       Grid.Row="0"
                       Header="最小化時動作の設定" 
@@ -27,37 +26,37 @@
                       Margin="10,10,0,0"
                       VerticalAlignment="Top"
                       Width="380">
-                <StackPanel Orientation="Horizontal">
-                    <RadioButton Content="タスクバー"
+            <StackPanel Orientation="Horizontal">
+                <RadioButton Content="タスクバー"
                                  FontSize="14"
                                  GroupName="ButtonVisibility"
                                  HorizontalAlignment="Left"
                                  IsChecked="{Binding MyType, ConverterParameter=TASKBAR, Converter={StaticResource EnumBooleanConverter}}"
                                  Margin="20,10,0,0"
                                  VerticalAlignment="Top" />
-                    <RadioButton Content="タスクトレイ"
+                <RadioButton Content="タスクトレイ"
                                  FontSize="14"
                                  GroupName="ButtonVisibility"
                                  HorizontalAlignment="Left"
                                  IsChecked="{Binding MyType, ConverterParameter=TASKTRAY, Converter={StaticResource EnumBooleanConverter}}"
                                  Margin="50,10,0,0"
                                  VerticalAlignment="Top" />
-                    <RadioButton Content="両方"
+                <RadioButton Content="両方"
                                  FontSize="14"
                                  GroupName="ButtonVisibility"
                                  HorizontalAlignment="Left"
                                  IsChecked="{Binding MyType, ConverterParameter=BOTH, Converter={StaticResource EnumBooleanConverter}}"
                                  Margin="80,10,0,0"
                                  VerticalAlignment="Top" />
-                </StackPanel>
-            </GroupBox>
-            <StackPanel Grid.Row="1"
+            </StackPanel>
+        </GroupBox>
+        <StackPanel Grid.Row="1"
                         Orientation="Horizontal">
-                <TextBlock Margin="10,0,0,0"
+            <TextBlock Margin="10,0,0,0"
                            Text="バッファサイズ："
                            FontSize="14"
                            VerticalAlignment="Center" />
-                <TextBox Height="23"
+            <TextBox Height="23"
                          local:NumericBehaviors.IsNumeric="True"
                          local:NumericBehaviors.Minimum="1"
                          local:NumericBehaviors.Maximum="500000"
@@ -67,18 +66,18 @@
                          Text="{Binding Path=BufSizeText, Mode=TwoWay}"
                          VerticalAlignment="Center"
                          Width="62" />
-                <TextBlock FontSize="14"
+            <TextBlock FontSize="14"
                            Text="KiB"
                            VerticalAlignment="Center" />
-            </StackPanel>
+        </StackPanel>
 
-            <StackPanel Grid.Row="2" Orientation="Horizontal">
-                <TextBlock FontSize="14"
+        <StackPanel Grid.Row="2" Orientation="Horizontal">
+            <TextBlock FontSize="14"
                            HorizontalAlignment="Left"
                            Margin="10,0,0,0"
                            Text="タイマの更新間隔："
                            VerticalAlignment="Center" />
-                <TextBox Height="23"
+            <TextBox Height="23"
                          HorizontalAlignment="Left"
                          local:NumericBehaviors.Default="{Binding Path=DefaultTimerInterval, Mode=OneTime}"
                          local:NumericBehaviors.IsNumeric="True"
@@ -89,22 +88,22 @@
                          Text="{Binding Path=TimerIntervalText, Mode=TwoWay}"
                          VerticalAlignment="Center"
                          Width="62" />
-                <TextBlock FontSize="14"
+            <TextBlock FontSize="14"
                            HorizontalAlignment="Left"
                            Margin="5,0,10,0"
                            Text="ミリ秒"
                            VerticalAlignment="Center" />
-            
+
             <CheckBox Content="並列化を有効にする"
                       FontSize="14"
                       IsChecked="{Binding Path=IsParallel, Mode=TwoWay}"
                       IsEnabled="{Binding Path=IsParallelEnabled, Mode=OneTime}"
                       VerticalAlignment="Center" />
-            </StackPanel>
+        </StackPanel>
 
-            <StackPanel Grid.Row="3"
+        <StackPanel Grid.Row="3"
                         Orientation="Horizontal">
-                <Button Click="Button_Click_1"
+            <Button Click="Button_Click_1"
                         Content="OK"
                         FontSize="14"
                         Height="23"
@@ -112,7 +111,7 @@
                         Margin="10,0,25,0"
                         VerticalAlignment="Center"
                         Width="110" />
-                <Button Click="Button_Click_2"
+            <Button Click="Button_Click_2"
                         Content="キャンセル"
                         FontSize="15"
                         Height="23"
@@ -120,13 +119,12 @@
                         Margin="0,0,25,0"
                         VerticalAlignment="Center"
                         Width="110" />
-                <Button Click="Button_Click_3"
+            <Button Click="Button_Click_3"
                         Content="デフォルトに戻す"
                         FontSize="14"
                         Height="23"
                         VerticalAlignment="Center"
                         Width="110" />
-            </StackPanel>
-        </Grid>
+        </StackPanel>
     </Grid>
 </Window>
