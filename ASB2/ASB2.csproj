@@ -167,6 +167,7 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
+    <None Include="README" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -195,7 +196,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Documents\readme.txt" />
+    <Resource Include="Document\readme.txt" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\16_24_36_64_128_256.png" />
