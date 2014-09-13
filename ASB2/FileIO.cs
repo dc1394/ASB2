@@ -1,35 +1,99 @@
-﻿using System;
-using System.IO;
-using System.Windows;
-using System.Windows.Threading;
-using System.Threading;
-using System.Threading.Tasks;
-
-using MyLogic;
-
-namespace FileMemWork
+﻿namespace FileMemWork
 {
-    public sealed class FileIO : IDisposable
+    using System;
+    using System.IO;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Windows;
+    using System.Windows.Threading;
+    using MyLogic;
+
+    internal sealed class FileIO : IDisposable
     {
         #region フィールド
-        
-        private Action<MemoryAllocate> memorywrite;
-        private Func<MemoryAllocate, MemoryAllocate, Boolean> memcmp = null;
-        private Action run;
-        private CancellationTokenSource cts = new CancellationTokenSource();
-        private Task tas = null;
 
-        private MemoryAllocate maread = null;
+        /// <summary>
+        /// 待機中のフラグ
+        /// </summary>
+        private const Int32 待機中 = 0;
+
+        /// <summary>
+        /// 失敗のフラグ
+        /// </summary>
+        private const Int32 動作中 = 1;
+
+        /// <summary>
+        /// 書き込まれたバイト数の合計
+        /// </summary>
+        static private Int64 totalWroteBytes = 0;
+
+        /// <summary>
+        /// ループした回数
+        /// </summary>
+        static private Int64 loopNum = 0;
+
+        /// <summary>
+        /// バッファのサイズ
+        /// </summary>
+        private Int32 bufSize;
+
+        /// <summary>
+        /// 処理をキャンセルする場合のトークン
+        /// </summary>
+        private CancellationTokenSource cts = null;
+
+        /// <summary>
+        /// IOの終了指示のフラグ
+        /// </summary>
+        private Boolean endFlag = false;
+
+        /// <summary>
+        /// 並列化するかどうかを示すフラグ
+        /// </summary>
+        private Boolean isParallel;
+
+        /// <summary>
+        /// ベリファイするかどうかを示すフラグ
+        /// </summary>
+        private Boolean isVerify;
+
+        /// <summary>
+        /// メモリー確保用のオブジェクト
+        /// </summary>
         private MemoryAllocate ma;
 
-        private Int32 bufSize;
-        private Boolean isVerify;
-        private Boolean isParallel;
-        private Boolean bMemoryWrited = false;
-        private Boolean bEnd = false;
+        /// <summary>
+        /// 読み込み専用のメモリー確保用のオブジェクト
+        /// </summary>
+        private MemoryAllocate maread = null;
 
-        static public Int64 totalWrote = 0;
-        static public Int64 loopNum = 0;
+        /// <summary>
+        /// メモリに書き込むデリゲート
+        /// </summary>
+        private Action<MemoryAllocate> memoryWriteAction;
+
+        /// <summary>
+        /// メモリの内容を比較するデリゲート
+        /// </summary>
+        private Func<MemoryAllocate, MemoryAllocate, Boolean> memcmp = null;
+
+        /// <summary>
+        /// 実際に処理を行うデリゲート
+        /// </summary>
+        private Action run;
+
+        /// <summary>
+        /// メモリに書き込まれたかどうかを示すフラグ
+        /// </summary>
+        private Boolean memoryWroteFlag = false;
+
+        /// <summary>
+        /// IOが終わったかどうかを示すフラグ
+        /// </summary>
+        /// <remarks>
+        /// 複数のスレッドからアクセスされる！
+        /// </remarks>
+        private Int32 isnow;
 
         #endregion フィールド
         
@@ -43,39 +107,39 @@ namespace FileMemWork
         {
             if (Environment.Is64BitProcess)
             {
-                memorywrite = new Action<MemoryAllocate>(UnsafeNativeMethods.writeMemory64);
+                this.memoryWriteAction = UnsafeNativeMethods.writeMemory64;
             }
             else
             {
-                memorywrite = new Action<MemoryAllocate>(UnsafeNativeMethods.writeMemory32);
+                this.memoryWriteAction = UnsafeNativeMethods.writeMemory32;
             }
 
-            run = new Action(write);
+            this.run = this.write;
 
             if (isVerify)
             {
                 if (Environment.Is64BitProcess && isParallel)
                 {
-                    memcmp = new Func<MemoryAllocate, MemoryAllocate, Boolean>(UnsafeNativeMethods.MemoryCmp64Parallel);
+                    this.memcmp = UnsafeNativeMethods.MemoryCmp64Parallel;
                 }
                 else if (Environment.Is64BitProcess)
                 {
-                    memcmp = new Func<MemoryAllocate, MemoryAllocate, Boolean>(UnsafeNativeMethods.MemoryCmp64);
+                    this.memcmp = UnsafeNativeMethods.MemoryCmp64;
                 }
                 else if (isParallel)
                 {
-                    memcmp = new Func<MemoryAllocate, MemoryAllocate, Boolean>(UnsafeNativeMethods.MemoryCmp32Parallel);
+                    this.memcmp = UnsafeNativeMethods.MemoryCmp32Parallel;
                 }
                 else
                 {
-                    memcmp = new Func<MemoryAllocate, MemoryAllocate, Boolean>(UnsafeNativeMethods.MemoryCmp32);
+                    this.memcmp = UnsafeNativeMethods.MemoryCmp32;
                 }
       
-                run += new Action(readandverify);
-                maread = new MemoryAllocate(bufSize);
+                this.run += this.readandverify;
+                this.maread = new MemoryAllocate(bufSize);
             }
 
-            ma = new MemoryAllocate(bufSize);
+            this.ma = new MemoryAllocate(bufSize);
 
             this.bufSize = bufSize;
             this.isVerify = isVerify;
@@ -87,9 +151,6 @@ namespace FileMemWork
         public void Dispose()
         {
             cts.Cancel();
-            while (Tas.Status != TaskStatus.RanToCompletion)
-            {
-            }
             cts.Dispose();
 
             if (maread != null)
@@ -105,20 +166,39 @@ namespace FileMemWork
         #endregion 構築・破棄
 
         #region プロパティ
+        
+        internal Boolean IsLoop { private get; set; }
 
-        public CancellationTokenSource Cts { get { return cts; } }
-        public Task Tas { get { return tas; } }
-        public Boolean IsLoop { private get; set; }
-        public String FileName { private get; set; }
-        public Int64 FileSize { private get; set; }
-        public Int64 WroteSize { get; private set; }
-        public Int64 ReadSize { get; private set; }
-        public Boolean AllMemoryWrited { get; private set; }
+        /// <summary>
+        /// IOが終わったかどうか
+        /// </summary>
+        /// <remarks>
+        /// 複数のスレッドからアクセスされる！
+        /// </remarks>
+        private Int32 Isnow
+        {
+            get
+            {
+                return this.isnow;
+            }
+
+            set
+            {
+                Interlocked.Exchange(ref this.isnow, value);
+            }
+        }
+
+        internal String FileName { private get; set; }
+        internal Int64 FileSize { private get; set; }
+        internal Int64 WroteSize { get; private set; }
+        internal Int64 ReadSize { get; private set; }
+        internal Boolean AllMemoryWrited { get; private set; }
 
         static public Int64 TotalWrote
         {
-            get { return totalWrote; }
+            get { return totalWroteBytes; }
         }
+
         static public Int64 LoopNum
         {
             get { return loopNum; }
@@ -128,18 +208,25 @@ namespace FileMemWork
 
         #region メソッド
 
-        public void fileIORun()
+        internal async void fileIORun()
         {
-            tas = Task.Factory.StartNew(() =>
+            if (this.cts == null)
+            {
+                this.cts = new CancellationTokenSource();
+            }
+
+            await Task.Run(
+                () =>
                 {
-                    if (IsLoop)
+                    if (this.IsLoop)
                     {
                         while (true)
                         {
-                            run();
+                            this.run();
+                            
                             // ファイル消去
                             File.Delete(FileName);
-                            if (bEnd)
+                            if (this.endFlag)
                             {
                                 break;
                             }
@@ -147,11 +234,16 @@ namespace FileMemWork
                     }
                     else
                     {
-                        run();
+                        this.run();
+
                         // ファイル消去
                         File.Delete(FileName);
                     }
-                });
+                },
+                this.cts.Token);
+
+            this.cts.Dispose();
+            this.cts = null;
         }
 
         private void write()
@@ -160,13 +252,14 @@ namespace FileMemWork
             {
                 if (isVerify)
                 {
-                    bMemoryWrited = false;
-                    AllMemoryWrited = false;
+                    this.memoryWroteFlag = false;
+                    this.AllMemoryWrited = false;
                 }
-                using (BinaryWriter bw = new BinaryWriter(new FileStream(FileName, FileMode.Create, FileAccess.Write, FileShare.None)))
+
+                using (var bw = new BinaryWriter(new FileStream(this.FileName, FileMode.Create, FileAccess.Write, FileShare.None)))
                 {
-                    var ct = cts.Token;
-                    
+                    var ct = this.cts.Token;
+
                     Int64 max = FileSize / bufSize;
                     for (Int64 i = 0; i < max; i++)
                     {
@@ -175,33 +268,35 @@ namespace FileMemWork
                             // キャンセルされた場合例外をスロー           
                             ct.ThrowIfCancellationRequested();
 
-                            if (!isVerify || !bMemoryWrited)
+                            if (!this.isVerify || !this.memoryWroteFlag)
                             {
-                                memorywrite(ma);
-                                bMemoryWrited = true;
+                                this.memoryWriteAction(this.ma);
+                                this.memoryWroteFlag = true;
                             }
 
                             // キャンセルされた場合例外をスロー           
                             ct.ThrowIfCancellationRequested();
 
-                            bw.Write(ma.Buf, ma.Offset, bufSize);
+                            bw.Write(this.ma.Buf, this.ma.Offset, this.bufSize);
 
                             // キャンセルされた場合例外をスロー           
                             ct.ThrowIfCancellationRequested();
 
                             // 強制的にバッファをクリア
                             bw.Flush();
-                            WroteSize = (i + 1) * bufSize;
-                            FileIO.totalWrote += bufSize;
+
+                            this.WroteSize = (i + 1) * bufSize;
+                            
+                            FileIO.totalWroteBytes += bufSize;
                         }
                         catch (OperationCanceledException)
                         {
-                            bEnd = true;
+                            this.endFlag = true;
                             return;
                         }
                     }
 
-                    Int32 residue = (Int32)(FileSize % (Int64)bufSize);
+                    var residue = (Int32)(FileSize % (Int64)bufSize);
                     if (residue != 0)
                     {
                         try
@@ -211,33 +306,37 @@ namespace FileMemWork
 
                             if (!isVerify)
                             {
-                                memorywrite(ma);
+                                memoryWriteAction(ma);
                             }
 
                             // キャンセルされた場合例外をスロー           
                             ct.ThrowIfCancellationRequested();
 
-                            bw.Write(ma.Buf, ma.Offset, residue);
+                            bw.Write(this.ma.Buf, this.ma.Offset, residue);
+
+                            // キャンセルされた場合例外をスロー           
+                            ct.ThrowIfCancellationRequested();
+
                             // 強制的にバッファをクリア
                             bw.Flush();
 
                             WroteSize += (Int64)residue;
-                            FileIO.totalWrote += (Int64)residue;
+                            FileIO.totalWroteBytes += (Int64)residue;
                         }
                         catch (OperationCanceledException)
                         {
-                            bEnd = true;
+                            this.endFlag = true;
                         }
                     }
                 }
 
-                if (!isVerify)
+                if (!this.isVerify)
                 {
                     FileIO.loopNum++;
                 }
                 else
                 {
-                    AllMemoryWrited = true;
+                    this.AllMemoryWrited = true;
                 }
             }
             catch (Exception ex)
@@ -283,13 +382,13 @@ namespace FileMemWork
                         }
                         catch (OperationCanceledException)
                         {
-                            bEnd = true;
+                            endFlag = true;
                             return;
                         }
                         catch (InvalidDataException e)
                         {
                             ErrorDispose.callError(e.Message);
-                            bEnd = true;
+                            endFlag = true;
                             return;
                         }
                     }
@@ -320,12 +419,12 @@ namespace FileMemWork
                         }
                         catch (OperationCanceledException)
                         {
-                            bEnd = true;
+                            endFlag = true;
                         }
                         catch (InvalidDataException e)
                         {
                             ErrorDispose.callError(e.Message);
-                            bEnd = true;
+                            endFlag = true;
                         }
                     }
                 }
