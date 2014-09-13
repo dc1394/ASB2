@@ -1,228 +1,138 @@
-﻿using System;
-using System.IO;
-using System.ComponentModel;
-
-using MyLogic;
-
+﻿//-----------------------------------------------------------------------
+// <copyright file="MainWindowViewModel.cs" company="dc1394's software">
+//     Copyright ©  2014 @dc1394 All Rights Reserved.
+// </copyright>
+//-----------------------------------------------------------------------
 namespace ASB2
 {
-    internal sealed class MainWindowViewModel : INotifyPropertyChanged
+    using System;
+    using MyLogic;
+
+    /// <summary>
+    /// MainWindowに対応するView
+    /// </summary>
+    internal sealed class MainWindowViewModel : MyViewModelBase.BindableBase
     {
-        #region 列挙型
-
-        internal enum ButtonState
-        {
-            開始,
-            停止
-        }
-
-        internal enum RWState
-        {
-            Write,
-            Read
-        }
-
-        #endregion 列挙型
-
         #region フィールド
 
-        public const String LOOPTEXT = "ループ終了済";
-        public const String TOTALWRITETEXT = "総書き込みバイト：";
-        public const String WRITESPEEDTEXT = "書き込み速度：";
-        public const String READSPEEDTEXT = "ベリファイ速度：";
-        public const String AVERAGEWRITESPEEDTEXT = "平均書き込み速度：";
-        public const String AVERAGEREADSPEEDTEXT = "平均ベリファイ速度：";
-
-        private String tmpFileNameFullPath;
-        private String buttonName = ButtonState.開始.ToString();
-        private String tmpFileSizeText;
+        /// <summary>
+        /// ループするかどうかを示すフラグ
+        /// </summary>
         private Boolean isLoop;
-        private Boolean isVerify;
-        private String progressPercentText = "";
-        private String loopNumText = "0" + MainWindowViewModel.LOOPTEXT;
-        private String totalWriteText = MainWindowViewModel.TOTALWRITETEXT;
-        private String writeSpeedText = MainWindowViewModel.WRITESPEEDTEXT;
-        private String readSpeedText = MainWindowViewModel.READSPEEDTEXT;
-        private String averageWriteSpeedText = MainWindowViewModel.AVERAGEWRITESPEEDTEXT;
-        private String averageReadSpeedText = MainWindowViewModel.AVERAGEREADSPEEDTEXT;
 
-        SaveDataManage.SaveData sd;
+        /// <summary>
+        /// ベリファイするかどうかを示すフラグ
+        /// </summary>
+        private Boolean isVerify;
+
+        /// <summary>
+        /// ファイルに保存される設定情報データのオブジェクト
+        /// </summary>
+        private SaveDataManage.SaveData sd;
+
+        /// <summary>
+        /// ドライブに書き出す一時ファイル名のフルパス
+        /// </summary>
+        private String tmpFileNameFullPath;
+
+        /// <summary>
+        /// ドライブに書き出す一時ファイルのバイト数
+        /// </summary>
+        private String tmpFileSizeText;
 
         #endregion フィールド
 
-        #region 構築・破棄
+        #region 構築
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="target"></param>
+        /// <param name="sd">ファイルに保存される設定情報データのオブジェクト</param>
         internal MainWindowViewModel(SaveDataManage.SaveData sd)
         {
+            this.isLoop = sd.IsLoop;
+
+            this.isVerify = sd.IsVerify;
+
             this.sd = sd;
-            tmpFileNameFullPath = sd.LastTmpFileNameFullPath;
-            tmpFileSizeText = sd.TmpFileSizeText;
-            isLoop = sd.IsLoop;
-            isVerify = sd.IsVerify;
+
+            this.tmpFileNameFullPath = sd.LastTmpFileNameFullPath;
+            
+            this.tmpFileSizeText = sd.TmpFileSizeText;
         }
 
-        #endregion 構築・破棄
+        #endregion 構築
 
         #region プロパティ
 
-        public String TmpFileNameFullPath
-        {
-            get { return tmpFileNameFullPath; }
-            set
-            {
-                tmpFileNameFullPath = value;
-                sd.LastTmpFileNameFullPath = value;
-                OnPropertyChanged("TmpFileNameFullPath");
-            }
-        }
-                
-        public String ButtonName
-        {
-            get { return buttonName; }
-            set
-            {
-                buttonName = value;
-                OnPropertyChanged("ButtonName");
-            }
-        }
-                
-        public String TmpFileSizeText
-        {
-            get { return tmpFileSizeText; }
-            set
-            {
-                tmpFileSizeText = value;
-                sd.TmpFileSizeText = value;
-                OnPropertyChanged("TmpFileSizeText");
-            }
-        }
-        
+        /// <summary>
+        /// ループするかどうかを示すフラグ
+        /// </summary>
         public Boolean IsLoop
         {
-            get { return isLoop; }
+            get
+            {
+                return this.isLoop;
+            }
+
             set
             {
-                isLoop = value;
-                sd.IsLoop = value;
-                OnPropertyChanged("IsLoop");
+                this.SetProperty(ref this.isLoop, value);
+                this.sd.IsLoop = value;
             }
         }
-                
+
+        /// <summary>
+        /// ベリファイするかどうかを示すフラグ
+        /// </summary>
         public Boolean IsVerify
         {
-            get { return isVerify; }
+            get
+            {
+                return this.isVerify;
+            }
+
             set
             {
-                isVerify = value;
-                sd.IsVerify = value;
-                OnPropertyChanged("IsVerify");
+                this.SetProperty(ref this.isVerify, value);
+                this.sd.IsVerify = value;
             }
         }
 
-        public String ProgressPercentText
-        {
-            get { return progressPercentText; }
-            set
-            {
-                progressPercentText = value;
-                OnPropertyChanged("ProgressPercentText");
-            }
-        }
-        
-        public String LoopNumText
-        {
-            get { return loopNumText; }
-            set
-            {
-                loopNumText = value;
-                OnPropertyChanged("LoopNumText");
-            }
-        }
-        
-        public String TotalWriteText
-        {
-            get { return totalWriteText; }
-            set
-            {
-                totalWriteText = value;
-                OnPropertyChanged("totalWriteText");
-            }
-        }
-        
-        public String SpeedText
+        /// <summary>
+        /// ドライブに書き出す一時ファイル名のフルパス
+        /// </summary>
+        public String TmpFileNameFullPath
         {
             get
             {
-                if (RWstate == RWState.Write)
-                {
-                    return writeSpeedText;
-                }
-                else
-                {
-                    return readSpeedText;
-                }
+                return this.tmpFileNameFullPath;
             }
+
             set
             {
-                if (RWstate == RWState.Write)
-                {
-                    writeSpeedText = value;
-                }
-                else
-                {
-                    readSpeedText = value;
-                }
-                OnPropertyChanged("SpeedText");
-            }
-        }
-        
-        public String AverageSpeedText
-        {
-            get
-            {
-                if (RWstate == RWState.Write)
-                {
-                    return averageWriteSpeedText;
-                }
-                else
-                {
-                    return averageReadSpeedText;
-                }
-            }
-            set
-            {
-                if (RWstate == RWState.Write)
-                {
-                    averageWriteSpeedText = value;
-                }
-                else
-                {
-                    averageReadSpeedText = value;
-                }
-                OnPropertyChanged("AverageSpeedText");
+                this.SetProperty(ref this.tmpFileNameFullPath, value);
+                this.sd.LastTmpFileNameFullPath = value;
             }
         }
 
-        public RWState RWstate { get; set; }
+        /// <summary>
+        /// ドライブに書き出す一時ファイルのバイト数
+        /// </summary>
+        public String TmpFileSizeText
+        {
+            get
+            {
+                return this.tmpFileSizeText;
+            }
+
+            set
+            {
+                this.SetProperty(ref this.tmpFileSizeText, value);
+                this.sd.TmpFileSizeText = value;
+            }
+        }
 
         #endregion プロパティ
-
-        #region INotifyPropertyChanged メンバー
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private void OnPropertyChanged(String name)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
-        }
-
-        #endregion
     }
 }

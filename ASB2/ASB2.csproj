@@ -152,7 +152,6 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <EmbeddedResource Include="Images\app.ico" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
@@ -201,13 +200,16 @@
     <Resource Include="Images\16_24_36_64_128_256.png" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Resources\" />
+    <Resource Include="Images\app.ico" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="MyLogic\MyLogic.fsproj">
       <Project>{8bbe3ff0-a0f2-47ee-acde-351b14fddda8}</Project>
       <Name>MyLogic</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
