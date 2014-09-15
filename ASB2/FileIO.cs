@@ -1,4 +1,9 @@
-﻿namespace FileMemWork
+﻿//-----------------------------------------------------------------------
+// <copyright file="FileIO.cs" company="dc1394's software">
+//     Copyright ©  2014 @dc1394 All Rights Reserved.
+// </copyright>
+//-----------------------------------------------------------------------
+namespace FileMemWork
 {
     using System;
     using System.IO;
@@ -6,8 +11,12 @@
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Threading;
+    using MyErrorLog;
     using MyLogic;
 
+    /// <summary>
+    /// ファイルIO用のクラス
+    /// </summary>
     internal sealed class FileIO : IDisposable
     {
         #region フィールド
@@ -15,32 +24,27 @@
         /// <summary>
         /// 待機中のフラグ
         /// </summary>
-        private const Int32 待機中 = 0;
+        internal const Int32 待機中 = 0;
 
         /// <summary>
-        /// 失敗のフラグ
+        /// 動作中のフラグ
         /// </summary>
-        private const Int32 動作中 = 1;
-
-        /// <summary>
-        /// 書き込まれたバイト数の合計
-        /// </summary>
-        static private Int64 totalWroteBytes = 0;
+        internal const Int32 動作中 = 1;
 
         /// <summary>
         /// ループした回数
         /// </summary>
-        static private Int64 loopNum = 0;
+        private static Int64 loopNum = 0;
+
+        /// <summary>
+        /// 書き込まれたバイト数の合計
+        /// </summary>
+        private static Int64 totalWroteBytes = 0;
 
         /// <summary>
         /// バッファのサイズ
         /// </summary>
         private Int32 bufSize;
-
-        /// <summary>
-        /// 処理をキャンセルする場合のトークン
-        /// </summary>
-        private CancellationTokenSource cts = null;
 
         /// <summary>
         /// IOの終了指示のフラグ
@@ -68,24 +72,24 @@
         private MemoryAllocate maread = null;
 
         /// <summary>
-        /// メモリに書き込むデリゲート
+        /// バッファに書き込むデリゲート
         /// </summary>
-        private Action<MemoryAllocate> memoryWriteAction;
+        private Action<MemoryAllocate> bufferWriteAction;
 
         /// <summary>
-        /// メモリの内容を比較するデリゲート
+        /// バッファの内容を比較するデリゲート
         /// </summary>
-        private Func<MemoryAllocate, MemoryAllocate, Boolean> memcmp = null;
+        private Func<MemoryAllocate, MemoryAllocate, Boolean> bufCompare = null;
 
         /// <summary>
-        /// 実際に処理を行うデリゲート
+        /// バッファとディスクとの間で処理を行うデリゲート
         /// </summary>
-        private Action run;
+        private Action bufBetweenDisk;
 
         /// <summary>
-        /// メモリに書き込まれたかどうかを示すフラグ
+        /// バッファに書き込まれたかどうかを示すフラグ
         /// </summary>
-        private Boolean memoryWroteFlag = false;
+        private Boolean bufferWroteFlag = false;
 
         /// <summary>
         /// IOが終わったかどうかを示すフラグ
@@ -93,7 +97,7 @@
         /// <remarks>
         /// 複数のスレッドからアクセスされる！
         /// </remarks>
-        private Int32 isnow;
+        private Int32 isNow;
 
         #endregion フィールド
         
@@ -102,118 +106,174 @@
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="target"></param>
-        public FileIO(Int32 bufSize, Boolean isVerify, Boolean isParallel)
+        /// <param name="bufSize">バッファのサイズ</param>
+        /// <param name="isParallel">並列化するかどうか</param>
+        /// <param name="isVerify">ベリファイをかけるかどうか</param>
+        public FileIO(Int32 bufSize, Boolean isParallel, Boolean isVerify)
         {
+            this.bufSize = bufSize;
+
+            this.isParallel = isParallel;
+
+            this.isVerify = isVerify;
+
             if (Environment.Is64BitProcess)
             {
-                this.memoryWriteAction = UnsafeNativeMethods.writeMemory64;
+                this.bufferWriteAction = UnsafeNativeMethods.writeMemory64;
             }
             else
             {
-                this.memoryWriteAction = UnsafeNativeMethods.writeMemory32;
+                this.bufferWriteAction = UnsafeNativeMethods.writeMemory32;
             }
 
-            this.run = this.write;
+            this.bufBetweenDisk = this.BufferToDisk;
 
-            if (isVerify)
+            if (this.isVerify)
             {
-                if (Environment.Is64BitProcess && isParallel)
+                if (Environment.Is64BitProcess && this.isParallel)
                 {
-                    this.memcmp = UnsafeNativeMethods.MemoryCmp64Parallel;
+                    this.bufCompare = UnsafeNativeMethods.MemoryCmp64Parallel;
                 }
                 else if (Environment.Is64BitProcess)
                 {
-                    this.memcmp = UnsafeNativeMethods.MemoryCmp64;
+                    this.bufCompare = UnsafeNativeMethods.MemoryCmp64;
                 }
-                else if (isParallel)
+                else if (this.isParallel)
                 {
-                    this.memcmp = UnsafeNativeMethods.MemoryCmp32Parallel;
+                    this.bufCompare = UnsafeNativeMethods.MemoryCmp32Parallel;
                 }
                 else
                 {
-                    this.memcmp = UnsafeNativeMethods.MemoryCmp32;
+                    this.bufCompare = UnsafeNativeMethods.MemoryCmp32;
                 }
-      
-                this.run += this.readandverify;
-                this.maread = new MemoryAllocate(bufSize);
+
+                this.maread = new MemoryAllocate(this.bufSize);
+                this.bufBetweenDisk += this.DiskVerify;
             }
 
-            this.ma = new MemoryAllocate(bufSize);
+            this.bufBetweenDisk +=
+                () =>
+                {
+                    if (File.Exists(this.FileName))
+                    {
+                        // もし一時ファイルが残っていたらそのファイルを消去
+                        File.Delete(this.FileName);
+                    }
+                };
 
-            this.bufSize = bufSize;
-            this.isVerify = isVerify;
-            this.isParallel = isParallel;
+            this.ma = new MemoryAllocate(this.bufSize);
         }
-
-        #region IDisposable メンバ
-
-        public void Dispose()
-        {
-            cts.Cancel();
-            cts.Dispose();
-
-            if (maread != null)
-            {
-                maread.Dispose();
-            }
-
-            ma.Dispose();
-        }
-
-        #endregion
 
         #endregion 構築・破棄
 
         #region プロパティ
-        
-        internal Boolean IsLoop { private get; set; }
 
+        /// <summary>
+        /// ループした回数
+        /// </summary>
+        internal static Int64 LoopNum
+        {
+            get { return FileIO.loopNum; }
+        }
+
+        /// <summary>
+        /// 書き込まれたバイト数の合計
+        /// </summary>
+        internal static Int64 TotalWroteBytes
+        {
+            get { return FileIO.totalWroteBytes; }
+        }
+
+        /// <summary>
+        /// バッファの内容が全て書き込まれたかどうかを示すフラグ
+        /// </summary>
+        internal Boolean AllBufferWrote { get; private set; }
+
+        /// <summary>
+        /// 処理をキャンセルする場合のトークン
+        /// </summary>
+        internal CancellationTokenSource Cts { get; set; }
+
+        /// <summary>
+        /// 一時ファイルのファイル名
+        /// </summary>
+        internal String FileName { private get; set; }
+
+        /// <summary>
+        /// 一時ファイルのファイルサイズ
+        /// </summary>
+        internal Int64 FileSize { private get; set; }
+
+        /// <summary>
+        /// ループした回数
+        /// </summary>
+        internal Boolean IsLoop { private get; set; }
+        
         /// <summary>
         /// IOが終わったかどうか
         /// </summary>
-        /// <remarks>
-        /// 複数のスレッドからアクセスされる！
-        /// </remarks>
-        private Int32 Isnow
+        /// <remarks>複数のスレッドからアクセスされる！</remarks>
+        internal Int32 IsNow
         {
             get
             {
-                return this.isnow;
+                return this.isNow;
             }
 
             set
             {
-                Interlocked.Exchange(ref this.isnow, value);
+                Interlocked.Exchange(ref this.isNow, value);
             }
         }
 
-        internal String FileName { private get; set; }
-        internal Int64 FileSize { private get; set; }
-        internal Int64 WroteSize { get; private set; }
-        internal Int64 ReadSize { get; private set; }
-        internal Boolean AllMemoryWrited { get; private set; }
+        /// <summary>
+        /// 読み込んだ合計のバイト数
+        /// </summary>
+        /// <remarks>必ず初期化すること！</remarks>
+        internal Int64 ReadBytes { get; set; }
 
-        static public Int64 TotalWrote
-        {
-            get { return totalWroteBytes; }
-        }
-
-        static public Int64 LoopNum
-        {
-            get { return loopNum; }
-        }
-
+        /// <summary>
+        /// 書き込んだ合計のバイト数
+        /// </summary>
+        /// <remarks>必ず初期化すること！</remarks>
+        internal Int64 WroteBytes { get; private set; }
+        
         #endregion
+
+        #region 破棄
+
+        /// <summary>
+        /// Disposeメソッド
+        /// </summary>
+        public void Dispose()
+        {
+            this.ma.Dispose();
+            
+            this.ma = null;
+
+            if (this.maread != null)
+            {
+                this.maread.Dispose();
+
+                this.maread = null;
+            }
+        }
+
+        #endregion 破棄
 
         #region メソッド
 
-        internal async void fileIORun()
+        /// <summary>
+        /// 一時ファイルの読み書きを行う
+        /// </summary>
+        internal async void FileIORun()
         {
-            if (this.cts == null)
+            if (this.Cts == null)
             {
-                this.cts = new CancellationTokenSource();
+                this.Cts = new CancellationTokenSource();
             }
+
+            this.IsNow = FileIO.動作中;
 
             await Task.Run(
                 () =>
@@ -222,10 +282,8 @@
                     {
                         while (true)
                         {
-                            this.run();
-                            
-                            // ファイル消去
-                            File.Delete(FileName);
+                            this.bufBetweenDisk();
+
                             if (this.endFlag)
                             {
                                 break;
@@ -234,217 +292,248 @@
                     }
                     else
                     {
-                        this.run();
+                        this.bufBetweenDisk();
 
                         // ファイル消去
-                        File.Delete(FileName);
+                        File.Delete(this.FileName);
                     }
-                },
-                this.cts.Token);
 
-            this.cts.Dispose();
-            this.cts = null;
+                    this.IsNow = FileIO.待機中;
+                },
+                this.Cts.Token);
+
+            this.Cts.Dispose();
+            this.Cts = null;
         }
 
-        private void write()
+        /// <summary>
+        /// バッファの内容をディスクに書き込む
+        /// </summary>
+        private void BufferToDisk()
+        {
+            if (this.isVerify)
+            {
+                this.bufferWroteFlag = false;
+                this.AllBufferWrote = false;
+            }
+
+            using (var bw = new BinaryWriter(new FileStream(this.FileName, FileMode.Create, FileAccess.Write, FileShare.None)))
+            {
+                var ct = this.Cts.Token;
+
+                try
+                {
+                    var max = this.FileSize / this.bufSize;
+                    for (var i = 0; i < max; i++)
+                    {
+                        if (!this.MyWrite(
+                            () =>
+                            {
+                                if (!(this.isVerify && this.bufferWroteFlag))
+                                {
+                                    this.bufferWriteAction(this.ma);
+                                    this.bufferWroteFlag = true;
+                                }
+                            },
+                            bw,
+                            this.bufSize))
+                        {
+                            return;
+                        }
+
+                        this.WroteBytes = (i + 1) * this.bufSize;
+                    }
+
+                    var residue = (Int32)(this.FileSize % (Int64)this.bufSize);
+                    if (residue != 0)
+                    {
+                        if (!this.MyWrite(
+                            () =>
+                            {
+                                if (!this.isVerify)
+                                {
+                                    this.bufferWriteAction(this.ma);
+                                }
+                            },
+                            bw,
+                            residue))
+                        {
+                            return;
+                        }
+
+                        this.WroteBytes += (Int64)residue;
+                    }
+
+                    if (!this.isVerify)
+                    {
+                        FileIO.loopNum++;
+                    }
+                    else
+                    {
+                        this.AllBufferWrote = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
+                    Application.Current.Dispatcher.Invoke(
+                        DispatcherPriority.Send,
+                        new DispatcherOperationCallback(ASB2.ErrorCheck.ThrowMainThreadException),
+                        ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 一時ファイルのベリファイ作業を行う
+        /// </summary>
+        /// <param name="br">BinaryReaderオブジェクト</param>
+        /// <param name="count">BinaryReaderで読み込むバイト数</param>
+        /// <returns>読み込みが正常に終了したならtrue、それ以外の場合はfalse</returns>
+        private Boolean MyVerify(BinaryReader br, Int32 count)
         {
             try
             {
-                if (isVerify)
+                var ct = this.Cts.Token;
+
+                // キャンセルされた場合例外をスロー           
+                ct.ThrowIfCancellationRequested();
+
+                br.Read(this.maread.Buf, this.maread.Offset, count);
+
+                // キャンセルされた場合例外をスロー           
+                ct.ThrowIfCancellationRequested();
+
+                if (!this.bufCompare(this.ma, this.maread))
                 {
-                    this.memoryWroteFlag = false;
-                    this.AllMemoryWrited = false;
+                    throw new InvalidDataException(
+                        String.Format(
+                            "ベリファイに失敗しました。{0}プログラムのバグか、SSD/HDDが壊れています。",
+                            Environment.NewLine));
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                this.endFlag = true;
 
-                using (var bw = new BinaryWriter(new FileStream(this.FileName, FileMode.Create, FileAccess.Write, FileShare.None)))
+                return false;
+            }
+            catch (InvalidDataException e)
+            {
+                e.Message.CallErrorMessageBox();
+
+                this.endFlag = true;
+
+                return false;
+            }
+            catch (IOException e)
+            {
+                e.Message.CallErrorMessageBox();
+
+                this.endFlag = true;
+
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// 一時ファイルに書き込み作業を行う
+        /// </summary>
+        /// <param name="act">BinaryWriterによる書き込み作業用のデリゲート</param>
+        /// <param name="bw">BinaryWriterオブジェクト</param>
+        /// <param name="count">BinaryWriterで書き込むバイト数</param>
+        /// <returns>書き込みが正常に終了したならtrue、それ以外の場合はfalse</returns>
+        private Boolean MyWrite(Action act, BinaryWriter bw, Int32 count)
+        {
+            try
+            {
+                var ct = this.Cts.Token;
+
+                // キャンセルされた場合例外をスロー           
+                ct.ThrowIfCancellationRequested();
+
+                act();
+
+                // キャンセルされた場合例外をスロー           
+                ct.ThrowIfCancellationRequested();
+
+                bw.Write(this.ma.Buf, this.ma.Offset, count);
+
+                // キャンセルされた場合例外をスロー           
+                ct.ThrowIfCancellationRequested();
+
+                // 強制的にバッファをクリア
+                bw.Flush();
+            }
+            catch (OperationCanceledException)
+            {
+                this.endFlag = true;
+
+                return false;
+            }
+            catch (IOException e)
+            {
+                e.Message.CallErrorMessageBox();
+
+                this.endFlag = true;
+
+                return false;
+            }
+
+            FileIO.totalWroteBytes += (Int64)count;
+
+            return true;
+        }
+
+        /// <summary>
+        /// ディスクの内容のベリファイを行う
+        /// </summary>
+        private void DiskVerify()
+        {
+            if (!this.endFlag)
+            {
+                try
                 {
-                    var ct = this.cts.Token;
-
-                    Int64 max = FileSize / bufSize;
-                    for (Int64 i = 0; i < max; i++)
+                    using (var br = new BinaryReader(File.Open(this.FileName, FileMode.Open, FileAccess.Read, FileShare.None)))
                     {
-                        try
+                        var max = this.FileSize / this.bufSize;
+                        for (var i = 0; i < max; i++)
                         {
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            if (!this.isVerify || !this.memoryWroteFlag)
+                            if (!this.MyVerify(br, this.bufSize))
                             {
-                                this.memoryWriteAction(this.ma);
-                                this.memoryWroteFlag = true;
+                                return;
                             }
 
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            bw.Write(this.ma.Buf, this.ma.Offset, this.bufSize);
-
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            // 強制的にバッファをクリア
-                            bw.Flush();
-
-                            this.WroteSize = (i + 1) * bufSize;
-                            
-                            FileIO.totalWroteBytes += bufSize;
+                            this.ReadBytes = (i + 1) * this.bufSize;
                         }
-                        catch (OperationCanceledException)
+
+                        var residue = (Int32)(this.FileSize % (Int64)this.bufSize);
+                        if (residue != 0)
                         {
-                            this.endFlag = true;
-                            return;
+                            if (!this.MyVerify(br, residue))
+                            {
+                                return;
+                            }
+
+                            this.ReadBytes += residue;
                         }
                     }
 
-                    var residue = (Int32)(FileSize % (Int64)bufSize);
-                    if (residue != 0)
-                    {
-                        try
-                        {
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            if (!isVerify)
-                            {
-                                memoryWriteAction(ma);
-                            }
-
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            bw.Write(this.ma.Buf, this.ma.Offset, residue);
-
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            // 強制的にバッファをクリア
-                            bw.Flush();
-
-                            WroteSize += (Int64)residue;
-                            FileIO.totalWroteBytes += (Int64)residue;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            this.endFlag = true;
-                        }
-                    }
-                }
-
-                if (!this.isVerify)
-                {
                     FileIO.loopNum++;
                 }
-                else
+                catch (Exception ex)
                 {
-                    this.AllMemoryWrited = true;
+                    // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
+                    Application.Current.Dispatcher.Invoke(
+                        DispatcherPriority.Send,
+                        new DispatcherOperationCallback(ASB2.ErrorCheck.ThrowMainThreadException),
+                        ex);
                 }
             }
-            catch (Exception ex)
-            {
-                // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
-                Application.Current.Dispatcher.Invoke(DispatcherPriority.Send,
-                                                      new DispatcherOperationCallback(ThrowMainThreadException),
-                                                      ex);
-            }
         }
-
-        private void readandverify()
-        {
-            try
-            {
-                using (BinaryReader br = new BinaryReader(File.Open(FileName, FileMode.Open, FileAccess.Read, FileShare.None)))
-                {
-                    var ct = cts.Token;
-
-                    Int64 max = FileSize / bufSize;
-                    for (Int64 i = 0; i < max; i++)
-                    {
-                        try
-                        {
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            br.Read(maread.Buf, maread.Offset, bufSize);
-
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            if (!memcmp(ma, maread))
-                            {
-                                throw new InvalidDataException(@"ベリファイに失敗しました。
-プログラムのバグか、SSD/HDDが壊れています。");
-                            }
-
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            ReadSize = (i + 1) * bufSize;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            endFlag = true;
-                            return;
-                        }
-                        catch (InvalidDataException e)
-                        {
-                            ErrorDispose.callError(e.Message);
-                            endFlag = true;
-                            return;
-                        }
-                    }
-
-                    Int32 residue = (Int32)(FileSize % (Int64)bufSize);
-                    if (residue != 0)
-                    {
-                        try
-                        {
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            br.Read(maread.Buf, maread.Offset, residue);
-
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            if (!memcmp(ma, maread))
-                            {
-                                throw new InvalidDataException(@"ベリファイに失敗しました。
-プログラムのバグか、SSD/HDDが壊れています。");
-                            }
-
-                            // キャンセルされた場合例外をスロー           
-                            ct.ThrowIfCancellationRequested();
-
-                            ReadSize += (Int64)residue;
-                        }
-                        catch (OperationCanceledException)
-                        {
-                            endFlag = true;
-                        }
-                        catch (InvalidDataException e)
-                        {
-                            ErrorDispose.callError(e.Message);
-                            endFlag = true;
-                        }
-                    }
-                }
-
-                FileIO.loopNum++;
-            }
-            catch (Exception ex)
-            {
-                // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
-                Application.Current.Dispatcher.Invoke(DispatcherPriority.Send,
-                                                      new DispatcherOperationCallback(ThrowMainThreadException),
-                                                      ex);
-            }
-        }
-
-        private Object ThrowMainThreadException(Object arg)
-        {
-            throw new Exception("FileIOクラスの例外です。", (Exception)arg);
-        }
-
+        
         #endregion メソッド
     }
 }

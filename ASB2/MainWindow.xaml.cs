@@ -306,11 +306,8 @@ namespace ASB2
             this.tti.Text = "ASB2 待機中";
 
             // WriteFileオブジェクトをGCの対象にする
-            if (this.fio != null)
-            {
-                this.fio.Dispose();
-                this.fio = null;
-            }
+            this.fio.Dispose();
+            this.fio = null;
         }
 
         /// <summary>
@@ -356,16 +353,16 @@ namespace ASB2
 
             this.fio = new FileMemWork.FileIO(
                 bufsize * Kilo,
-                this.mwvm.IsVerify,
-                this.sdm.SaveData.IsParallel)
+                this.sdm.SaveData.IsParallel,
+                this.mwvm.IsVerify)
             {
-                IsLoop = this.mwvm.IsLoop,
                 FileName = this.mwvm.TmpFileNameFullPath,
                 FileSize = tmpFileSize,
+                IsLoop = this.mwvm.IsLoop
             };
 
             // 処理開始
-            this.fio.fileIORun();
+            this.fio.FileIORun();
 
             Double interval;
             Double.TryParse(this.sdm.SaveData.TimerIntervalText, out interval);
@@ -413,9 +410,8 @@ namespace ASB2
             // タスクトレイアイコンのテキスト変更
             this.tti.Text = "ASB2 待機中";
 
-            // WriteFileをGCの対象にする
-            this.fio.Dispose();
-            this.fio = null;
+            // FileIOの処理をキャンセルする
+            this.fio.Cts.Cancel();
 
             // キャンセル処理を行う
             this.NormalCancelClose();
@@ -430,7 +426,7 @@ namespace ASB2
         private void UpdateWindow()
         {
             this.LoopNumTextBlock.Text = FileIO.LoopNum.ToString() + MainWindow.LoopText;
-            this.TotalWriteTextBlock.Text = String.Format(MainWindow.TotalWriteText + "{0:N0} Bytes", FileIO.TotalWrote);
+            this.TotalWriteTextBlock.Text = String.Format(MainWindow.TotalWriteText + "{0:N0} Bytes", FileIO.TotalWroteBytes);
         }
 
         /// <summary>
@@ -520,7 +516,7 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            if (!this.fio.AllMemoryWrited)
+            if (!this.fio.AllBufferWrote)
             {
                 switch (this.rwstate)
                 {
@@ -536,7 +532,7 @@ namespace ASB2
                         break;
                 }
             }
-            else if (this.fio.AllMemoryWrited && this.mwvm.IsVerify)
+            else if (this.fio.AllBufferWrote && this.mwvm.IsVerify)
             {
                 switch (this.rwstate)
                 {
@@ -565,15 +561,15 @@ namespace ASB2
                 case MainWindow.RWState.Read:
                     // ウィンドウを更新
                     this.UpdateWindowRead(
-                        (Double)this.fio.ReadSize,
-                        this.CalcSpeed(ref this.aisread, ref this.beforeReadByte, (Double)this.fio.ReadSize));
+                        (Double)this.fio.ReadBytes,
+                        this.CalcSpeed(ref this.aisread, ref this.beforeReadByte, (Double)this.fio.ReadBytes));
                     break;
 
                 case MainWindow.RWState.Write:
                     // ウィンドウを更新
                     this.UpdateWindowWrite(
-                        this.CalcSpeed(ref this.aiswrite, ref this.beforeWroteByte, (Double)this.fio.WroteSize),
-                        (Double)this.fio.WroteSize);
+                        this.CalcSpeed(ref this.aiswrite, ref this.beforeWroteByte, (Double)this.fio.WroteBytes),
+                        (Double)this.fio.WroteBytes);
                     break;
 
                 default:
@@ -581,13 +577,17 @@ namespace ASB2
                     break;
             }
 
-            switch (this.fio.Tas.Status)
+            switch (this.fio.IsNow)
             {
-                case TaskStatus.RanToCompletion:
+                case FileIO.待機中:
                     this.NormalCancelClose();
                     break;
 
+                case FileIO.動作中:
+                    break;
+
                 default:
+                    Debug.Assert(false, "IsNowが異常です！");
                     break;
             }
         }
@@ -609,16 +609,21 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private void MainWindow_Closed(object sender, EventArgs e)
         {
+            // タイマーストップ
+            this.dispatcherTimer.Stop();
+
+            if (this.fio != null)
+            {
+                this.fio.Cts.Cancel();
+                this.fio.Dispose();
+                this.fio = null;
+            }
+
             this.sdm.dataSave();
 
             if (this.tti != null)
             {
                 this.tti.Dispose();
-            }
-
-            if (this.fio != null)
-            {
-                this.fio.Dispose();
             }
         }
 

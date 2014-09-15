@@ -12,7 +12,6 @@ namespace MyErrorLog
     using System.Reflection;
     using System.Text;
     using System.Windows;
-    using MyErrorLog;
 
     /// <summary>
     /// エラー処理の関数をまとめたクラス

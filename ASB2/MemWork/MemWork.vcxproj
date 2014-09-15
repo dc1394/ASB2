@@ -142,8 +142,8 @@ copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework
     <PostBuildEvent>
       <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Release\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy "C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler\cilkrts20.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\3.0\Runtime\v4.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Documents\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
+copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
+copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

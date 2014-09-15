@@ -87,7 +87,7 @@ DLLEXPORT bool __stdcall memcmpparallel128(std::uint8_t * p1, std::uint8_t * p2,
 	auto res = true;
 
 	// 実際に1回のループで64バイトずつ比較
-	cilk_for (auto i = 0; i < write512loop; i++) {
+	cilk_for (std::uint32_t i = 0; i < write512loop; i++) {
 		if (res) {
 			char const * s1 = reinterpret_cast<char const *>(p1) + (i << 6);
 			char const * s2 = reinterpret_cast<char const *>(p2) + (i << 6);
@@ -140,7 +140,7 @@ DLLEXPORT void __stdcall memfill128(std::uint8_t * p, std::uint32_t size)
     auto const write512loop = size >> 6;
 
     // 実際に1回のループで64バイトずつ書き込む
-    for (auto i = 0; i < write512loop; i++) {
+    for (std::uint32_t i = 0; i < write512loop; i++) {
         std::array<__m128i, 4> xmm;
         // xmm0～3レジスタ上に乱数生成
         for (auto j = 0; j < 4; j++)
