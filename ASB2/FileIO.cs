@@ -154,10 +154,13 @@ namespace FileMemWork
             this.bufBetweenDisk +=
                 () =>
                 {
-                    if (File.Exists(this.FileName))
+                    try
                     {
                         // もし一時ファイルが残っていたらそのファイルを消去
                         File.Delete(this.FileName);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
                     }
                 };
 
@@ -257,6 +260,24 @@ namespace FileMemWork
 
                 this.maread = null;
             }
+
+            if (File.Exists(this.FileName))
+            {
+                var fileNotAccess = false;
+                while (!fileNotAccess)
+                {
+                    try
+                    {
+                        File.Delete(this.FileName);
+                    }
+                    catch (IOException)
+                    {
+                        continue;
+                    }
+
+                    fileNotAccess = true;
+                }
+            }
         }
 
         #endregion 破棄
@@ -293,9 +314,6 @@ namespace FileMemWork
                     else
                     {
                         this.bufBetweenDisk();
-
-                        // ファイル消去
-                        File.Delete(this.FileName);
                     }
 
                     this.IsNow = FileIO.待機中;

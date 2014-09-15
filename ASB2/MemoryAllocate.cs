@@ -1,88 +1,123 @@
-﻿using System;
-using System.Runtime;
-
-using MyLogic;
-
+﻿//-----------------------------------------------------------------------
+// <copyright file="MemoryAllocate.cs" company="dc1394's software">
+//     Copyright ©  2014 @dc1394 All Rights Reserved.
+// </copyright>
+//-----------------------------------------------------------------------
 namespace FileMemWork
 {
+    using System;
+    using System.Runtime;
+    using MyLogic;
+
+    /// <summary>
+    /// メモリのアロケートを行うクラス
+    /// </summary>
     internal sealed class MemoryAllocate : IDisposable
     {
         #region フィールド
 
+        /// <summary>
+        /// 15を表す定数
+        /// </summary>
         private const Byte FIFTEEN = 15;
-        private const UInt32 MASK_FFFFFFF0h = 0xFFFFFFF0;
-        private const UInt64 MASK_FFFFFFFFFFFFFFF0h = 0xFFFFFFFFFFFFFFF0;
-        
-        private Int32 bufSize;
 
+        /// <summary>
+        /// x86のときのビットマスク
+        /// </summary>
+        private const UInt32 MASKOfFFFFFFF0h = 0xFFFFFFF0;
+
+        /// <summary>
+        /// x64のときのビットマスク
+        /// </summary>
+        private const UInt64 MASKOfFFFFFFFFFFFFFFF0h = 0xFFFFFFFFFFFFFFF0;
+
+        /// <summary>
+        /// 1MByte以上のメモリを確保するときに使う
+        /// MemoryFailPointオブジェクト
+        /// </summary>
         private MemoryFailPoint mfp;
 
         #endregion フィールド
 
-        #region 構築・破棄
+        #region 構築
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="target"></param>
+        /// <param name="bufSize">バッファの大きさ</param>
         internal unsafe MemoryAllocate(Int32 bufSize)
         {
-            Int32 i = bufSize / (Int32)Pow.pow(2L, 20U);
-            mfp = (i != 0) ? new MemoryFailPoint(i) : null;
-            this.bufSize = bufSize;
-            Buf = new Byte[bufSize + FIFTEEN];
+            this.BufSize = bufSize;
+            
+            var i = this.BufSize / (Int32)Pow.pow(2L, 20U);
+            
+            this.mfp = (i != 0) ? new MemoryFailPoint(i) : null;
+            
+            this.Buf = new Byte[this.BufSize + FIFTEEN];
 
-            fixed (Byte* p = &Buf[0])
+            fixed (Byte* p = &this.Buf[0])
             {
                 if (Environment.Is64BitProcess)
                 {
-                    UInt64 ptr = (UInt64)p;
-                    Address64 = ((ptr + (UInt64)FIFTEEN) & MASK_FFFFFFFFFFFFFFF0h);
-                    Offset = (Int32)(Address64 - ptr);
+                    var ptr = (UInt64)p;
+                    this.Address64 = (ptr + (UInt64)MemoryAllocate.FIFTEEN) & MemoryAllocate.MASKOfFFFFFFFFFFFFFFF0h;
+                    this.Offset = (Int32)(this.Address64 - ptr);
                 }
                 else
                 {
-                    UInt32 ptr = (UInt32)p;
-                    Address32 = ((ptr + (UInt32)FIFTEEN) & MASK_FFFFFFF0h);
-                    Offset = (Int32)(Address32 - ptr);
+                    var ptr = (UInt32)p;
+                    this.Address32 = (ptr + (UInt32)MemoryAllocate.FIFTEEN) & MemoryAllocate.MASKOfFFFFFFF0h;
+                    this.Offset = (Int32)(this.Address32 - ptr);
                 }
             }
         }
 
-        #region IDisposable メンバ
-
-        public void Dispose()
-        {
-            // メモリ解放
-            if (mfp != null)
-            {
-                mfp.Dispose();
-            }
-        }
-
-        #endregion
-
-        #endregion 構築・破棄
+        #endregion 構築
 
         #region プロパティ
 
-        internal Int32 BufSize
+        /// <summary>
+        /// x86におけるバッファの先頭アドレス
+        /// </summary>
+        internal UInt32 Address32 { get; private set; }
+
+        /// <summary>
+        /// x64におけるバッファの先頭アドレス
+        /// </summary>
+        internal UInt64 Address64 { get; private set; }
+
+        /// <summary>
+        /// バッファ
+        /// </summary>
+        internal Byte[] Buf { get; private set; }
+
+        /// <summary>
+        /// バッファの大きさ
+        /// </summary>
+        internal Int32 BufSize { get; private set; }
+
+        /// <summary>
+        /// バッファのオフセット
+        /// </summary>
+        internal Int32 Offset { get; private set; }
+
+        #endregion プロパティ
+
+        #region 破棄
+
+        /// <summary>
+        /// Disposeメソッド
+        /// </summary>
+        public void Dispose()
         {
-            get { return bufSize; }
+            // メモリ解放
+            if (this.mfp != null)
+            {
+                this.mfp.Dispose();
+                this.mfp = null;
+            }
         }
 
-        internal UInt64 Address64
-        { get; private set; }
-        
-        internal UInt32 Address32
-        { get; private set; }
-        
-        internal Int32 Offset
-        { get; private set; }
-
-        internal Byte[] Buf
-        { get; private set; }
-
-        #endregion
+        #endregion 破棄
     }
 }

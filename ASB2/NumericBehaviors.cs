@@ -168,7 +168,7 @@ namespace ASB2
                 Int32.TryParse(e.DataObject.GetData(typeof(string)) as string, out val) &&
                 val >= GetMinimum(textBox))
             {
-                Int32 max = GetMaximum(textBox);
+                var max = GetMaximum(textBox);
                 if (val > max)
                 {
                     textBox.Text = max.ToString();

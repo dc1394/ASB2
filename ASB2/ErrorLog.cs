@@ -68,10 +68,14 @@ namespace MyErrorLog
             builder.AppendFormat("Source: {0}{1}", ex.Source, Environment.NewLine);
             builder.AppendFormat("TargetSite: {0}{1}", ex.TargetSite, Environment.NewLine);
             builder.AppendFormat("Data: {0}", Environment.NewLine);
-            foreach (DictionaryEntry de in ex.Data)
-            {
-                builder.AppendFormat("\t{0} : {1}{2}", de.Key, de.Value, Environment.NewLine);
-            }
+            ex.Data
+              .OfType<DictionaryEntry>()
+              .ToList()
+              .ForEach(
+              c =>
+                {
+                    builder.AppendFormat("\t{0} : {1}{2}", c.Key, c.Value, Environment.NewLine);
+                });
 
             builder.AppendFormat("StackTrace: {0}{1}", ex.StackTrace, Environment.NewLine);
         }

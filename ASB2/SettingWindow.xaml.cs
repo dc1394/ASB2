@@ -1,13 +1,16 @@
-﻿using System;
-using System.Reflection;
-using System.Windows;
-using System.Windows.Media.Imaging;
-
-using MyLogic;
-
-
+﻿//-----------------------------------------------------------------------
+// <copyright file="SettingWindow.xaml.cs" company="dc1394's software">
+//     Copyright ©  2014 @dc1394 All Rights Reserved.
+// </copyright>
+//-----------------------------------------------------------------------
 namespace ASB2
 {
+    using System;
+    using System.Reflection;
+    using System.Windows;
+    using System.Windows.Media.Imaging;
+    using MyLogic;
+    
     /// <summary>
     /// SettingWindow.xaml の相互作用ロジック
     /// </summary>
@@ -15,59 +18,101 @@ namespace ASB2
     {
         #region フィールド
 
-        private SettingViewModel sd;
-        private SaveDataManage.SaveData sdmsd;
+        /// <summary>
+        /// SettingWindowに対応するView
+        /// </summary>
+        private SettingViewModel svm;
+
+        /// <summary>
+        /// 保存された設定情報のオブジェクト
+        /// </summary>
+        private SaveDataManage.SaveData sd;
 
         #endregion フィールド
 
-        #region 構築・破棄
+        #region 構築
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="target"></param>
-        internal SettingWindow(SaveDataManage.SaveData sdmsd)
+        /// <param name="sd">保存された設定情報のオブジェクト</param>
+        internal SettingWindow(SaveDataManage.SaveData sd)
         {
-            InitializeComponent();
-            this.sdmsd = sdmsd;
-            sd = new SettingViewModel(sdmsd);
-            this.DataContext = sd;
+            this.InitializeComponent();
+
+            this.sd = sd;
         }
 
-        #endregion 構築・破棄
+        #endregion 構築
 
         #region イベントハンドラ
 
-        private void MainWindow_Loaded(object sender, EventArgs e)
-        {
-            // Iconを設定
-            // 現在のコードを実行しているAssemblyを取得する
-            Assembly myAssembly = Assembly.GetExecutingAssembly();
-
-            // 指定されたマニフェストリソース(この場合だとアイコンファイル)を読み込む
-            this.Icon = BitmapFrame.Create(myAssembly.GetManifestResourceStream("ASB2.Images.app.ico"));    // ソフトウェアの左上のアイコンの指定
-        }
-
-        private void Button_Click_1(object sender, RoutedEventArgs e)
-        {
-            sdmsd.Minimize = sd.MyType;
-            sdmsd.BufSizeText = sd.BufSizeText;
-            sdmsd.TimerIntervalText = sd.TimerIntervalText;
-            sdmsd.IsParallel = sd.IsParallel;
-            this.Close();
-        }
-
-        private void Button_Click_2(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 「キャンセル」ボタンをクリックしたとき呼び出される
+        /// </summary>
+        /// <param name="sender">The parameter is not used.</param>
+        /// <param name="e">The parameter is not used.</param>
+        private void Cancel_Button_Click(object sender, RoutedEventArgs e)
         {
             this.Close();
         }
 
-        private void Button_Click_3(object sender, RoutedEventArgs e)
+        /// <summary>
+        /// 「デフォルト」ボタンをクリックしたとき呼び出される
+        /// </summary>
+        /// <param name="sender">The parameter is not used.</param>
+        /// <param name="e">The parameter is not used.</param>
+        private void Default_Button_Click(object sender, RoutedEventArgs e)
         {
-            sd.MyType = DefaultData.DefaultDataDefinition.DEFAULTMINIMIZE;
-            sd.BufSizeText = DefaultData.DefaultDataDefinition.DEFAULTBUFSIZETEXT;
-            sd.TimerIntervalText = DefaultData.DefaultDataDefinition.DEFAULTTIMERINTERVALTEXT;
-            sd.IsParallel = DefaultData.DefaultDataDefinition.DEFAULTPARALLEL;
+            this.BufferSizeTextBox.Text = DefaultData.DefaultDataDefinition.DEFAULTBUFSIZETEXT;
+            
+            this.svm.MyType = DefaultData.DefaultDataDefinition.DEFAULTMINIMIZE;
+
+            this.TimerIntervalTextBox.Text = DefaultData.DefaultDataDefinition.DEFAULTTIMERINTERVALTEXT;
+
+            if (this.sd.IsVerify)
+            {
+                this.IsParallelCheckBox.IsChecked = DefaultData.DefaultDataDefinition.DEFAULTPARALLEL;
+            }
+        }
+
+        /// <summary>
+        /// 「OK」ボタンをクリックしたとき呼び出される
+        /// </summary>
+        /// <param name="sender">The parameter is not used.</param>
+        /// <param name="e">The parameter is not used.</param>
+        private void OK_Button_Click(object sender, RoutedEventArgs e)
+        {
+            this.sd.BufSizeText = this.BufferSizeTextBox.Text;
+
+            this.sd.IsParallel = this.IsParallelCheckBox.IsChecked ?? false;
+
+            this.sd.Minimize = this.svm.MyType;
+
+            this.sd.TimerIntervalText = this.TimerIntervalTextBox.Text;
+
+            this.Close();
+        }
+
+        /// <summary>
+        /// ウィンドウがロードされるとき呼び出される
+        /// </summary>
+        /// <param name="sender">The parameter is not used.</param>
+        /// <param name="e">The parameter is not used.</param>
+        private void SettingWindow_Loaded(object sender, EventArgs e)
+        {
+            this.DataContext = this.svm = new SettingViewModel(this.sd);
+
+            this.BufferSizeTextBox.Text = this.sd.BufSizeText;
+
+            if (this.IsParallelCheckBox.IsEnabled = this.sd.IsVerify)
+            {
+                this.IsParallelCheckBox.IsChecked = this.sd.IsParallel;
+            }
+
+            this.sd.Minimize = this.svm.MyType;
+
+            this.TimerIntervalTextBox.Text = this.sd.TimerIntervalText;
         }
 
         #endregion イベントハンドラ

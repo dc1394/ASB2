@@ -118,7 +118,6 @@
     <Compile Include="VersionInformationForm.Designer.cs">
       <DependentUpon>VersionInformationForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ViewModelBase.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
