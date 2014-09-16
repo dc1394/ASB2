@@ -52,13 +52,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.fs" />
+    <Compile Include="AverageWriteSpeed.fs" />
+    <Compile Include="DefaultData.fs" />
+    <Compile Include="MyError.fs" />
     <Compile Include="Pow.fs" />
     <Compile Include="SaveDataManage.fs" />
     <None Include="App.config" />
     <None Include="Script.fsx" />
-    <Compile Include="DefaultData.fs" />
-    <Compile Include="ErrorLog.fs" />
-    <Compile Include="AverageWriteSpeed.fs" />
   </ItemGroup>
   <PropertyGroup>
     <MinimumVisualStudioVersion Condition="'$(MinimumVisualStudioVersion)' == ''">11</MinimumVisualStudioVersion>

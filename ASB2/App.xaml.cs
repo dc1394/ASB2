@@ -10,7 +10,7 @@ namespace ASB2
     using System.Threading;
     using System.Windows;
     using System.Windows.Threading;
-    using MyErrorLog;
+    using MyLogic;
 
     /// <summary>
     /// App.xaml の相互作用ロジック
@@ -56,11 +56,11 @@ namespace ASB2
                    String.Format(
                         App.ErrorMessage1,
                         Environment.NewLine,
-                        Path.GetFullPath(ErrorLog.ErrorLogFilename)) +
+                        Path.GetFullPath(MyError.ErrorLogFilename)) +
                    String.Format(
                         App.ErrorMessage2,
                         Environment.NewLine,
-                        Path.GetFullPath(ErrorLog.ErrorLogFilename)) +
+                        Path.GetFullPath(MyError.ErrorLogFilename)) +
                    String.Format(ErrorMessage3, Environment.NewLine);
         }
 
@@ -73,11 +73,12 @@ namespace ASB2
         /// <param name="ex">受け取る例外</param>
         private void ReportUnhandledException(Exception ex)
         {
-            this.CreateErrorMessage(ex)     // 例外の内容からエラー文字列を生成
-                .CallErrorMessageBox();     // 生成したエラー文字列の内容をメッセージボックスで表示   
+            /// 例外の内容からエラー文字列を生成
+            /// 生成したエラー文字列の内容をメッセージボックスで表示
+            MyError.CallErrorMessageBox(this.CreateErrorMessage(ex));        
 
             // 例外の内容をログに書き込む
-            ex.WriteLog();
+            MyError.WriteLog(ex);
 
             this.Shutdown();
         }

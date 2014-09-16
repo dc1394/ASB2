@@ -4,8 +4,8 @@ module SaveDataManage =
     open System
     open System.IO
     open System.Runtime.Serialization.Formatters.Binary
-
-    //open DefaultData
+    open DefaultData
+    open MyError
 
     [<Serializable>]
     [<Sealed>]
@@ -87,6 +87,9 @@ module SaveDataManage =
                                                           //シリアル化して書き込む
                                                           (new BinaryFormatter()).Serialize(fs, sd))
             with
-                | e -> CallErrorMessageBox (e.Message + String.Format("{0}データファイルの書き込みに失敗しました。{0}{1}にログを保存しました。",
-                                                             Environment.NewLine, ErrorLogFileName))
+                | e -> let message = String.Format(
+                                        "{0}データファイルの書き込みに失敗しました。{0}{1}にログを保存しました。",
+                                        Environment.NewLine,
+                                        MyError.ErrorLogFilename)
+                       CallErrorMessageBox (e.Message + message)
                        WriteLog e

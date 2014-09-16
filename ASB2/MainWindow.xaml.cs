@@ -271,12 +271,12 @@ namespace ASB2
             }
             else if (drive.IsReady)
             {
-                ErrorDispose.callError("ドライブの空き容量が不足しています");
+                MyError.CallErrorMessageBox("ドライブの空き容量が不足しています");
                 return false;
             }
             else
             {
-                ErrorDispose.callError(String.Format("ドライブ{0}は利用できません。", this.mwvm.TmpFileNameFullPath[0]));
+                MyError.CallErrorMessageBox(String.Format("ドライブ{0}は利用できません。", this.mwvm.TmpFileNameFullPath[0]));
                 return false;
             }
         }
@@ -635,12 +635,6 @@ namespace ASB2
         private void MainWindow_Loaded(object sender, EventArgs e)
         {
             SaveDataManage.SaveDataManage.XMLFILENAME = MainWindow.DefaultDirrectory + SaveDataManage.SaveDataManage.XMLFILENAME;
-            ErrorDispose.ErrorLogFileName = MainWindow.DefaultDirrectory + ErrorDispose.ErrorLogFileName;
-
-            if (File.Exists(ErrorDispose.ErrorLogFileName))
-            {
-                File.Delete(ErrorDispose.ErrorLogFileName);
-            }
 
             try
             {
@@ -648,7 +642,7 @@ namespace ASB2
             }
             catch (InvalidOperationException)
             {
-                ErrorDispose.callError(@"データを保存したxmlファイルが壊れています。
+                MyError.CallErrorMessageBox(@"データを保存したxmlファイルが壊れています。
 xmlファイルを削除してデフォルトデータを読み込みます");
                 File.Delete(SaveDataManage.SaveDataManage.XMLFILENAME);
             }
@@ -679,7 +673,7 @@ xmlファイルを削除してデフォルトデータを読み込みます");
             this.NotifyIcon_Setup();
 
             // Iconを設定
-            this.tti.Icon = Properties.Resources.app;                                                            // タスクトレイのアイコンの指定
+            this.tti.Icon = Properties.Resources.app;               // タスクトレイのアイコンの指定
                         
             this.LoopNumTextBlock.Text = "0" + MainWindow.LoopText;
         }

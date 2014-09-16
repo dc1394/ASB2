@@ -106,8 +106,6 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BindableBase.cs" />
-    <Compile Include="ErrorCheck.cs" />
-    <Compile Include="ErrorLog.cs" />
     <Compile Include="FileIO.cs" />
     <Compile Include="MemoryAllocate.cs" />
     <Compile Include="TaskTrayIcon.cs" />

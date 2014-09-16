@@ -11,7 +11,6 @@ namespace FileMemWork
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Threading;
-    using MyErrorLog;
     using MyLogic;
 
     /// <summary>
@@ -285,6 +284,19 @@ namespace FileMemWork
         #region メソッド
 
         /// <summary>
+        /// メインスレッド以外で投げられた例外をメインスレッドで投げ返す
+        /// </summary>
+        /// <param name="arg">例外</param>
+        /// <returns>なし</returns>
+        internal static Object ThrowMainThreadException(Object arg)
+        {
+            var ex = arg as Exception;
+            MyError.WriteAndThrow<SystemException>(ex.Message, ex);
+
+            return null;
+        }
+
+        /// <summary>
         /// 一時ファイルの読み書きを行う
         /// </summary>
         internal async void FileIORun()
@@ -396,7 +408,54 @@ namespace FileMemWork
                     // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
                     Application.Current.Dispatcher.Invoke(
                         DispatcherPriority.Send,
-                        new DispatcherOperationCallback(ASB2.ErrorCheck.ThrowMainThreadException),
+                        new DispatcherOperationCallback(FileIO.ThrowMainThreadException),
+                        ex);
+                }
+            }
+        }
+
+        /// <summary>
+        /// ディスクの内容のベリファイを行う
+        /// </summary>
+        private void DiskVerify()
+        {
+            if (!this.endFlag)
+            {
+                try
+                {
+                    using (var br = new BinaryReader(File.Open(this.FileName, FileMode.Open, FileAccess.Read, FileShare.None)))
+                    {
+                        var max = this.FileSize / this.bufSize;
+                        for (var i = 0; i < max; i++)
+                        {
+                            if (!this.MyVerify(br, this.bufSize))
+                            {
+                                return;
+                            }
+
+                            this.ReadBytes = (i + 1) * this.bufSize;
+                        }
+
+                        var residue = (Int32)(this.FileSize % (Int64)this.bufSize);
+                        if (residue != 0)
+                        {
+                            if (!this.MyVerify(br, residue))
+                            {
+                                return;
+                            }
+
+                            this.ReadBytes += residue;
+                        }
+                    }
+
+                    FileIO.loopNum++;
+                }
+                catch (Exception ex)
+                {
+                    // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
+                    Application.Current.Dispatcher.Invoke(
+                        DispatcherPriority.Send,
+                        new DispatcherOperationCallback(FileIO.ThrowMainThreadException),
                         ex);
                 }
             }
@@ -438,7 +497,7 @@ namespace FileMemWork
             }
             catch (InvalidDataException e)
             {
-                e.Message.CallErrorMessageBox();
+                MyError.CallErrorMessageBox(e.Message);
 
                 this.endFlag = true;
 
@@ -446,7 +505,7 @@ namespace FileMemWork
             }
             catch (IOException e)
             {
-                e.Message.CallErrorMessageBox();
+                MyError.CallErrorMessageBox(e.Message);
 
                 this.endFlag = true;
 
@@ -493,7 +552,7 @@ namespace FileMemWork
             }
             catch (IOException e)
             {
-                e.Message.CallErrorMessageBox();
+                MyError.CallErrorMessageBox(e.Message);
 
                 this.endFlag = true;
 
@@ -505,53 +564,6 @@ namespace FileMemWork
             return true;
         }
 
-        /// <summary>
-        /// ディスクの内容のベリファイを行う
-        /// </summary>
-        private void DiskVerify()
-        {
-            if (!this.endFlag)
-            {
-                try
-                {
-                    using (var br = new BinaryReader(File.Open(this.FileName, FileMode.Open, FileAccess.Read, FileShare.None)))
-                    {
-                        var max = this.FileSize / this.bufSize;
-                        for (var i = 0; i < max; i++)
-                        {
-                            if (!this.MyVerify(br, this.bufSize))
-                            {
-                                return;
-                            }
-
-                            this.ReadBytes = (i + 1) * this.bufSize;
-                        }
-
-                        var residue = (Int32)(this.FileSize % (Int64)this.bufSize);
-                        if (residue != 0)
-                        {
-                            if (!this.MyVerify(br, residue))
-                            {
-                                return;
-                            }
-
-                            this.ReadBytes += residue;
-                        }
-                    }
-
-                    FileIO.loopNum++;
-                }
-                catch (Exception ex)
-                {
-                    // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
-                    Application.Current.Dispatcher.Invoke(
-                        DispatcherPriority.Send,
-                        new DispatcherOperationCallback(ASB2.ErrorCheck.ThrowMainThreadException),
-                        ex);
-                }
-            }
-        }
-        
         #endregion メソッド
     }
 }

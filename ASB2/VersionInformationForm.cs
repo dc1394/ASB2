@@ -35,7 +35,7 @@ icon @aominpoko", Environment.NewLine);
             }
             catch (Win32Exception)
             {
-                ErrorDispose.callError(@"カレントフォルダにreadme.txtが見つかりません。
+                MyError.CallErrorMessageBox(@"カレントフォルダにreadme.txtが見つかりません。
 更新履歴.txtを削除しないで下さい。");
             }
         }

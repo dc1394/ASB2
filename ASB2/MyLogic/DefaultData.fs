@@ -2,7 +2,10 @@
 
 module DefaultData =
     open System
-
+    
+    /// <summary>
+    /// 最小化時の挙動を表す列挙型
+    /// </summary>
     [<Serializable>]
     type MinimizeType =
          | TASKBAR   = 0
@@ -11,11 +14,20 @@ module DefaultData =
 
     type DefaultDataDefinition =
         struct
-            // asb最小化時動作のデフォルト設定
+
+            /// <summary>
+            /// asb最小化時動作のデフォルト設定
+            /// </summary>
             static member DEFAULTMINIMIZE = MinimizeType.BOTH
-            // デフォルトのバッファサイズ（kiB）
+            
+            /// <summary>
+            /// デフォルトのバッファサイズ（kiB）
+            /// </summary>
             static member DEFAULTBUFSIZETEXT = "1024"
-            // 一時ファイルのデフォルトサイズ(GiB)
+            
+            /// <summary>
+            /// 一時ファイルのデフォルトサイズ(GiB)
+            /// </summary>
             static member DEFAULTTMPFILESIZETEXT = "3"
             // デフォルトの更新間隔（ミリ秒）
             static member DEFAULTTIMERINTERVALTEXT = "150"
