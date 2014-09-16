@@ -59,6 +59,11 @@ module MyError =
                 elif !current = null then loop := false
             }
 
+    /// <summary>
+    /// 例外の詳細をStringBuilderに追加して、それをStringに変換して返す
+    /// </summary>
+    /// <param name="ex">例外</param>
+    /// <returns>例外の詳細の文字列</returns>
     let ToFullDisplayString ex =
         let displayText = new StringBuilder()
         for inner in (GetNestedExceptionList ex) do
@@ -68,11 +73,21 @@ module MyError =
 
         displayText.ToString()
 
+    /// <summary>
+    /// 与えられたエラーメッセージをログファイルに書き込み、
+    /// 与えられたエラーメッセージで与えられた型の例外を投げる
+    /// </summary>
+    /// <typeparam name="T">例外の型</typeparam>
+    /// <param name="errmsg">エラーメッセージ</param>
     let WriteAndThrow<'T> errmsg innerException =
         Log.Error(errmsg);
         let ctor = typeof<'T>.GetConstructor([| typeof<String>; typeof<Exception>; |])
 
         raise (ctor.Invoke([| errmsg; innerException |]) :?> Exception)
 
+    /// <summary>
+    /// 例外をエラーとしてファイルに記録する
+    /// </summary>
+    /// <param name="ex">例外</param>
     let WriteLog (ex : Exception) =
         Log.Error(ex.ToString() + Environment.NewLine + ToFullDisplayString ex)

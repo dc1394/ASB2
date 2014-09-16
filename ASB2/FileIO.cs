@@ -93,9 +93,7 @@ namespace FileMemWork
         /// <summary>
         /// IOが終わったかどうかを示すフラグ
         /// </summary>
-        /// <remarks>
-        /// 複数のスレッドからアクセスされる！
-        /// </remarks>
+        /// <remarks>複数のスレッドからアクセスされる！</remarks>
         private Int32 isNow;
 
         #endregion フィールド
