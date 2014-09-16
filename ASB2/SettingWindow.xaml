@@ -61,6 +61,7 @@
                        FontSize="14"
                        VerticalAlignment="Center" />
             <TextBox Height="23"
+                     local:NumericBehaviors.Default="{Binding Path=DefaultBufferSize, Mode=OneTime}"
                      local:NumericBehaviors.IsNumeric="True"
                      local:NumericBehaviors.Minimum="1"
                      local:NumericBehaviors.Maximum="500000"
@@ -81,6 +82,7 @@
                        VerticalAlignment="Center" />
             <TextBox Height="23"
                      HorizontalAlignment="Left"
+                     local:NumericBehaviors.Default="{Binding Path=DefaultTimerInterval, Mode=OneTime}"
                      local:NumericBehaviors.IsNumeric="True"
                      local:NumericBehaviors.Minimum="1"
                      local:NumericBehaviors.Maximum="10000"

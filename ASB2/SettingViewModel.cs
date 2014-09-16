@@ -14,16 +14,32 @@ namespace ASB2
     /// </summary>
     internal sealed class SettingViewModel : MyViewModelBase.BindableBase
     {
+
         #region フィールド
+
+        /// <summary>
+        /// バッファサイズの文字列
+        /// </summary>
+        private String bufferSizeText;
+
+        /// <summary>
+        /// 並列化を有効にするかどうか
+        /// </summary>
+        private Boolean isParallel;
 
         /// <summary>
         /// 最小化のときの状態
         /// </summary>
         private DefaultData.MinimizeType myType;
-        
+
+        /// <summary>
+        /// タイマの更新間隔
+        /// </summary>
+        private String timerIntervalText;
+
         #endregion フィールド
 
-        #region 構築・破棄
+        #region 構築
 
         /// <summary>
         /// コンストラクタ
@@ -31,13 +47,64 @@ namespace ASB2
         /// <param name="sd">セーブデータ</param>
         internal SettingViewModel(SaveDataManage.SaveData sd)
         {
+            this.bufferSizeText = sd.BufSizeText;
+
             this.myType = sd.Minimize;
+
+            this.isParallel = sd.IsParallel;
+
+            this.timerIntervalText = sd.TimerIntervalText;
         }
 
-        #endregion 構築・破棄
+        #endregion 構築
 
         #region プロパティ
 
+        public String DefaultBufSize
+        {
+            get { return DefaultData.DefaultDataDefinition.DEFAULTBUFSIZETEXT; }
+        }
+
+        /// <summary>
+        /// バッファサイズの文字列
+        /// </summary>
+        public String BufferSizeText
+        {
+            get
+            {
+                return this.bufferSizeText;
+            }
+
+            set
+            {
+                this.SetProperty(ref this.bufferSizeText, value);
+            }
+        }
+
+        public String DefaultTimerInterval
+        {
+            get { return DefaultData.DefaultDataDefinition.DEFAULTTIMERINTERVALTEXT; }
+        }
+
+        /// <summary>
+        /// タイマの更新間隔
+        /// </summary>
+        public String TimerIntervalText
+        {
+            get
+            {
+                return timerIntervalText;
+            }
+
+            set
+            {
+                this.SetProperty(ref this.timerIntervalText, value);
+            }
+        }
+
+        /// <summary>
+        /// 最小化のときの状態
+        /// </summary>
         public DefaultData.MinimizeType MyType
         {
             get
@@ -50,8 +117,8 @@ namespace ASB2
                 this.SetProperty(ref this.myType, value);
             }
         }
-        
-		#endregion プロパティ
+
+        #endregion プロパティ
 
     }
 }
