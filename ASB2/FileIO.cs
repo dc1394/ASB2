@@ -12,6 +12,8 @@ namespace FileMemWork
     using System.Windows;
     using System.Windows.Threading;
     using MyLogic;
+    using System.Runtime.InteropServices;
+    using System.Diagnostics;
 
     /// <summary>
     /// ファイルIO用のクラス
@@ -21,14 +23,34 @@ namespace FileMemWork
         #region フィールド
 
         /// <summary>
-        /// 待機中のフラグ
+        /// 待機中の定数
         /// </summary>
         internal const Int32 待機中 = 0;
-
+        
         /// <summary>
-        /// 動作中のフラグ
+        /// 動作中の定数
         /// </summary>
         internal const Int32 動作中 = 1;
+
+        /// <summary>
+        /// 終了待機中の定数
+        /// </summary>
+        internal const Int32 終了待機中 = 2;
+
+        /// <summary>
+        /// 未終了の定数
+        /// </summary>
+        internal const Int32 未終了 = 1;
+
+        /// <summary>
+        /// 正常終了の定数
+        /// </summary>
+        internal const Int32 正常終了 = 0;
+
+        /// <summary>
+        /// 異常終了の定数
+        /// </summary>
+        internal const Int32 異常終了 = -1;
 
         /// <summary>
         /// ループした回数
@@ -41,14 +63,41 @@ namespace FileMemWork
         private static Int64 totalWroteBytes = 0;
 
         /// <summary>
-        /// バッファのサイズ
+        /// バッファとディスクとの間で処理を行うデリゲート
         /// </summary>
-        private Int32 bufSize;
+        private Action bufBetweenDisk;
 
         /// <summary>
-        /// IOの終了指示のフラグ
+        /// バッファのサイズ
         /// </summary>
-        private Boolean endFlag = false;
+        private Int32 bufferSize;
+
+        /// <summary>
+        /// バッファの内容を比較するデリゲート
+        /// </summary>
+        private Action<MemoryAllocate, MemoryAllocate> bufferCompare = null;
+
+        /// <summary>
+        /// バッファに書き込むデリゲート
+        /// </summary>
+        private Action<MemoryAllocate> bufferWrite;
+
+        /// <summary>
+        /// バッファに書き込まれたかどうかを示すフラグ
+        /// </summary>
+        private Boolean bufferWroteFlag = false;
+
+        /// <summary>
+        /// IOが終わったかどうかを示すフラグ
+        /// </summary>
+        /// <remarks>複数のスレッドからアクセスされる！</remarks>
+        private Int32 errorCode = FileIO.未終了;
+
+        /// <summary>
+        /// IOが終わったかどうかを示すフラグ
+        /// </summary>
+        /// <remarks>複数のスレッドからアクセスされる！</remarks>
+        private Int32 isNow = FileIO.待機中;
 
         /// <summary>
         /// 並列化するかどうかを示すフラグ
@@ -70,45 +119,19 @@ namespace FileMemWork
         /// </summary>
         private MemoryAllocate maread = null;
 
-        /// <summary>
-        /// バッファに書き込むデリゲート
-        /// </summary>
-        private Action<MemoryAllocate> bufferWriteAction;
-
-        /// <summary>
-        /// バッファの内容を比較するデリゲート
-        /// </summary>
-        private Func<MemoryAllocate, MemoryAllocate, Boolean> bufCompare = null;
-
-        /// <summary>
-        /// バッファとディスクとの間で処理を行うデリゲート
-        /// </summary>
-        private Action bufBetweenDisk;
-
-        /// <summary>
-        /// バッファに書き込まれたかどうかを示すフラグ
-        /// </summary>
-        private Boolean bufferWroteFlag = false;
-
-        /// <summary>
-        /// IOが終わったかどうかを示すフラグ
-        /// </summary>
-        /// <remarks>複数のスレッドからアクセスされる！</remarks>
-        private Int32 isNow;
-
         #endregion フィールド
         
-        #region 構築・破棄
+        #region 構築
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="bufSize">バッファのサイズ</param>
+        /// <param name="bufferSize">バッファのサイズ</param>
         /// <param name="isParallel">並列化するかどうか</param>
         /// <param name="isVerify">ベリファイをかけるかどうか</param>
-        public FileIO(Int32 bufSize, Boolean isParallel, Boolean isVerify)
+        public FileIO(Int32 bufferSize, Boolean isParallel, Boolean isVerify)
         {
-            this.bufSize = bufSize;
+            this.bufferSize = bufferSize;
 
             this.isParallel = isParallel;
 
@@ -116,11 +139,11 @@ namespace FileMemWork
 
             if (Environment.Is64BitProcess)
             {
-                this.bufferWriteAction = UnsafeNativeMethods.writeMemory64;
+                this.bufferWrite = UnsafeNativeMethods.writeMemory64;
             }
             else
             {
-                this.bufferWriteAction = UnsafeNativeMethods.writeMemory32;
+                this.bufferWrite = UnsafeNativeMethods.writeMemory32;
             }
 
             this.bufBetweenDisk = this.BufferToDisk;
@@ -129,22 +152,22 @@ namespace FileMemWork
             {
                 if (Environment.Is64BitProcess && this.isParallel)
                 {
-                    this.bufCompare = UnsafeNativeMethods.MemoryCmp64Parallel;
+                    this.bufferCompare = UnsafeNativeMethods.MemoryCmp64Parallel;
                 }
                 else if (Environment.Is64BitProcess)
                 {
-                    this.bufCompare = UnsafeNativeMethods.MemoryCmp64;
+                    this.bufferCompare = UnsafeNativeMethods.MemoryCmp64;
                 }
                 else if (this.isParallel)
                 {
-                    this.bufCompare = UnsafeNativeMethods.MemoryCmp32Parallel;
+                    this.bufferCompare = UnsafeNativeMethods.MemoryCmp32Parallel;
                 }
                 else
                 {
-                    this.bufCompare = UnsafeNativeMethods.MemoryCmp32;
+                    this.bufferCompare = UnsafeNativeMethods.MemoryCmp32;
                 }
 
-                this.maread = new MemoryAllocate(this.bufSize);
+                this.maread = new MemoryAllocate(this.bufferSize);
                 this.bufBetweenDisk += this.DiskVerify;
             }
 
@@ -161,10 +184,10 @@ namespace FileMemWork
                     }
                 };
 
-            this.ma = new MemoryAllocate(this.bufSize);
+            this.ma = new MemoryAllocate(this.bufferSize);
         }
 
-        #endregion 構築・破棄
+        #endregion 構築
 
         #region プロパティ
 
@@ -195,6 +218,23 @@ namespace FileMemWork
         internal CancellationTokenSource Cts { get; set; }
 
         /// <summary>
+        /// 処理が終了した場合のエラーコード
+        /// </summary>
+        /// <remarks>複数のスレッドからアクセスされる！</remarks>
+        internal Int32 ErrorCode
+        {
+            get
+            {
+                return this.errorCode;
+            }
+
+            private set
+            {
+                Interlocked.Exchange(ref this.errorCode, value);
+            }
+        }
+
+        /// <summary>
         /// 一時ファイルのファイル名
         /// </summary>
         internal String FileName { private get; set; }
@@ -220,7 +260,7 @@ namespace FileMemWork
                 return this.isNow;
             }
 
-            set
+            private set
             {
                 Interlocked.Exchange(ref this.isNow, value);
             }
@@ -260,19 +300,23 @@ namespace FileMemWork
 
             if (File.Exists(this.FileName))
             {
-                var fileNotAccess = false;
-                while (!fileNotAccess)
+                var fileDelete = false;
+                while (!fileDelete)
                 {
                     try
                     {
                         File.Delete(this.FileName);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                        continue;
                     }
                     catch (IOException)
                     {
                         continue;
                     }
 
-                    fileNotAccess = true;
+                    fileDelete = true;
                 }
             }
         }
@@ -315,10 +359,24 @@ namespace FileMemWork
                         {
                             this.bufBetweenDisk();
 
-                            if (this.endFlag)
+                            switch (this.IsNow)
                             {
-                                break;
+                                case FileIO.待機中:
+                                    Debug.Assert(false, "IsNowが「待機中」になっている！");
+                                    break;
+
+                                case FileIO.動作中:
+                                    continue;
+
+                                case FileIO.終了待機中:
+                                    break;
+
+                                default:
+                                    Debug.Assert(false, "IsNowがありえない値になっている！");
+                                    break;
                             }
+
+                            break;
                         }
                     }
                     else
@@ -326,7 +384,7 @@ namespace FileMemWork
                         this.bufBetweenDisk();
                     }
 
-                    this.IsNow = FileIO.待機中;
+                    this.IsNow = FileIO.終了待機中;
                 },
                 this.Cts.Token);
 
@@ -351,7 +409,7 @@ namespace FileMemWork
 
                 try
                 {
-                    var max = this.FileSize / this.bufSize;
+                    var max = this.FileSize / this.bufferSize;
                     for (var i = 0; i < max; i++)
                     {
                         if (!this.MyWrite(
@@ -359,20 +417,20 @@ namespace FileMemWork
                             {
                                 if (!(this.isVerify && this.bufferWroteFlag))
                                 {
-                                    this.bufferWriteAction(this.ma);
+                                    this.bufferWrite(this.ma);
                                     this.bufferWroteFlag = true;
                                 }
                             },
                             bw,
-                            this.bufSize))
+                            this.bufferSize))
                         {
                             return;
                         }
 
-                        this.WroteBytes = (i + 1) * this.bufSize;
+                        this.WroteBytes = (i + 1) * this.bufferSize;
                     }
 
-                    var residue = (Int32)(this.FileSize % (Int64)this.bufSize);
+                    var residue = (Int32)(this.FileSize % (Int64)this.bufferSize);
                     if (residue != 0)
                     {
                         if (!this.MyWrite(
@@ -380,7 +438,7 @@ namespace FileMemWork
                             {
                                 if (!this.isVerify)
                                 {
-                                    this.bufferWriteAction(this.ma);
+                                    this.bufferWrite(this.ma);
                                 }
                             },
                             bw,
@@ -417,45 +475,58 @@ namespace FileMemWork
         /// </summary>
         private void DiskVerify()
         {
-            if (!this.endFlag)
+            switch (this.IsNow)
             {
-                try
-                {
-                    using (var br = new BinaryReader(File.Open(this.FileName, FileMode.Open, FileAccess.Read, FileShare.None)))
+                case FileIO.待機中:
+                    Debug.Assert(false, "IsNowが「待機中」になっている！");
+                    break;
+
+                case FileIO.動作中:
+                    try
                     {
-                        var max = this.FileSize / this.bufSize;
-                        for (var i = 0; i < max; i++)
+                        using (var br = new BinaryReader(File.Open(this.FileName, FileMode.Open, FileAccess.Read, FileShare.None)))
                         {
-                            if (!this.MyVerify(br, this.bufSize))
+                            var max = this.FileSize / this.bufferSize;
+                            for (var i = 0; i < max; i++)
                             {
-                                return;
+                                if (!this.MyVerify(br, this.bufferSize))
+                                {
+                                    return;
+                                }
+
+                                this.ReadBytes = (i + 1) * this.bufferSize;
                             }
 
-                            this.ReadBytes = (i + 1) * this.bufSize;
-                        }
-
-                        var residue = (Int32)(this.FileSize % (Int64)this.bufSize);
-                        if (residue != 0)
-                        {
-                            if (!this.MyVerify(br, residue))
+                            var residue = (Int32)(this.FileSize % (Int64)this.bufferSize);
+                            if (residue != 0)
                             {
-                                return;
-                            }
+                                if (!this.MyVerify(br, residue))
+                                {
+                                    return;
+                                }
 
-                            this.ReadBytes += residue;
+                                this.ReadBytes += residue;
+                            }
                         }
+
+                        FileIO.loopNum++;
                     }
+                    catch (Exception ex)
+                    {
+                        // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
+                        Application.Current.Dispatcher.Invoke(
+                            DispatcherPriority.Send,
+                            new DispatcherOperationCallback(FileIO.ThrowMainThreadException),
+                            ex);
+                    }
+                    break;
 
-                    FileIO.loopNum++;
-                }
-                catch (Exception ex)
-                {
-                    // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
-                    Application.Current.Dispatcher.Invoke(
-                        DispatcherPriority.Send,
-                        new DispatcherOperationCallback(FileIO.ThrowMainThreadException),
-                        ex);
-                }
+                case FileIO.終了待機中:
+                    break;
+
+                default:
+                    Debug.Assert(false, "IsNowがありえない状態になっている！");
+                    break;
             }
         }
 
@@ -479,25 +550,13 @@ namespace FileMemWork
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
 
-                if (!this.bufCompare(this.ma, this.maread))
-                {
-                    throw new InvalidDataException(
-                        String.Format(
-                            "ベリファイに失敗しました。{0}プログラムのバグか、SSD/HDDが壊れています。",
-                            Environment.NewLine));
-                }
+                this.bufferCompare(this.ma, this.maread);
             }
             catch (OperationCanceledException)
             {
-                this.endFlag = true;
+                this.ErrorCode = FileIO.正常終了;
 
-                return false;
-            }
-            catch (InvalidDataException e)
-            {
-                MyError.CallErrorMessageBox(e.Message);
-
-                this.endFlag = true;
+                this.IsNow = FileIO.終了待機中;
 
                 return false;
             }
@@ -505,7 +564,21 @@ namespace FileMemWork
             {
                 MyError.CallErrorMessageBox(e.Message);
 
-                this.endFlag = true;
+                this.ErrorCode = FileIO.異常終了;
+
+                this.IsNow = FileIO.終了待機中;
+
+                return false;
+            }
+            catch (SEHException)
+            {
+                MyError.CallErrorMessageBox(String.Format(
+                        "ベリファイに失敗しました。{0}プログラムのバグか、SSD/HDDが壊れています。",
+                        Environment.NewLine));
+
+                this.ErrorCode = FileIO.異常終了;
+
+                this.IsNow = FileIO.終了待機中;
 
                 return false;
             }
@@ -544,7 +617,9 @@ namespace FileMemWork
             }
             catch (OperationCanceledException)
             {
-                this.endFlag = true;
+                this.ErrorCode = FileIO.正常終了;
+
+                this.IsNow = FileIO.終了待機中;
 
                 return false;
             }
@@ -552,7 +627,9 @@ namespace FileMemWork
             {
                 MyError.CallErrorMessageBox(e.Message);
 
-                this.endFlag = true;
+                this.ErrorCode = FileIO.異常終了;
+
+                this.IsNow = FileIO.終了待機中;
 
                 return false;
             }

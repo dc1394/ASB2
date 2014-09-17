@@ -16,7 +16,7 @@ module AverageIOSpeed =
         /// <summary>
         /// 平均を求めるときのサンプル数
         /// </summary>
-        let MAXLISTSIZE = 1000
+        let MAXLISTSIZE = 10000
         
         /// <summary>
         /// 測定値を格納するList
@@ -32,8 +32,8 @@ module AverageIOSpeed =
             let averagespeed = this.Averagespeed()
             speedlist <- List.filter (fun x -> x < averagespeed * SPEEDRATIO) speedlist
 
-            if speedlist.Length >= MAXLISTSIZE then 
-                speedlist <- speedlist.Tail @ [this.Averagespeed()]
+            if speedlist.Length > MAXLISTSIZE then 
+                speedlist <- speedlist.Tail.Tail @ [this.Averagespeed()]
 
         /// <summary>
         /// 平均速度を求める

@@ -282,28 +282,36 @@ namespace ASB2
         }
 
         /// <summary>
-        /// 読み書き処理のキャンセルを行う
+        /// 読み書き処理の終了を行う
+        /// それに伴い、UI要素を変更する
         /// </summary>
-        private void NormalCancelClose()
+        /// <param name="titleString">変更後のウィンドウタイトル</param>
+        private void DoWriteEnd(String titleString)
         {
             // タイマー停止
             this.dispatcherTimer.Stop();
-
-            // ストップウォッチ停止
-            this.sw.Reset();
 
             // 計測したデータをリセット
             this.aiswrite.Reset();
             this.aisread.Reset();
 
-            // ボタンのテキストを「開始」にする
-            this.開始停止Button.Content = MainWindow.ButtonState.開始;
+            // プログレスバーを元に戻す
+            this.ProgressBar.Value = 0.0;
+
+            // パーセンテージを0に戻す
+            this.ProgressPercentTextBox.Text = "0.0%";
+
+            // ストップウォッチ停止
+            this.sw.Reset();
 
             // タイトル変更
-            this.Title = "ASB2 - 正常終了（実行待機中）";
+            this.Title = titleString;
 
             // タスクトレイのアイコンを右クリックしたときのテキスト変更
             this.tti.Text = "ASB2 待機中";
+
+            // ボタンのテキストを「開始」にする
+            this.開始停止Button.Content = MainWindow.ButtonState.開始;
 
             // WriteFileオブジェクトをGCの対象にする
             this.fio.Dispose();
@@ -401,23 +409,8 @@ namespace ASB2
             // タイトル変更
             this.Title = "ASB2 - キャンセル待機中...少々お待ちください";
 
-            // プログレスバーを元に戻す
-            this.ProgressBar.Value = 0.0;
-
-            // パーセンテージを0に戻す
-            this.ProgressPercentTextBox.Text = "0.0%";
-
-            // タスクトレイアイコンのテキスト変更
-            this.tti.Text = "ASB2 待機中";
-
             // FileIOの処理をキャンセルする
             this.fio.Cts.Cancel();
-
-            // キャンセル処理を行う
-            this.NormalCancelClose();
-
-            // タイトルを変更
-            this.Title = "ASB2 - ユーザーの要求によりキャンセル（実行待機中）";
         }
 
         /// <summary>
@@ -580,14 +573,35 @@ namespace ASB2
             switch (this.fio.IsNow)
             {
                 case FileIO.待機中:
-                    this.NormalCancelClose();
                     break;
 
                 case FileIO.動作中:
                     break;
 
+                case FileIO.終了待機中:
+                    switch (this.fio.ErrorCode)
+                    {
+                        case FileIO.正常終了:
+                            this.DoWriteEnd("ASB2 - ユーザーの要求によりキャンセル（実行待機中）");
+                            break;
+
+                        case FileIO.異常終了:
+                            this.DoWriteEnd("ASB2 - IOエラーにより終了（実行待機中）");
+                            break;
+
+                        case FileIO.未終了:
+                            Debug.Assert(false, "FileIO.ErrorCodeが「未終了」になっている！");
+                            break;
+                        
+                        default:
+                            Debug.Assert(false, "FileIO.ErrorCodeがありえない値になっている！");
+                            break;
+                    }
+
+                    break;
+
                 default:
-                    Debug.Assert(false, "IsNowが異常です！");
+                    Debug.Assert(false, "FileIO.IsNowがありえない値になっている！");
                     break;
             }
         }
