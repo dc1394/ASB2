@@ -30,12 +30,17 @@ namespace FileMemWork
         /// <summary>
         /// 動作中の定数
         /// </summary>
-        internal const Int32 動作中 = 1;
+        internal const Int32 書き込み中 = 1;
+
+        /// <summary>
+        /// 動作中の定数
+        /// </summary>
+        internal const Int32 ベリファイ中 = 2;
 
         /// <summary>
         /// 終了待機中の定数
         /// </summary>
-        internal const Int32 終了待機中 = 2;
+        internal const Int32 終了待機中 = 3;
 
         /// <summary>
         /// 未終了の定数
@@ -177,7 +182,7 @@ namespace FileMemWork
                     try
                     {
                         // もし一時ファイルが残っていたらそのファイルを消去
-                        File.Delete(this.FileName);
+                        File.Delete(this.Filename);
                     }
                     catch (UnauthorizedAccessException)
                     {
@@ -208,14 +213,9 @@ namespace FileMemWork
         }
 
         /// <summary>
-        /// バッファの内容が全て書き込まれたかどうかを示すフラグ
-        /// </summary>
-        internal Boolean AllBufferWrote { get; private set; }
-
-        /// <summary>
         /// 処理をキャンセルする場合のトークン
         /// </summary>
-        internal CancellationTokenSource Cts { get; set; }
+        internal CancellationTokenSource Cts { get; private set; }
 
         /// <summary>
         /// 処理が終了した場合のエラーコード
@@ -237,7 +237,7 @@ namespace FileMemWork
         /// <summary>
         /// 一時ファイルのファイル名
         /// </summary>
-        internal String FileName { private get; set; }
+        internal String Filename { private get; set; }
 
         /// <summary>
         /// 一時ファイルのファイルサイズ
@@ -270,7 +270,7 @@ namespace FileMemWork
         /// 読み込んだ合計のバイト数
         /// </summary>
         /// <remarks>必ず初期化すること！</remarks>
-        internal Int64 ReadBytes { get; set; }
+        internal Int64 ReadBytes { get; private set; }
 
         /// <summary>
         /// 書き込んだ合計のバイト数
@@ -298,14 +298,14 @@ namespace FileMemWork
                 this.maread = null;
             }
 
-            if (File.Exists(this.FileName))
+            if (File.Exists(this.Filename))
             {
                 var fileDelete = false;
                 while (!fileDelete)
                 {
                     try
                     {
-                        File.Delete(this.FileName);
+                        File.Delete(this.Filename);
                     }
                     catch (UnauthorizedAccessException)
                     {
@@ -348,7 +348,7 @@ namespace FileMemWork
                 this.Cts = new CancellationTokenSource();
             }
 
-            this.IsNow = FileIO.動作中;
+            this.IsNow = FileIO.書き込み中;
 
             await Task.Run(
                 () =>
@@ -365,7 +365,8 @@ namespace FileMemWork
                                     Debug.Assert(false, "IsNowが「待機中」になっている！");
                                     break;
 
-                                case FileIO.動作中:
+                                case FileIO.書き込み中:
+                                case FileIO.ベリファイ中:
                                     continue;
 
                                 case FileIO.終了待機中:
@@ -400,10 +401,9 @@ namespace FileMemWork
             if (this.isVerify)
             {
                 this.bufferWroteFlag = false;
-                this.AllBufferWrote = false;
             }
 
-            using (var bw = new BinaryWriter(new FileStream(this.FileName, FileMode.Create, FileAccess.Write, FileShare.None)))
+            using (var bw = new BinaryWriter(new FileStream(this.Filename, FileMode.Create, FileAccess.Write, FileShare.None)))
             {
                 var ct = this.Cts.Token;
 
@@ -456,7 +456,7 @@ namespace FileMemWork
                     }
                     else
                     {
-                        this.AllBufferWrote = true;
+                        this.IsNow = FileIO.ベリファイ中;
                     }
                 }
                 catch (Exception ex)
@@ -481,10 +481,14 @@ namespace FileMemWork
                     Debug.Assert(false, "IsNowが「待機中」になっている！");
                     break;
 
-                case FileIO.動作中:
+                case FileIO.書き込み中:
+                    Debug.Assert(false, "IsNowが「書き込み中」になっている！");
+                    break;
+
+                case FileIO.ベリファイ中:
                     try
                     {
-                        using (var br = new BinaryReader(File.Open(this.FileName, FileMode.Open, FileAccess.Read, FileShare.None)))
+                        using (var br = new BinaryReader(File.Open(this.Filename, FileMode.Open, FileAccess.Read, FileShare.None)))
                         {
                             var max = this.FileSize / this.bufferSize;
                             for (var i = 0; i < max; i++)

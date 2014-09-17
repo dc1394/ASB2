@@ -75,7 +75,7 @@ namespace ASB2
                 return this.isLoop;
             }
 
-            set
+            internal set
             {
                 this.SetProperty(ref this.isLoop, value);
                 this.sd.IsLoop = value;
@@ -92,7 +92,7 @@ namespace ASB2
                 return this.isVerify;
             }
 
-            set
+            internal set
             {
                 this.SetProperty(ref this.isVerify, value);
                 this.sd.IsVerify = value;
@@ -109,7 +109,7 @@ namespace ASB2
                 return this.tmpFileNameFullPath;
             }
 
-            set
+            internal set
             {
                 this.SetProperty(ref this.tmpFileNameFullPath, value);
                 this.sd.LastTmpFileNameFullPath = value;
@@ -126,7 +126,7 @@ namespace ASB2
                 return this.tmpFileSizeText;
             }
 
-            set
+            internal set
             {
                 this.SetProperty(ref this.tmpFileSizeText, value);
                 this.sd.TmpFileSizeText = value;

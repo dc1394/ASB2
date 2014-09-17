@@ -364,7 +364,7 @@ namespace ASB2
                 this.sdm.SaveData.IsParallel,
                 this.mwvm.IsVerify)
             {
-                FileName = this.mwvm.TmpFileNameFullPath,
+                Filename = this.mwvm.TmpFileNameFullPath,
                 FileSize = tmpFileSize,
                 IsLoop = this.mwvm.IsLoop
             };
@@ -390,7 +390,7 @@ namespace ASB2
         {
             Int64 tmpFileSize;
             Int64.TryParse(this.mwvm.TmpFileSizeText, out tmpFileSize);
-            tmpFileSize *= Giga;
+            tmpFileSize *= MainWindow.Giga;
 
             if (!this.DriveAndSpaceCheck(tmpFileSize))
             {
@@ -434,10 +434,10 @@ namespace ASB2
             this.ProgressBar.Value = (this.ProgressBar.Maximum * 0.5) + (readbyte * 0.5);
 
             this.ProgressPercentTextBox.Text = (((readbyte / this.ProgressBar.Maximum) * 0.5) + 0.5).ToString("0.0%");
-            this.SpeedTextBlock.Text = String.Format(MainWindow.ReadSpeedText + "{0:0.00} MiB/s", readbytespeed / Mega);
+            this.SpeedTextBlock.Text = String.Format(MainWindow.ReadSpeedText + "{0:0.00} MiB/s", readbytespeed / MainWindow.Mega);
             this.AverageSpeedTextBlock.Text = String.Format(
                 MainWindow.AverageReadSpeedText + "{0:0.00} MiB/s",
-                this.aisread.Averagespeed() / Mega);
+                this.aisread.Averagespeed() / MainWindow.Mega);
         }
 
         /// <summary>
