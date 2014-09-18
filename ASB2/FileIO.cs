@@ -6,14 +6,14 @@
 namespace FileMemWork
 {
     using System;
+    using System.Diagnostics;
     using System.IO;
+    using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Threading;
     using MyLogic;
-    using System.Runtime.InteropServices;
-    using System.Diagnostics;
 
     /// <summary>
     /// ファイルIO用のクラス
@@ -22,15 +22,17 @@ namespace FileMemWork
     {
         #region フィールド
 
-        /// <summary>
-        /// 待機中の定数
-        /// </summary>
-        internal const Int32 待機中 = 0;
+        enum 動作状態 { 待機中 = 0, 書込中 = 1 };
+
+        ///// <summary>
+        ///// 待機中の定数
+        ///// </summary>
+        //internal const Int32 待機中 = 0;
         
-        /// <summary>
-        /// 動作中の定数
-        /// </summary>
-        internal const Int32 書き込み中 = 1;
+        ///// <summary>
+        ///// 動作中の定数
+        ///// </summary>
+        //internal const Int32 書き込み中 = 1;
 
         /// <summary>
         /// 動作中の定数
@@ -102,7 +104,7 @@ namespace FileMemWork
         /// IOが終わったかどうかを示すフラグ
         /// </summary>
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
-        private Int32 isNow = FileIO.待機中;
+        private Int32 isNow = (Int32)FileIO.動作状態.待機中;
 
         /// <summary>
         /// 並列化するかどうかを示すフラグ
@@ -144,11 +146,11 @@ namespace FileMemWork
 
             if (Environment.Is64BitProcess)
             {
-                this.bufferWrite = UnsafeNativeMethods.writeMemory64;
+                this.bufferWrite = UnsafeNativeMethods.WriteMemory64;
             }
             else
             {
-                this.bufferWrite = UnsafeNativeMethods.writeMemory32;
+                this.bufferWrite = UnsafeNativeMethods.WriteMemory32;
             }
 
             this.bufBetweenDisk = this.BufferToDisk;
@@ -513,6 +515,8 @@ namespace FileMemWork
                             }
                         }
 
+                        this.IsNow = FileIO.書き込み中;
+
                         FileIO.loopNum++;
                     }
                     catch (Exception ex)
@@ -549,7 +553,7 @@ namespace FileMemWork
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
 
-                br.Read(this.maread.Buf, this.maread.Offset, count);
+                br.Read(this.maread.Buffer, this.maread.Offset, count);
 
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
@@ -587,6 +591,8 @@ namespace FileMemWork
                 return false;
             }
 
+            this.ErrorCode = FileIO.正常終了;
+            
             return true;
         }
 
@@ -611,7 +617,7 @@ namespace FileMemWork
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
 
-                bw.Write(this.ma.Buf, this.ma.Offset, count);
+                bw.Write(this.ma.Buffer, this.ma.Offset, count);
 
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
@@ -636,6 +642,11 @@ namespace FileMemWork
                 this.IsNow = FileIO.終了待機中;
 
                 return false;
+            }
+
+            if (!this.isVerify)
+            {
+                this.ErrorCode = FileIO.正常終了;
             }
 
             FileIO.totalWroteBytes += (Int64)count;

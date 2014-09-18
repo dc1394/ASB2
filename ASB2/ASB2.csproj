@@ -110,11 +110,8 @@
     <Compile Include="MemoryAllocate.cs" />
     <Compile Include="TaskTrayIcon.cs" />
     <Compile Include="UnsafeNativeMethods.cs" />
-    <Compile Include="VersionInformationForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="VersionInformationForm.Designer.cs">
-      <DependentUpon>VersionInformationForm.cs</DependentUpon>
+    <Compile Include="VersionInformationWindow.xaml.cs">
+      <DependentUpon>VersionInformationWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -139,6 +136,10 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="VersionInformationWindow.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
@@ -157,10 +158,6 @@
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </EmbeddedResource>
-    <EmbeddedResource Include="VersionInformationForm.resx">
-      <DependentUpon>VersionInformationForm.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
@@ -196,7 +193,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="Document\readme.txt" />
+    <Resource Include="Document\readme.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Images\16_24_36_64_128_256.png" />

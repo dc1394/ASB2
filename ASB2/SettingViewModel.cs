@@ -44,10 +44,10 @@ namespace ASB2
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="sd">セーブデータ</param>
+        /// <param name="sd">保存された設定情報のオブジェクト</param>
         internal SettingViewModel(SaveDataManage.SaveData sd)
         {
-            this.bufferSizeText = sd.BufSizeText;
+            this.bufferSizeText = sd.BufferSizeText;
 
             this.myType = sd.Minimize;
 

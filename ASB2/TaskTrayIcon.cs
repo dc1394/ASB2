@@ -1,31 +1,35 @@
-﻿// 参考ソースコード：http://hogetan.blogspot.jp/2008/10/blog-post.html
-// Arranged by dc1394
-
-using System;
-using System.Windows;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Diagnostics;
-using System.ComponentModel;
-
-using MyLogic;
-
+﻿//-----------------------------------------------------------------------
+// <copyright file="TaskTrayIcon.cs" company="dc1394's software">
+//     but this is originally adapted by ほげたん
+//     cf. http://hogetan.blogspot.jp/2008/10/blog-post.html
+//     Copyright ©  2014 @dc1394 All Rights Reserved.
+// </copyright>
+//-----------------------------------------------------------------------
 namespace ASB2
 {
+    using System;
+    using System.ComponentModel;
+    using System.Diagnostics;
+    using System.Drawing;
+    using System.Windows;
+    using System.Windows.Forms;
+    using MyLogic;
+
     /// <summary>
     /// タスクトレイにアイコンを表示するためのヘルパークラス
-    /// 
+    /// <para> 
     /// コンストラクタで指定したウィンドウに接続して以下の動作を実現します。
     /// ・ウィンドウが最小化された場合にタスクトレイにバルーンチップを表示
     /// ・バルーンチップまたはアイコンクリックでウィンドウ再表示（通常表示）
     /// ・ウィンドウ非表示中はタスクトレイにアイコンを表示
     /// ・ウィンドウ表示中はタスクトレイアイコン非表示
-    /// 
+    /// </para>
     /// このクラスを利用するためには以下のDLLを参照設定に追加する必要があります。
     ///  - System.Drawing
     ///  - System.Windows.Forms
-    /// 
+    /// <para>
     /// NotifyIconクラスから派生させるのが簡単だが sealed クラスで派生できないためラップしています。
+    /// </para>
     /// </summary>
     internal sealed class TaskTrayIcon : IDisposable
     {
@@ -34,80 +38,58 @@ namespace ASB2
         /// <summary>
         /// タスクトレイに表示するアイコン
         /// </summary>
-        private NotifyIcon m_NotifyIcon = new NotifyIcon();
+        private NotifyIcon notifyIcon = new NotifyIcon();
 
         /// <summary>
         /// 接続しているウィンドウ
         /// </summary>
-        private Window m_TargetWindow;
+        private Window targetWindow;
 
         /// <summary>
         /// 接続しているウィンドウの表示状態
         /// </summary>
-        private WindowState m_StoredWindowState;
+        private WindowState storedWindowState;
 
         #endregion フィールド
 
-        #region 構築・破棄
+        #region 構築
 
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="target"></param>
+        /// <param name="target">ターゲットのウィンドウ</param>
         internal TaskTrayIcon(Window target)
         {
-            BalloonTipTitle = "ASB2";
-            BalloonTipText = "タスクトレイに常駐します";
-            m_NotifyIcon.BalloonTipIcon = ToolTipIcon.Info;
-            m_NotifyIcon.MouseClick += m_notifyIcon_MouseClick;
+            this.BalloonTipTitle = "ASB2";
+            this.BalloonTipText = "タスクトレイに常駐します";
+            this.notifyIcon.BalloonTipIcon = ToolTipIcon.Info;
+            this.notifyIcon.MouseClick += this.NotifyIcon_MouseClick;
 
             // 接続先ウィンドウ
-            m_TargetWindow = target;
-            m_StoredWindowState = m_TargetWindow.WindowState;
+            this.targetWindow = target;
+            this.storedWindowState = this.targetWindow.WindowState;
 
             // ウィンドウに接続
-            if (m_TargetWindow != null)
+            if (this.targetWindow != null)
             {
-                m_TargetWindow.Closing += new System.ComponentModel.CancelEventHandler(target_Closing);
-                m_TargetWindow.StateChanged += new EventHandler(target_StateChanged);
-                m_TargetWindow.IsVisibleChanged += new DependencyPropertyChangedEventHandler(target_IsVisibleChanged);
+                this.targetWindow.Closing += new CancelEventHandler(this.Target_Closing);
+                this.targetWindow.IsVisibleChanged += new DependencyPropertyChangedEventHandler(this.Target_IsVisibleChanged);
+                this.targetWindow.StateChanged += new EventHandler(this.Target_StateChanged);
             }
         }
 
-        #region IDisposable メンバ
-
-        public void Dispose()
-        {
-            if (m_NotifyIcon != null)
-            {
-                m_NotifyIcon.Dispose();
-            }
-
-            // ウィンドウから切断
-            if (m_TargetWindow != null)
-            {
-                m_TargetWindow.Closing -= new System.ComponentModel.CancelEventHandler(target_Closing);
-                m_TargetWindow.StateChanged -= new EventHandler(target_StateChanged);
-                m_TargetWindow.IsVisibleChanged -= new DependencyPropertyChangedEventHandler(target_IsVisibleChanged);
-                m_TargetWindow = null;
-            }
-        }
-
-        #endregion
-
-        #endregion 構築・破棄
+        #endregion 構築
 
         #region プロパティ
 
         /// <summary>
-        /// アイコンのテキスト
-        /// 改行文字を使って複数行のテキストを表示できます。
+        /// アイコンを右クリックすると出現するメニュー
         /// </summary>
-        internal string Text
+        internal ContextMenuStrip ContextMenuStrip
         {
             set
             {
-                m_NotifyIcon.Text = value;
+                this.notifyIcon.ContextMenuStrip = value;
             }
         }
 
@@ -118,19 +100,24 @@ namespace ASB2
         {
             set
             {
-                m_NotifyIcon.Icon = value;
+                this.notifyIcon.Icon = value;
             }
         }
 
         /// <summary>
-        /// バルーンチップに表示するタイトル
-        /// 文字列中に含まれる改行文字は無視します。
+        /// 保存された設定情報のオブジェクト
         /// </summary>
-        internal string BalloonTipTitle
+        internal SaveDataManage.SaveData SaveData { private get; set; }
+
+        /// <summary>
+        /// アイコンのテキスト
+        /// 改行文字を使って複数行のテキストを表示できます。
+        /// </summary>
+        internal string Text
         {
             set
             {
-                m_NotifyIcon.BalloonTipTitle = value;
+                this.notifyIcon.Text = value;
             }
         }
 
@@ -138,144 +125,196 @@ namespace ASB2
         /// バルーンチップに表示するテキスト
         /// 改行文字を使って複数行のテキストを表示できます。
         /// </summary>
-        internal string BalloonTipText
+        private string BalloonTipText
         {
             set
             {
-                m_NotifyIcon.BalloonTipText = value;
-            }
-        }
-
-        /// <summary>
-        /// アイコンを右クリックすると出現するメニュー
-        /// </summary>
-        public ContextMenuStrip ContextMenuStrip
-        {
-            set
-            {
-                m_NotifyIcon.ContextMenuStrip = value;
+                this.notifyIcon.BalloonTipText = value;
             }
         }
 
         /// <summary>
         /// バルーンチップを表示する時間（ミリ秒）
         /// </summary>
-        internal Int32 BalloonTipTimeout
-        { private get; set; }
+        private Int32 BalloonTipTimeout { get; set; }
 
-        internal SaveDataManage.SaveData SaveData
-        { private get; set; }
+        /// <summary>
+        /// バルーンチップに表示するタイトル
+        /// 文字列中に含まれる改行文字は無視します。
+        /// </summary>
+        private string BalloonTipTitle
+        {
+            set
+            {
+                this.notifyIcon.BalloonTipTitle = value;
+            }
+        }
 
         #endregion プロパティ
+
+        #region 破棄
+
+        /// <summary>
+        /// Disposeメソッド
+        /// </summary>
+        public void Dispose()
+        {
+            if (this.notifyIcon != null)
+            {
+                this.notifyIcon.Dispose();
+            }
+
+            // ウィンドウから切断
+            if (this.targetWindow != null)
+            {
+                this.targetWindow.Closing -= new CancelEventHandler(this.Target_Closing);
+                this.targetWindow.StateChanged -= new EventHandler(this.Target_StateChanged);
+                this.targetWindow.IsVisibleChanged -=
+                    new DependencyPropertyChangedEventHandler(this.Target_IsVisibleChanged);
+                this.targetWindow = null;
+            }
+        }
+
+        #endregion 破棄
+
+        #region メソッド
+
+        /// <summary>
+        /// ウィンドウを開く
+        /// </summary>
+        internal void OpenWindow()
+        {
+            switch (this.SaveData.Minimize)
+            {
+                case DefaultData.MinimizeType.TASKTRAY:
+                    this.targetWindow.Show();
+                    break;
+
+                default:
+                    this.notifyIcon.Visible = false;
+                    break;
+            }
+
+            this.targetWindow.WindowState = this.storedWindowState;
+        }
+
+        #endregion メソッド
 
         #region イベントハンドラ
 
         /// <summary>
         /// 接続先ウィンドウの可視状態が変化した
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void target_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        /// <param name="sender">The parameter is not used.</param>
+        /// <param name="e">The parameter is not used.</param>
+        private void Target_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (m_NotifyIcon != null)
+            if (this.notifyIcon != null)
             {
-                m_NotifyIcon.Visible = !m_TargetWindow.IsVisible;
+                this.notifyIcon.Visible = !this.targetWindow.IsVisible;
             }
         }
 
         /// <summary>
         /// 接続先ウィンドウの表示状態が変化した
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void target_StateChanged(object sender, EventArgs e)
+        /// <param name="sender">The parameter is not used.</param>
+        /// <param name="e">The parameter is not used.</param>
+        private void Target_StateChanged(object sender, EventArgs e)
         {
-            if (m_TargetWindow.WindowState == WindowState.Minimized)
+            switch (this.targetWindow.WindowState)
             {
-                switch (SaveData.Minimize)
-                {
-                    case DefaultData.MinimizeType.TASKBAR:
-                        break;
-                    case DefaultData.MinimizeType.TASKTRAY:
-                        m_TargetWindow.Hide();
-                        if (m_NotifyIcon != null)
-                        {
-                            m_NotifyIcon.ShowBalloonTip(BalloonTipTimeout);
-                        }
-                        break;
-                    case DefaultData.MinimizeType.BOTH:
-                        m_NotifyIcon.Visible = true;
-                        if (m_NotifyIcon != null)
-                        {
-                            m_NotifyIcon.ShowBalloonTip(BalloonTipTimeout);
-                        }
-                        break;
-                    default:
-                        Debug.Assert(false, "何かがおかしい！！");
-                        break;
-                }
-            }
-            else if (m_TargetWindow.WindowState == WindowState.Normal && SaveData.Minimize == DefaultData.MinimizeType.BOTH)
-            {
-                m_NotifyIcon.Visible = false;
-                m_StoredWindowState = m_TargetWindow.WindowState;
-            }
-            else
-            {
-                m_StoredWindowState = m_TargetWindow.WindowState;
+                case WindowState.Minimized:
+                    switch (this.SaveData.Minimize)
+                    {
+                         case DefaultData.MinimizeType.TASKBAR:
+                             break;
+
+                         case DefaultData.MinimizeType.TASKTRAY:
+                             this.targetWindow.Hide();
+                     
+                             if (this.notifyIcon != null)
+                             {
+                                 this.notifyIcon.ShowBalloonTip(this.BalloonTipTimeout);
+                             }
+
+                             break;
+
+                         case DefaultData.MinimizeType.BOTH:
+                             this.notifyIcon.Visible = true;
+                     
+                             if (this.notifyIcon != null)
+                             {
+                                 this.notifyIcon.ShowBalloonTip(this.BalloonTipTimeout);
+                             }
+                     
+                             break;
+
+                         default:
+                             Debug.Assert(false, "SaveData.Minimizeが異常！");
+                             break;
+                    }
+
+                    break;
+            
+                case WindowState.Normal:
+                    switch (this.SaveData.Minimize)
+                    {
+                        case DefaultData.MinimizeType.BOTH:
+                            this.notifyIcon.Visible = false;
+                            this.storedWindowState = this.targetWindow.WindowState;
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    break;
+
+                default:
+                    this.storedWindowState = this.targetWindow.WindowState;
+                    break;
             }
         }
 
         /// <summary>
         /// 接続先ウィンドウが閉じられた
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void target_Closing(object sender, CancelEventArgs e)
+        /// <param name="sender">The parameter is not used.</param>
+        /// <param name="e">The parameter is not used.</param>
+        private void Target_Closing(object sender, CancelEventArgs e)
         {
-            m_NotifyIcon.Dispose();
-            m_NotifyIcon = null;
+            this.notifyIcon.Dispose();
+            this.notifyIcon = null;
         }
 
         /// <summary>
         /// タスクトレイでアイコンがクリックされた
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        // NotifyIconのクリックイベントのハンドラ
-        private void m_notifyIcon_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        /// <param name="sender">The parameter is not used.</param>
+        /// <param name="e">NotifyIconのクリックイベントのハンドラ</param>
+        private void NotifyIcon_MouseClick(object sender, MouseEventArgs e)
         {
-            if (e.Button == MouseButtons.Left)
+            switch (e.Button)
             {
-                if (SaveData.Minimize == DefaultData.MinimizeType.TASKTRAY)
-                {
-                    m_TargetWindow.Show();
-                }
-                else
-                {
-                    m_NotifyIcon.Visible = false;
-                }
-                m_TargetWindow.WindowState = m_StoredWindowState;
+                case MouseButtons.Left:
+                    switch (this.SaveData.Minimize)
+                    {
+                        case DefaultData.MinimizeType.TASKTRAY:
+                            this.targetWindow.Show();
+                            break;
+
+                        default:
+                            this.notifyIcon.Visible = false;
+                            break;
+                    }
+
+                    this.targetWindow.WindowState = this.storedWindowState;
+
+                    break;
             }
         }
 
         #endregion イベントハンドラ
-
-        #region メソッド
-
-        internal void openWindow()
-        {
-            if (SaveData.Minimize == DefaultData.MinimizeType.TASKTRAY)
-            {
-                m_TargetWindow.Show();
-            }
-            else
-            {
-                m_NotifyIcon.Visible = false;
-            }
-            m_TargetWindow.WindowState = m_StoredWindowState;
-        }
-
-        #endregion メソッド
     }
 }

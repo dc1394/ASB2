@@ -47,15 +47,15 @@ namespace FileMemWork
         /// <param name="bufSize">バッファの大きさ</param>
         internal unsafe MemoryAllocate(Int32 bufSize)
         {
-            this.BufSize = bufSize;
+            this.BufferSize = bufSize;
             
-            var i = this.BufSize / (Int32)Pow.pow(2L, 20U);
+            var i = this.BufferSize / (Int32)Pow.pow(2L, 20U);
             
             this.mfp = (i != 0) ? new MemoryFailPoint(i) : null;
             
-            this.Buf = new Byte[this.BufSize + FIFTEEN];
+            this.Buffer = new Byte[this.BufferSize + FIFTEEN];
 
-            fixed (Byte* p = &this.Buf[0])
+            fixed (Byte* p = &this.Buffer[0])
             {
                 if (Environment.Is64BitProcess)
                 {
@@ -89,12 +89,12 @@ namespace FileMemWork
         /// <summary>
         /// バッファ
         /// </summary>
-        internal Byte[] Buf { get; private set; }
+        internal Byte[] Buffer { get; private set; }
 
         /// <summary>
         /// バッファの大きさ
         /// </summary>
-        internal Int32 BufSize { get; private set; }
+        internal Int32 BufferSize { get; private set; }
 
         /// <summary>
         /// バッファのオフセット

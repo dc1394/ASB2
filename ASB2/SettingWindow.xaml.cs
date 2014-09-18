@@ -83,7 +83,7 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private void OK_Button_Click(object sender, RoutedEventArgs e)
         {
-            this.sd.BufSizeText = this.BufferSizeTextBox.Text;
+            this.sd.BufferSizeText = this.BufferSizeTextBox.Text;
 
             this.sd.IsParallel = this.IsParallelCheckBox.IsChecked ?? false;
 
@@ -103,7 +103,7 @@ namespace ASB2
         {
             this.DataContext = this.svm = new SettingViewModel(this.sd);
 
-            this.BufferSizeTextBox.Text = this.sd.BufSizeText;
+            this.BufferSizeTextBox.Text = this.sd.BufferSizeText;
 
             if (this.IsParallelCheckBox.IsEnabled = this.sd.IsVerify)
             {

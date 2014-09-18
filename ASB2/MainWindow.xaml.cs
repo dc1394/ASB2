@@ -8,12 +8,10 @@ namespace ASB2
     using System;
     using System.Diagnostics;
     using System.IO;
-    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Forms;
     using System.Windows.Input;
     using System.Windows.Threading;
-
     using FileMemWork;
     using MyLogic;
 
@@ -117,7 +115,7 @@ namespace ASB2
         /// <summary>
         /// 現在の状態が書き込みモードなのか読み込みモードなのかを示す列挙型変数
         /// </summary>
-        private RWState rwstate;
+        private 書込ベリファイ列挙型 書込ベリファイ状態;
 
         /// <summary>
         /// タスクトレイアイコンオブジェクト
@@ -156,30 +154,31 @@ namespace ASB2
         private enum ButtonState
         {
             /// <summary>
-            /// 停止している状態のとき
+            /// 開始している状態のとき
             /// </summary>
             開始,
 
             /// <summary>
-            /// 開始している状態のとき
+            /// 停止している状態のとき
             /// </summary>
             停止
         }
 
         /// <summary>
-        /// 現在の状態が書き込みモードなのか読み込みモードなのかを示す列挙型
+        /// 現在の「ウィンドウの」状態が書き込みモードなのか
+        /// ベリファイモードなのかを示す列挙型
         /// </summary>
-        private enum RWState
+        private enum 書込ベリファイ列挙型
         {
-            /// <summary>
-            /// 読み込みモード
-            /// </summary>
-            Read,
-
             /// <summary>
             /// 書き込みモード
             /// </summary>
-            Write
+            書込,
+
+            /// <summary>
+            /// ベリファイモード
+            /// </summary>
+            ベリファイ
         }
 
         #endregion 列挙型
@@ -239,21 +238,6 @@ namespace ASB2
         }
 
         /// <summary>
-        /// 各種タイトル等の変更を行う
-        /// </summary>
-        private void Change()
-        {
-            // 状態を「Write」にする
-            this.rwstate = MainWindow.RWState.Write;
-
-            // タイトル変更
-            this.Title = "ASB2 - ディスクに書き込み中";
-
-            // タスクトレイのアイコンを右クリックしたときのテキスト変更
-            this.tti.Text = "ASB2 ディスクに書き込み中";
-        }
-
-        /// <summary>
         /// 指定されたドライブが利用可能で、かつそのドライブに引数で
         /// 指定された値以上の利用可能な空きバイト数が存在するかを調べる
         /// </summary>
@@ -307,8 +291,7 @@ namespace ASB2
             // タイトル変更
             this.Title = titleString;
 
-            // タスクトレイのアイコンを右クリックしたときのテキスト変更
-            this.tti.Text = "ASB2 待機中";
+            this.TaskTrayIconTextTo待機中();
 
             // ボタンのテキストを「開始」にする
             this.開始停止Button.Content = MainWindow.ButtonState.開始;
@@ -319,11 +302,26 @@ namespace ASB2
         }
 
         /// <summary>
+        /// ウィンドウのUI要素を、「書き込みモード」から「ベリファイモード」に変更する
+        /// </summary>
+        private void From書込Toベリファイ()
+        {
+            // タイトル変更
+            this.Title = "ASB2 - 一時ファイルをベリファイ中";
+
+            // タスクトレイのアイコンを右クリックしたときのテキスト変更
+            this.tti.Text = "ASB2 一時ファイルをベリファイ中";
+
+            // 状態を「ベリファイモード」にする
+            this.書込ベリファイ状態 = MainWindow.書込ベリファイ列挙型.ベリファイ;
+        }
+
+        /// <summary>
         /// タスクトレイアイコンを設定する
         /// </summary>
         private void NotifyIcon_Setup()
         {
-            this.tti.Text = "ASB2 待機中";
+            this.TaskTrayIconTextTo待機中();
 
             // アイコンにコンテキストメニューを追加する
             var newcontitemary = new ToolStripMenuItem[4]
@@ -347,7 +345,7 @@ namespace ASB2
         private void PreparationAndStart(Int64 tmpFileSize)
         {
             // タイトル等変更
-            this.Change();
+            this.To書込();
 
             // プログレスバー設定
             this.ProgressBar.Minimum = 0.0;
@@ -357,7 +355,7 @@ namespace ASB2
             this.sw.Start();
 
             Int32 bufsize;
-            Int32.TryParse(this.sdm.SaveData.BufSizeText, out bufsize);
+            Int32.TryParse(this.sdm.SaveData.BufferSizeText, out bufsize);
 
             this.fio = new FileMemWork.FileIO(
                 bufsize * Kilo,
@@ -389,7 +387,7 @@ namespace ASB2
         private void Run()
         {
             Int64 tmpFileSize;
-            Int64.TryParse(this.mwvm.TmpFileSizeText, out tmpFileSize);
+            Int64.TryParse(this.mwvm.TempFileSizeText, out tmpFileSize);
             tmpFileSize *= MainWindow.Giga;
 
             if (!this.DriveAndSpaceCheck(tmpFileSize))
@@ -414,6 +412,30 @@ namespace ASB2
         }
 
         /// <summary>
+        /// タスクトレイのアイコンのテキストを「ASB2 待機中」に変更する
+        /// </summary>
+        private void TaskTrayIconTextTo待機中()
+        {
+            // タスクトレイのアイコンを右クリックしたときのテキスト変更
+            this.tti.Text = "ASB2 待機中";
+        }
+
+        /// <summary>
+        /// ウィンドウのUIを、「書き込みモード」に変更する
+        /// </summary>
+        private void To書込()
+        {
+            // タイトル変更
+            this.Title = "ASB2 - 一時ファイルをディスクに書き込み中";
+
+            // タスクトレイのアイコンを右クリックしたときのテキスト変更
+            this.tti.Text = "ASB2 一時ファイルをディスクに書き込み中";
+
+            // 状態を「書込モード」にする
+            this.書込ベリファイ状態 = MainWindow.書込ベリファイ列挙型.書込;
+        }
+
+        /// <summary>
         /// 書き込み・読み込みに関わる部分以外のウィンドウの要素を更新する
         /// </summary>
         private void UpdateWindow()
@@ -423,11 +445,11 @@ namespace ASB2
         }
 
         /// <summary>
-        /// 読み込みに関するウィンドウの要素を更新する
+        /// ウィンドウのUI要素を更新する（ベリファイモード）
         /// </summary>
         /// <param name="readbyte">トータルで読み込まれたバイト</param>
         /// <param name="readbytespeed">読み込み速度（単位はbyte/sec）</param>
-        private void UpdateWindowRead(Double readbyte, Double readbytespeed)
+        private void UpdateWindowForベリファイ(Double readbyte, Double readbytespeed)
         {
             this.UpdateWindow();
 
@@ -441,11 +463,11 @@ namespace ASB2
         }
 
         /// <summary>
-        /// 書き込みに関するウィンドウの要素を更新する
+        /// ウィンドウのUI要素を更新する（書き込みモード）
         /// </summary>
         /// <param name="writebytespeed">書き込み速度（単位はbyte/sec）</param>
         /// <param name="wrotebyte">トータルで書き込まれたバイト</param>
-        private void UpdateWindowWrite(Double writebytespeed, Double wrotebyte)
+        private void UpdateWindowFor書込(Double writebytespeed, Double wrotebyte)
         {
             this.UpdateWindow();
 
@@ -495,11 +517,13 @@ namespace ASB2
         private void ApplicationVersioned(object sender, ExecutedRoutedEventArgs e)
         {
             // Instantiate the dialog box
-            using (var vif = new VersionInformationForm())
+            var ew = new VersionInformationWindow()
             {
-                // Open the dialog box modally
-                vif.ShowDialog();
-            }
+                Owner = this
+            };
+
+            // Open the dialog box modally
+            ew.ShowDialog();
         }
 
         /// <summary>
@@ -509,73 +533,51 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            if (!this.fio.AllBufferWrote)
-            {
-                switch (this.rwstate)
-                {
-                    case MainWindow.RWState.Read:
-                        this.Change();
-                        break;
-
-                    case MainWindow.RWState.Write:
-                        break;
-
-                    default:
-                        Debug.Assert(false, "rwstateが異常！");
-                        break;
-                }
-            }
-            else if (this.fio.AllBufferWrote && this.mwvm.IsVerify)
-            {
-                switch (this.rwstate)
-                {
-                    case MainWindow.RWState.Read:
-                        break;
-
-                    case MainWindow.RWState.Write:
-                        // 状態を「Read」にする
-                        this.rwstate = MainWindow.RWState.Read;
-
-                        // タイトル変更
-                        this.Title = "ASB2 - ファイルをベリファイ中";
-
-                        // タスクトレイのアイコンを右クリックしたときのテキスト変更
-                        this.tti.Text = "ASB2 ファイルをベリファイ中";
-                        break;
-
-                    default:
-                        Debug.Assert(false, "rwstateが異常！");
-                        break;
-                }
-            }
-
-            switch (this.rwstate)
-            {
-                case MainWindow.RWState.Read:
-                    // ウィンドウを更新
-                    this.UpdateWindowRead(
-                        (Double)this.fio.ReadBytes,
-                        this.CalcSpeed(ref this.aisread, ref this.beforeReadByte, (Double)this.fio.ReadBytes));
-                    break;
-
-                case MainWindow.RWState.Write:
-                    // ウィンドウを更新
-                    this.UpdateWindowWrite(
-                        this.CalcSpeed(ref this.aiswrite, ref this.beforeWroteByte, (Double)this.fio.WroteBytes),
-                        (Double)this.fio.WroteBytes);
-                    break;
-
-                default:
-                    Debug.Assert(false, "rwstateが異常！");
-                    break;
-            }
-
             switch (this.fio.IsNow)
             {
                 case FileIO.待機中:
                     break;
 
-                case FileIO.動作中:
+                case FileIO.書き込み中:
+                    switch (this.書込ベリファイ状態)
+                    {
+                        case MainWindow.書込ベリファイ列挙型.書込:
+                            // ウィンドウを更新
+                            this.UpdateWindowFor書込(
+                                this.CalcSpeed(ref this.aiswrite, ref this.beforeWroteByte, (Double)this.fio.WroteBytes),
+                                (Double)this.fio.WroteBytes);
+                            break;
+
+                        case MainWindow.書込ベリファイ列挙型.ベリファイ:
+                            this.To書込();
+                            break;
+
+                        default:
+                            Debug.Assert(false, "書込ベリファイ状態があり得ない値になっている！");
+                            break;
+                    }
+
+                    break;
+
+                case FileIO.ベリファイ中:
+                    switch (this.書込ベリファイ状態)
+                    {
+                        case MainWindow.書込ベリファイ列挙型.書込:
+                            this.From書込Toベリファイ();
+                            break;
+
+                        case MainWindow.書込ベリファイ列挙型.ベリファイ:
+                            // ウィンドウを更新
+                            this.UpdateWindowForベリファイ(
+                                (Double)this.fio.ReadBytes,
+                                this.CalcSpeed(ref this.aisread, ref this.beforeReadByte, (Double)this.fio.ReadBytes));
+                            break;
+
+                        default:
+                            Debug.Assert(false, "書込ベリファイ状態があり得ない値になっている！");
+                            break;
+                    }
+
                     break;
 
                 case FileIO.終了待機中:
@@ -663,7 +665,7 @@ xmlファイルを削除してデフォルトデータを読み込みます");
 
             this.DataContext = this.mwvm = new MainWindowViewModel(this.sdm.SaveData);
 
-            if (File.Exists(this.sdm.SaveData.LastTmpFileNameFullPath))
+            if (File.Exists(this.sdm.SaveData.TempFilenameFullPath))
             {
                 var message = String.Format(
                     "以前起動したときの一時ファイルと思われるファイルがあります。{0}削除しますか？",
@@ -675,7 +677,7 @@ xmlファイルを削除してデフォルトデータを読み込みます");
                     MessageBoxButton.YesNo,
                     MessageBoxImage.Information) == MessageBoxResult.Yes)
                 {
-                    File.Delete(this.sdm.SaveData.LastTmpFileNameFullPath);
+                    File.Delete(this.sdm.SaveData.TempFilenameFullPath);
                 }
             }
 
@@ -712,7 +714,7 @@ xmlファイルを削除してデフォルトデータを読み込みます");
         /// <param name="e">The parameter is not used.</param>
         private void RightClick_開く(object sender, EventArgs e)
         {
-            this.tti.openWindow();
+            this.tti.OpenWindow();
         }
 
         /// <summary>
@@ -745,8 +747,8 @@ xmlファイルを削除してデフォルトデータを読み込みます");
         /// <param name="e">The parameter is not used.</param>
         private void デフォルトに戻すButton_Click(object sender, RoutedEventArgs e)
         {
-            this.mwvm.TmpFileNameFullPath = DefaultData.DefaultDataDefinition.DEFAULTTMPFILENAMEFULLPATH;
-            this.mwvm.TmpFileSizeText = DefaultData.DefaultDataDefinition.DEFAULTTMPFILESIZETEXT;
+            this.mwvm.TmpFileNameFullPath = DefaultData.DefaultDataDefinition.DEFAULTTEMPFILENAMEFULLPATH;
+            this.mwvm.TempFileSizeText = DefaultData.DefaultDataDefinition.DEFAULTTEMPFILESIZETEXT;
             this.mwvm.IsLoop = DefaultData.DefaultDataDefinition.DEFAULTLOOP;
             this.mwvm.IsVerify = DefaultData.DefaultDataDefinition.DEFAULTVERIFY;
         }
@@ -779,14 +781,14 @@ xmlファイルを削除してデフォルトデータを読み込みます");
             {
                 // はじめのファイル名を指定する
                 // はじめに「ファイル名」で表示される文字列を指定する
-                FileName = Path.GetFileName(this.sdm.SaveData.LastTmpFileNameFullPath),
+                FileName = Path.GetFileName(this.sdm.SaveData.TempFilenameFullPath),
 
                 // [ファイルの種類]に表示される選択肢を指定する
                 Filter = "一時ファイル(*.tmp;*.temp)|*.tmp;*.temp|すべてのファイル(*.*)|*.*",
 
                 // はじめに表示されるフォルダを指定する
                 // 指定しない（空の文字列）の時は、現在のディレクトリが表示される
-                InitialDirectory = Path.GetDirectoryName(this.sdm.SaveData.LastTmpFileNameFullPath),
+                InitialDirectory = Path.GetDirectoryName(this.sdm.SaveData.TempFilenameFullPath),
 
                 // タイトルを設定する
                 Title = "一時ファイルのファイル名を指定："
@@ -797,7 +799,7 @@ xmlファイルを削除してデフォルトデータを読み込みます");
             {
                 // フルパスを含むファイル名を保存
                 this.mwvm.TmpFileNameFullPath =
-                    this.sdm.SaveData.LastTmpFileNameFullPath = sfd.FileName;
+                    this.sdm.SaveData.TempFilenameFullPath = sfd.FileName;
             }
         }
 

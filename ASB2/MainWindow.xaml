@@ -87,11 +87,11 @@
                 <TextBox add:NumericBehaviors.IsNumeric="True"
                          add:NumericBehaviors.Minimum="1"
                          add:NumericBehaviors.Maximum="999"
-                         add:NumericBehaviors.Default="{Binding Path=TmpFileSizeText, Mode=OneTime}"
+                         add:NumericBehaviors.Default="{Binding Path=TempFileSizeText, Mode=OneTime}"
                          Height="23"
                          HorizontalAlignment="Center"
                          MaxLength="3"
-                         Text="{Binding Path=TmpFileSizeText, Mode=TwoWay}"
+                         Text="{Binding Path=TempFileSizeText, Mode=TwoWay}"
                          VerticalAlignment="Center"
                          Width="60" />
                 <TextBlock FontSize="14"

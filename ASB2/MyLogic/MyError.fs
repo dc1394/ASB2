@@ -2,23 +2,13 @@ namespace MyLogic
 
 module MyError =
     open System
+    open System.Collections
     open System.IO
     open System.Reflection
     open System.Text
     open System.Windows
-    open System.Collections
     open log4net
-
-    /// <summary>
-    /// ログを記録するファイル名
-    /// </summary>
-    let ErrorLogFilename = "Errorlog-file.txt"
-
-    /// <summary>
-    /// log4netインスタンス（ログ記録用）
-    /// </summary>
-    let Log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
-
+    
     /// <summary>
     /// 例外の詳細をStringBuilderに追加する
     /// </summary>
@@ -38,12 +28,21 @@ module MyError =
 
         builder.AppendFormat("StackTrace: {0}{1}", ex.StackTrace, Environment.NewLine) |> ignore
 
+    /// <summary>
+    /// エラーメッセージボックスを表示する
+    /// </summary>
+    /// <param name="errMsg">エラーメッセージ</param>
     let CallErrorMessageBox errMsg =
         MessageBox.Show(
             errMsg,
             "エラー",
             MessageBoxButton.OK,
             MessageBoxImage.Error) |> ignore
+    
+    /// <summary>
+    /// ログを記録するファイル名
+    /// </summary>
+    let ErrorLogFilename = "Errorlog-file.txt"
 
     /// <summary>
     /// ネストされた例外を列挙子にいれて返す
@@ -58,6 +57,11 @@ module MyError =
                 if !current <> null then yield current
                 elif !current = null then loop := false
             }
+    
+    /// <summary>
+    /// log4netインスタンス（ログ記録用）
+    /// </summary>
+    let Log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
 
     /// <summary>
     /// 例外の詳細をStringBuilderに追加して、それをStringに変換して返す

@@ -33,7 +33,7 @@ namespace ASB2
         /// <summary>
         /// ドライブに書き出す一時ファイル名のフルパス
         /// </summary>
-        private String tmpFileNameFullPath;
+        private String tempFilenameFullPath;
 
         /// <summary>
         /// ドライブに書き出す一時ファイルのバイト数
@@ -56,9 +56,9 @@ namespace ASB2
 
             this.sd = sd;
 
-            this.tmpFileNameFullPath = sd.LastTmpFileNameFullPath;
+            this.tempFilenameFullPath = sd.TempFilenameFullPath;
             
-            this.tmpFileSizeText = sd.TmpFileSizeText;
+            this.tmpFileSizeText = sd.TempFileSizeText;
         }
 
         #endregion 構築
@@ -106,20 +106,20 @@ namespace ASB2
         {
             get
             {
-                return this.tmpFileNameFullPath;
+                return this.tempFilenameFullPath;
             }
 
             internal set
             {
-                this.SetProperty(ref this.tmpFileNameFullPath, value);
-                this.sd.LastTmpFileNameFullPath = value;
+                this.SetProperty(ref this.tempFilenameFullPath, value);
+                this.sd.TempFilenameFullPath = value;
             }
         }
 
         /// <summary>
         /// ドライブに書き出す一時ファイルのバイト数
         /// </summary>
-        public String TmpFileSizeText
+        public String TempFileSizeText
         {
             get
             {
@@ -129,7 +129,7 @@ namespace ASB2
             internal set
             {
                 this.SetProperty(ref this.tmpFileSizeText, value);
-                this.sd.TmpFileSizeText = value;
+                this.sd.TempFileSizeText = value;
             }
         }
 
