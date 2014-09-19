@@ -45,7 +45,7 @@ namespace FileMemWork
         /// <summary>
         /// バッファの内容を比較するデリゲート
         /// </summary>
-        private Action<MemoryAllocate, MemoryAllocate> bufferCompare = null;
+        private Action<MemoryAllocate, MemoryAllocate> bufferCompare;
 
         /// <summary>
         /// バッファに書き込むデリゲート
@@ -61,7 +61,7 @@ namespace FileMemWork
         /// IOが終わったかどうかを示すフラグ
         /// </summary>
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
-        private Int32 isNow = (Int32)FileIO.動作状態.待機中;
+        private Int32 isNow;
 
         /// <summary>
         /// 並列化するかどうかを示すフラグ
@@ -81,13 +81,13 @@ namespace FileMemWork
         /// <summary>
         /// 読み込み専用のメモリー確保用のオブジェクト
         /// </summary>
-        private MemoryAllocate maread = null;
+        private MemoryAllocate maread;
 
         /// <summary>
         /// IOが終わったかどうかを示すフラグ
         /// </summary>
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
-        private Int32 returnCode = (Int32)FileIO.終了状態.未終了;
+        private Int32 returnCode;
 
         #endregion フィールド
         
@@ -193,24 +193,24 @@ namespace FileMemWork
         internal enum 終了状態
         {
             /// <summary>
+            /// 処理が終了していない
+            /// </summary>
+            未終了 = 0,
+
+            /// <summary>
             /// 正常に終了
             /// </summary>
-            正常終了 = 0,
+            正常終了 = 1,
 
             /// <summary>
             /// キャンセルされた
             /// </summary>
-            キャンセル終了 = 1,
+            キャンセル終了 = 2,
 
             /// <summary>
             /// 何らかの異常があって終了した
             /// </summary>
             異常終了 = -1,
-
-            /// <summary>
-            /// 処理が終了していない
-            /// </summary>
-            未終了 = -2
         }
 
         #endregion 列挙型
