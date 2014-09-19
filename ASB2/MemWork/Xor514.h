@@ -1,5 +1,5 @@
 ﻿/*! \file Xor514.h
-    \brief SSE2を使って高速化したXorshiftによる乱数生成クラス
+    \brief SSE2を使って高速化したXorshiftによる乱数生成クラスの宣言
     
     but this is originally adapted by 和田維作 さま
     cf. http://www001.upp.so-net.ne.jp/isaku/xor.c.html
@@ -81,9 +81,13 @@ namespace memwork {
         */
         class Xor514 final
         {
-        public:
+        private:
             // #region 共用体
 
+            //! A union.
+            /*!
+            xorshiftのデータが格納される共用体
+            */
             align32 union xor514_t {
                 std::uint32_t u[20];
                 __m128i m[5];
@@ -91,6 +95,7 @@ namespace memwork {
 
             // #endregion 共用体
 
+        public:
             // #region コンストラクタ
 
             //! A constructor.
@@ -110,9 +115,15 @@ namespace memwork {
             */
             __m128i rand128();
 
+        private:
+            //! A private member function.
+            /*!
+            バッファ上に新しい乱数を生成する
+            */
+            void xor514sub();
+
             // #endregion メンバ関数
 
-        private:
             // #region メンバ変数
 
             //! A private variable (constant expression).
@@ -127,13 +138,35 @@ namespace memwork {
             */
             static auto constexpr XOR514HEAD = 16;
 
-            
+            //! A union.
+            /*!
+            xorshiftのデータ
+            */
             xor514_t p;
-            void xor514sub();
 
+            // #region 禁止されたコンストラクタ・メンバ関数
+
+            //! A private constructor (deleted).
+            /*!
+            デフォルトコンストラクタ（禁止）
+            */
             Xor514() = delete;
+
+            //! A private copy constructor (deleted).
+            /*!
+            コピーコンストラクタ（禁止）
+            */
             Xor514(Xor514 const &) = delete;
+
+            //! A private member function (deleted).
+            /*!
+            operator=()の宣言（禁止）
+            \param コピー元のオブジェクト
+            \return コピー元のオブジェクト
+            */
             Xor514 & operator=(Xor514 const &) = delete;
+
+            // #endregion 禁止されたコンストラクタ・メンバ関数
         };
     }
 }

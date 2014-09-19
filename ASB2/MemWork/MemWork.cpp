@@ -1,4 +1,4 @@
-#include "MemWork.h"
+ï»¿#include "MemWork.h"
 #include "Xor514.h"
 #include <cassert>
 #include <ctime>
@@ -16,17 +16,17 @@ namespace {
         auto const s1 = reinterpret_cast<char const *>(p1) + (index << 6);
         auto const s2 = reinterpret_cast<char const *>(p2) + (index << 6);
 
-        // ƒLƒƒƒbƒVƒ…‰˜õ‚ğ–h‚®
+        // ã‚­ãƒ£ãƒƒã‚·ãƒ¥æ±šæŸ“ã‚’é˜²ã
         ::_mm_prefetch(s1 + PREFETCHSIZE, _MM_HINT_NTA);
 
-        // ƒƒ‚ƒŠ‚©‚çxmm0`7‚Éƒ[ƒh
+        // ãƒ¡ãƒ¢ãƒªã‹ã‚‰xmm0ï½7ã«ãƒ­ãƒ¼ãƒ‰
         std::array<__m128i, 4> xmm, xmm2;
         for (auto j = 0; j < 4; j++) {
             xmm[j] = ::_mm_load_si128(reinterpret_cast<__m128i const *>(s1 + j * sizeof(__m128i)));
             xmm2[j] = ::_mm_load_si128(reinterpret_cast<__m128i const *>(s2 + j * sizeof(__m128i)));
         }
 
-        // Œ‹‰Ê‚ğ”äŠr
+        // çµæœã‚’æ¯”è¼ƒ
         std::array<__m128i, 4> r;
         for (auto j = 0; j < 4; j++) {
             if (availableSSE4_1)
@@ -34,7 +34,7 @@ namespace {
             else
                 r[j] = ::_mm_cmpeq_epi32(xmm[j], xmm2[j]);
 
-            // 64ƒrƒbƒgi8ƒoƒCƒgj‚²‚Æ‚ÉŒ‹‰Ê‚ğƒ`ƒFƒbƒN
+            // 64ãƒ“ãƒƒãƒˆï¼ˆ8ãƒã‚¤ãƒˆï¼‰ã”ã¨ã«çµæœã‚’ãƒã‚§ãƒƒã‚¯
             for (auto k = 0; k < 2; k++) {
                 if (r[j].m128i_u64[k] != FFFFFFFFFFFFFFFFh)
                     throw std::runtime_error("");
@@ -44,7 +44,7 @@ namespace {
 
     std::tuple<bool, std::uint32_t> check(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size)
     {
-        // ƒAƒ‰ƒCƒƒ“ƒg‚Í‚ ‚Á‚Ä‚¢‚é‚©H
+        // ã‚¢ãƒ©ã‚¤ãƒ¡ãƒ³ãƒˆã¯ã‚ã£ã¦ã„ã‚‹ã‹ï¼Ÿ
 #ifdef _WIN64
         assert(!(reinterpret_cast<std::uint64_t>(p1)& 0x0F));
         assert(!(reinterpret_cast<std::uint64_t>(p2)& 0x0F));
@@ -52,13 +52,13 @@ namespace {
         assert(!(reinterpret_cast<std::uint32_t>(p1)& 0x0F));
         assert(!(reinterpret_cast<std::uint32_t>(p2)& 0x0F));
 #endif
-        // ‘‚«‚ŞƒoƒCƒg”‚Í64ƒoƒCƒg‚Ì”{”‚©H
+        // æ›¸ãè¾¼ã‚€ãƒã‚¤ãƒˆæ•°ã¯64ãƒã‚¤ãƒˆã®å€æ•°ã‹ï¼Ÿ
         assert(!(size & 0x3F));
 
-        // ”äŠr‚·‚é‰ñ”i1‰ñ‚Ìƒ‹[ƒv‚Å64ƒoƒCƒgi512ƒrƒbƒgj‚¸‚Â”äŠrj
+        // æ¯”è¼ƒã™ã‚‹å›æ•°ï¼ˆ1å›ã®ãƒ«ãƒ¼ãƒ—ã§64ãƒã‚¤ãƒˆï¼ˆ512ãƒ“ãƒƒãƒˆï¼‰ãšã¤æ¯”è¼ƒï¼‰
         auto const write512loop = size >> 6;
 
-        // SSE4.1–½—ß‚Íg—p‰Â”\‚©
+        // SSE4.1å‘½ä»¤ã¯ä½¿ç”¨å¯èƒ½ã‹
         auto const availableSSE4_1 = isAvailableSSE4_1();
 
         return std::make_pair(availableSSE4_1, write512loop);
@@ -72,7 +72,7 @@ DLLEXPORT void __stdcall memcmp128(std::uint8_t * p1, std::uint8_t * p2, std::ui
 
     std::tie(availableSSE4_1, write512loop) = check(p1, p2, size);
 
-	// ÀÛ‚É1‰ñ‚Ìƒ‹[ƒv‚Å64ƒoƒCƒg‚¸‚Â”äŠr
+	// å®Ÿéš›ã«1å›ã®ãƒ«ãƒ¼ãƒ—ã§64ãƒã‚¤ãƒˆãšã¤æ¯”è¼ƒ
 	for (std::uint32_t i = 0; i < write512loop; i++) {
         bufferCompareUseSimd(availableSSE4_1, i, p1, p2);
 	}
@@ -85,7 +85,7 @@ DLLEXPORT void __stdcall memcmpparallel128(std::uint8_t * p1, std::uint8_t * p2,
 
     std::tie(availableSSE4_1, write512loop) = check(p1, p2, size);
 
-	// ÀÛ‚É1‰ñ‚Ìƒ‹[ƒv‚Å64ƒoƒCƒg‚¸‚Â”äŠr
+	// å®Ÿéš›ã«1å›ã®ãƒ«ãƒ¼ãƒ—ã§64ãƒã‚¤ãƒˆãšã¤æ¯”è¼ƒ
 	cilk_for (std::uint32_t i = 0; i < write512loop; i++) {
         bufferCompareUseSimd(availableSSE4_1, i, p1, p2);
 	}
@@ -93,31 +93,31 @@ DLLEXPORT void __stdcall memcmpparallel128(std::uint8_t * p1, std::uint8_t * p2,
 
 DLLEXPORT void __stdcall memfill128(std::uint8_t * p, std::uint32_t size)
 {
-    // —”ƒIƒuƒWƒFƒNƒg¶¬
+    // ä¹±æ•°ã‚ªãƒ–ã‚¸ã‚§ã‚¯ãƒˆç”Ÿæˆ
     memwork::myrandom::Xor514 pxor(static_cast<std::uint32_t>(std::time(NULL)));
 
-    // ƒAƒ‰ƒCƒƒ“ƒg‚Í‚ ‚Á‚Ä‚¢‚é‚©H
+    // ã‚¢ãƒ©ã‚¤ãƒ¡ãƒ³ãƒˆã¯ã‚ã£ã¦ã„ã‚‹ã‹ï¼Ÿ
 #ifdef _WIN64
     assert(!(reinterpret_cast<std::uint64_t>(p)& 0x0F));
 #else
     assert(!(reinterpret_cast<std::uint32_t>(p)& 0x0F));
 #endif
-    // ‘‚«‚ŞƒoƒCƒg”‚Í64ƒoƒCƒg‚Ì”{”‚©H
+    // æ›¸ãè¾¼ã‚€ãƒã‚¤ãƒˆæ•°ã¯64ãƒã‚¤ãƒˆã®å€æ•°ã‹ï¼Ÿ
     assert(!(size & 0x3F));
 
-    // 1‰ñ‚Ìƒ‹[ƒv‚Å‘‚«‚Ş‰ñ”i64ƒoƒCƒgi512ƒrƒbƒgj‚¸‚Âj
+    // 1å›ã®ãƒ«ãƒ¼ãƒ—ã§æ›¸ãè¾¼ã‚€å›æ•°ï¼ˆ64ãƒã‚¤ãƒˆï¼ˆ512ãƒ“ãƒƒãƒˆï¼‰ãšã¤ï¼‰
     auto const write512loop = size >> 6;
 
-    // ÀÛ‚É1‰ñ‚Ìƒ‹[ƒv‚Å64ƒoƒCƒg‚¸‚Â‘‚«‚Ş
+    // å®Ÿéš›ã«1å›ã®ãƒ«ãƒ¼ãƒ—ã§64ãƒã‚¤ãƒˆãšã¤æ›¸ãè¾¼ã‚€
     for (std::uint32_t i = 0; i < write512loop; i++) {
         std::array<__m128i, 4> xmm;
-        // xmm0`3ƒŒƒWƒXƒ^ã‚É—”¶¬
+        // xmm0ï½3ãƒ¬ã‚¸ã‚¹ã‚¿ä¸Šã«ä¹±æ•°ç”Ÿæˆ
         for (auto j = 0; j < 4; j++)
             xmm[j] = pxor.rand128();
 
-        // ƒAƒhƒŒƒX
+        // ã‚¢ãƒ‰ãƒ¬ã‚¹
         std::uint8_t * const d = p + (i << 6);
-        // ÀÛ‚É‘‚«‚Ş
+        // å®Ÿéš›ã«æ›¸ãè¾¼ã‚€
         for (auto j = 0; j < 4; j++)
             ::_mm_stream_si128(reinterpret_cast<__m128i *>(d + j * sizeof(__m128i)), xmm[j]);
     }

@@ -212,7 +212,7 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private static void OnLostFocus(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = sender as TextBox;
+            var textBox = sender as TextBox;
             
             if (textBox != null)
             {

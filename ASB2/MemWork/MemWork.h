@@ -1,3 +1,8 @@
+﻿/*! \file MemWork.h
+    \brief メモリに書き込む関数の宣言
+
+    Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
 #ifndef _MEMWORK_H_
 #define _MEMWORK_H_
 
@@ -21,9 +26,24 @@
 #endif
 
 namespace {
+    //! A static variable (constant expression).
+    /*!
+    64ビット符号なし整数の最大値
+    */
+    static auto constexpr FFFFFFFFFFFFFFFFh = 0xFFFFFFFFFFFFFFFF;
+
+    //! A static variable (constant expression).
+    /*!
+    SSE4.1が使用できるかどうかに使うフラグ
+    */
 	static auto constexpr SSE4_1_FLAG = 0x00080000;
+
+    //! A static variable (constant expression).
+    /*!
+    プリフェッチのサイズ
+    */
 	static auto constexpr PREFETCHSIZE = 4096;
-	static auto constexpr FFFFFFFFFFFFFFFFh = 0xFFFFFFFFFFFFFFFF;
+
 
     void bufferCompareUseSimd(bool availableSSE4_1, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
     std::tuple<bool, std::uint32_t> check(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
