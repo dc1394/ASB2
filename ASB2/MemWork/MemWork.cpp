@@ -1,4 +1,9 @@
-﻿#include "MemWork.h"
+﻿/*! \file MemWork.cpp
+    \brief メモリに書き込む関数群の実装
+
+    Copyright ©  2014 @dc1394 All Rights Reserved.
+*/
+#include "MemWork.h"
 #include "Xor514.h"
 #include <cassert>
 #include <ctime>

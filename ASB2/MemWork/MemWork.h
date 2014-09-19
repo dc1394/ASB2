@@ -1,5 +1,5 @@
 ﻿/*! \file MemWork.h
-    \brief メモリに書き込む関数の宣言
+    \brief メモリに書き込む関数群の宣言
 
     Copyright ©  2014 @dc1394 All Rights Reserved.
 */
@@ -14,9 +14,9 @@
 #include <intrin.h>
 
 #ifndef _WIN64
-	#pragma comment(linker, "/export:memfill128=_memfill128@8")
 	#pragma comment(linker, "/export:memcmp128=_memcmp128@12")
 	#pragma comment(linker, "/export:memcmpparallel128=_memcmpparallel128@12")
+    #pragma comment(linker, "/export:memfill128=_memfill128@8")
 #endif
 
 #ifdef __cplusplus
@@ -44,10 +44,31 @@ namespace {
     */
 	static auto constexpr PREFETCHSIZE = 4096;
 
-
+    //! A function.
+    /*!
+    バッファを比較する（SIMDを使う）
+    \param availableSSE4_1 SSE4.1が使用可能かどうか
+    \param index バッファを比較するときに足すインデックス
+    \param p1 比較するバッファ1の先頭アドレス
+    \param p2 比較するバッファ2の先頭アドレス
+    */
     void bufferCompareUseSimd(bool availableSSE4_1, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+
+    //! A function.
+    /*!
+    各種条件を確認する
+    \param p1 比較するバッファ1の先頭アドレス
+    \param p2 比較するバッファ2の先頭アドレス
+    \param size 比較するバッファのサイズ
+    \return SSE4.1が使用可能かどうかと、比較する回数をセットにしたtuple
+    */
     std::tuple<bool, std::uint32_t> check(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
 
+    //! A function (inline).
+    /*!
+    SSE4.1が使用可能かどうかチェックする
+    \return SSE4.1が使用可能かどうか
+    */
 	inline bool isAvailableSSE4_1()
 	{
 		std::array<std::int32_t, 4> CPUInfo;
@@ -57,8 +78,30 @@ namespace {
 	}
 }
 
+//! A function.
+/*!
+バッファを比較する
+\param p1 比較するバッファ1の先頭アドレス
+\param p2 比較するバッファ2の先頭アドレス
+\param size 比較するバッファのサイズ
+*/
 DLLEXPORT void __stdcall memcmp128(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
+
+//! A function.
+/*!
+バッファを比較する（並列化あり）
+\param p1 比較するバッファ1の先頭アドレス
+\param p2 比較するバッファ2の先頭アドレス
+\param size 比較するバッファのサイズ
+*/
 DLLEXPORT void __stdcall memcmpparallel128(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
+
+//! A function.
+/*!
+バッファの内容を乱数で埋める
+\param p 比較するバッファ1の先頭アドレス
+\param size 比較するバッファのサイズ
+*/
 DLLEXPORT void __stdcall memfill128(std::uint8_t * p, std::uint32_t size);
 
 #endif  // _MEMWORK_H_
