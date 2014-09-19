@@ -15,15 +15,15 @@ namespace memwork {
             enum { a = 101, b = 99, c = 8 };
             auto const x = p.m[1];
             auto const w = p.m[4];
-            auto s = _mm_slli_si128(_mm_slli_epi64(x, a - 64), 8);
-            auto t = _mm_xor_si128(x, s);
+            auto s = ::_mm_slli_si128(::_mm_slli_epi64(x, a - 64), 8);
+            auto t = ::_mm_xor_si128(x, s);
             p.m[1] = p.m[2];
             p.m[2] = p.m[3];
             p.m[3] = w;
-            s = _mm_srli_si128(_mm_srli_epi64(t, b - 64), 8);
-            t = _mm_xor_si128(t, s);
-            s = _mm_srli_si128(w, c / 8);
-            s = _mm_xor_si128(s, t);
+            s = ::_mm_srli_si128(_mm_srli_epi64(t, b - 64), 8);
+            t = ::_mm_xor_si128(t, s);
+            s = ::_mm_srli_si128(w, c / 8);
+            s = ::_mm_xor_si128(s, t);
             p.m[4] = _mm_xor_si128(w, s);
         }
 
