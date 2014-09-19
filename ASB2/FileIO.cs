@@ -22,43 +22,6 @@ namespace FileMemWork
     {
         #region フィールド
 
-        enum 動作状態 { 待機中 = 0, 書込中 = 1 };
-
-        ///// <summary>
-        ///// 待機中の定数
-        ///// </summary>
-        //internal const Int32 待機中 = 0;
-        
-        ///// <summary>
-        ///// 動作中の定数
-        ///// </summary>
-        //internal const Int32 書き込み中 = 1;
-
-        /// <summary>
-        /// 動作中の定数
-        /// </summary>
-        internal const Int32 ベリファイ中 = 2;
-
-        /// <summary>
-        /// 終了待機中の定数
-        /// </summary>
-        internal const Int32 終了待機中 = 3;
-
-        /// <summary>
-        /// 未終了の定数
-        /// </summary>
-        internal const Int32 未終了 = 1;
-
-        /// <summary>
-        /// 正常終了の定数
-        /// </summary>
-        internal const Int32 正常終了 = 0;
-
-        /// <summary>
-        /// 異常終了の定数
-        /// </summary>
-        internal const Int32 異常終了 = -1;
-
         /// <summary>
         /// ループした回数
         /// </summary>
@@ -98,12 +61,6 @@ namespace FileMemWork
         /// IOが終わったかどうかを示すフラグ
         /// </summary>
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
-        private Int32 errorCode = FileIO.未終了;
-
-        /// <summary>
-        /// IOが終わったかどうかを示すフラグ
-        /// </summary>
-        /// <remarks>複数のスレッドからアクセスされる！</remarks>
         private Int32 isNow = (Int32)FileIO.動作状態.待機中;
 
         /// <summary>
@@ -125,6 +82,12 @@ namespace FileMemWork
         /// 読み込み専用のメモリー確保用のオブジェクト
         /// </summary>
         private MemoryAllocate maread = null;
+
+        /// <summary>
+        /// IOが終わったかどうかを示すフラグ
+        /// </summary>
+        /// <remarks>複数のスレッドからアクセスされる！</remarks>
+        private Int32 returnCode = (Int32)FileIO.終了状態.未終了;
 
         #endregion フィールド
         
@@ -195,6 +158,62 @@ namespace FileMemWork
         }
 
         #endregion 構築
+        
+        #region 列挙型
+
+        /// <summary>
+        /// 現在の動作状態を表す列挙型
+        /// </summary>
+        internal enum 動作状態
+        {
+            /// <summary>
+            /// 待機中
+            /// </summary>
+            待機中 = 0,
+
+            /// <summary>
+            /// ディスクに書き込み中
+            /// </summary>
+            書込中 = 1,
+
+            /// <summary>
+            /// ディスクに書き込んだファイルをベリファイ中
+            /// </summary>
+            ベリファイ中 = 2,
+
+            /// <summary>
+            /// 終了を待機中
+            /// </summary>
+            終了待機中 = 3
+        }
+
+        /// <summary>
+        /// 終了の理由を表す列挙型
+        /// </summary>
+        internal enum 終了状態
+        {
+            /// <summary>
+            /// 正常に終了
+            /// </summary>
+            正常終了 = 0,
+
+            /// <summary>
+            /// キャンセルされた
+            /// </summary>
+            キャンセル終了 = 1,
+
+            /// <summary>
+            /// 何らかの異常があって終了した
+            /// </summary>
+            異常終了 = -1,
+
+            /// <summary>
+            /// 処理が終了していない
+            /// </summary>
+            未終了 = -2
+        }
+
+        #endregion 列挙型
 
         #region プロパティ
 
@@ -218,23 +237,6 @@ namespace FileMemWork
         /// 処理をキャンセルする場合のトークン
         /// </summary>
         internal CancellationTokenSource Cts { get; private set; }
-
-        /// <summary>
-        /// 処理が終了した場合のエラーコード
-        /// </summary>
-        /// <remarks>複数のスレッドからアクセスされる！</remarks>
-        internal Int32 ErrorCode
-        {
-            get
-            {
-                return this.errorCode;
-            }
-
-            private set
-            {
-                Interlocked.Exchange(ref this.errorCode, value);
-            }
-        }
 
         /// <summary>
         /// 一時ファイルのファイル名
@@ -273,6 +275,23 @@ namespace FileMemWork
         /// </summary>
         /// <remarks>必ず初期化すること！</remarks>
         internal Int64 ReadBytes { get; private set; }
+
+        /// <summary>
+        /// 処理が終了した場合のエラーコード
+        /// </summary>
+        /// <remarks>複数のスレッドからアクセスされる！</remarks>
+        internal Int32 ReturnCode
+        {
+            get
+            {
+                return this.returnCode;
+            }
+
+            private set
+            {
+                Interlocked.Exchange(ref this.returnCode, value);
+            }
+        }
 
         /// <summary>
         /// 書き込んだ合計のバイト数
@@ -350,7 +369,7 @@ namespace FileMemWork
                 this.Cts = new CancellationTokenSource();
             }
 
-            this.IsNow = FileIO.書き込み中;
+            this.IsNow = (Int32)FileIO.動作状態.書込中;
 
             await Task.Run(
                 () =>
@@ -361,17 +380,13 @@ namespace FileMemWork
                         {
                             this.bufBetweenDisk();
 
-                            switch (this.IsNow)
+                            switch ((動作状態)this.IsNow)
                             {
-                                case FileIO.待機中:
-                                    Debug.Assert(false, "IsNowが「待機中」になっている！");
-                                    break;
-
-                                case FileIO.書き込み中:
-                                case FileIO.ベリファイ中:
+                                case FileIO.動作状態.書込中:
+                                case FileIO.動作状態.ベリファイ中:
                                     continue;
 
-                                case FileIO.終了待機中:
+                                case FileIO.動作状態.終了待機中:
                                     break;
 
                                 default:
@@ -387,7 +402,7 @@ namespace FileMemWork
                         this.bufBetweenDisk();
                     }
 
-                    this.IsNow = FileIO.終了待機中;
+                    this.IsNow = (Int32)FileIO.動作状態.終了待機中;
                 },
                 this.Cts.Token);
 
@@ -458,7 +473,7 @@ namespace FileMemWork
                     }
                     else
                     {
-                        this.IsNow = FileIO.ベリファイ中;
+                        this.IsNow = (Int32)FileIO.動作状態.ベリファイ中;
                     }
                 }
                 catch (Exception ex)
@@ -477,17 +492,9 @@ namespace FileMemWork
         /// </summary>
         private void DiskVerify()
         {
-            switch (this.IsNow)
+            switch ((動作状態)this.IsNow)
             {
-                case FileIO.待機中:
-                    Debug.Assert(false, "IsNowが「待機中」になっている！");
-                    break;
-
-                case FileIO.書き込み中:
-                    Debug.Assert(false, "IsNowが「書き込み中」になっている！");
-                    break;
-
-                case FileIO.ベリファイ中:
+                case FileIO.動作状態.ベリファイ中:
                     try
                     {
                         using (var br = new BinaryReader(File.Open(this.Filename, FileMode.Open, FileAccess.Read, FileShare.None)))
@@ -515,7 +522,7 @@ namespace FileMemWork
                             }
                         }
 
-                        this.IsNow = FileIO.書き込み中;
+                        this.IsNow = (Int32)FileIO.動作状態.書込中;
 
                         FileIO.loopNum++;
                     }
@@ -527,9 +534,10 @@ namespace FileMemWork
                             new DispatcherOperationCallback(FileIO.ThrowMainThreadException),
                             ex);
                     }
+
                     break;
 
-                case FileIO.終了待機中:
+                case FileIO.動作状態.終了待機中:
                     break;
 
                 default:
@@ -562,9 +570,9 @@ namespace FileMemWork
             }
             catch (OperationCanceledException)
             {
-                this.ErrorCode = FileIO.正常終了;
+                this.ReturnCode = (Int32)FileIO.終了状態.キャンセル終了;
 
-                this.IsNow = FileIO.終了待機中;
+                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
 
                 return false;
             }
@@ -572,9 +580,9 @@ namespace FileMemWork
             {
                 MyError.CallErrorMessageBox(e.Message);
 
-                this.ErrorCode = FileIO.異常終了;
+                this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
 
-                this.IsNow = FileIO.終了待機中;
+                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
 
                 return false;
             }
@@ -584,14 +592,14 @@ namespace FileMemWork
                         "ベリファイに失敗しました。{0}プログラムのバグか、SSD/HDDが壊れています。",
                         Environment.NewLine));
 
-                this.ErrorCode = FileIO.異常終了;
+                this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
 
-                this.IsNow = FileIO.終了待機中;
+                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
 
                 return false;
             }
 
-            this.ErrorCode = FileIO.正常終了;
+            this.ReturnCode = (Int32)FileIO.終了状態.正常終了;
             
             return true;
         }
@@ -627,9 +635,9 @@ namespace FileMemWork
             }
             catch (OperationCanceledException)
             {
-                this.ErrorCode = FileIO.正常終了;
+                this.ReturnCode = (Int32)FileIO.終了状態.キャンセル終了;
 
-                this.IsNow = FileIO.終了待機中;
+                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
 
                 return false;
             }
@@ -637,16 +645,16 @@ namespace FileMemWork
             {
                 MyError.CallErrorMessageBox(e.Message);
 
-                this.ErrorCode = FileIO.異常終了;
+                this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
 
-                this.IsNow = FileIO.終了待機中;
+                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
 
                 return false;
             }
 
             if (!this.isVerify)
             {
-                this.ErrorCode = FileIO.正常終了;
+                this.ReturnCode = (Int32)FileIO.終了状態.正常終了;
             }
 
             FileIO.totalWroteBytes += (Int64)count;

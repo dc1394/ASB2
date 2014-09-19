@@ -533,12 +533,12 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            switch (this.fio.IsNow)
+            switch ((FileIO.動作状態)this.fio.IsNow)
             {
-                case FileIO.待機中:
+                case FileIO.動作状態.待機中:
                     break;
 
-                case FileIO.書き込み中:
+                case FileIO.動作状態.書込中:
                     switch (this.書込ベリファイ状態)
                     {
                         case MainWindow.書込ベリファイ列挙型.書込:
@@ -559,7 +559,7 @@ namespace ASB2
 
                     break;
 
-                case FileIO.ベリファイ中:
+                case FileIO.動作状態.ベリファイ中:
                     switch (this.書込ベリファイ状態)
                     {
                         case MainWindow.書込ベリファイ列挙型.書込:
@@ -580,21 +580,21 @@ namespace ASB2
 
                     break;
 
-                case FileIO.終了待機中:
-                    switch (this.fio.ErrorCode)
+                case FileIO.動作状態.終了待機中:
+                    switch ((FileIO.終了状態)this.fio.ReturnCode)
                     {
-                        case FileIO.正常終了:
+                        case FileIO.終了状態.正常終了:
+                            this.DoWriteEnd("ASB2 - 正常終了（実行待機中）");
+                            break;
+
+                        case FileIO.終了状態.キャンセル終了:
                             this.DoWriteEnd("ASB2 - ユーザーの要求によりキャンセル（実行待機中）");
                             break;
 
-                        case FileIO.異常終了:
+                        case FileIO.終了状態.異常終了:
                             this.DoWriteEnd("ASB2 - IOエラーにより終了（実行待機中）");
                             break;
 
-                        case FileIO.未終了:
-                            Debug.Assert(false, "FileIO.ErrorCodeが「未終了」になっている！");
-                            break;
-                        
                         default:
                             Debug.Assert(false, "FileIO.ErrorCodeがありえない値になっている！");
                             break;
