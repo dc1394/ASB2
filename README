@@ -5,24 +5,9 @@
 
 ★これは何？
 　SSD/HDDにデータ（ファイル）をひたすら、書き込んでは消し、書き込んでは消し…を
-　繰り返すことでSSD/HDDの寿命を意図的に縮めるソフトです。不要になったSSD/HDDを
+　繰り返すことでSSD/HDDの寿命を意図的に縮めるコードです。不要になったSSD/HDDを
 　処分するときに使えるかもしれません。一回だけの書き込みも出来るので、SSD/HDDの
 　ちょっとしたベンチマークにも使えるかもしれません。
-
-★インストール
-　ASB2_x64_(バージョン番号).zip（x64版）またはASB2_x86_(バージョン番号).zip（x86
-　版）を任意のフォルダに解凍してください。
-　ただし、このソフトを動作させるためには、「Microsoft .NET Framework 4」
-　（ http://bit.ly/16JtVz1 からダウンロード可能）と、「Visual Studio 2012 更新プ
-　ログラム 1 の Visual C++ 再頒布可能パッケージ」（ http://bit.ly/13sbvSW からダ
-　ウンロード可能）が必要です。なお、ASB2 x86版の動作には、「vcredist_x86.exe」が、
-　ASB2 x64版の動作には「vcredist_x64.exe」が必要となります（OS自体のx86、x64バー
-　ジョンとは関係が無いので注意して下さい。なお当然ですが、ASB2 x64版は、x86バー
-　ジョンのWindowsでは動きません。）
-
-★アンインストール
-　解凍したフォルダを削除して下さい。
-　このソフトはレジストリを変更しません。
 
 ★既知のバグについて
 　現状では既知のバグとして、開発環境がWindows 8であるため、Windows 7（とたぶんそ
@@ -40,7 +25,8 @@
 ★謝辞
 　このソフトウェアのBindaleBaseクラスは、「id:minami_SC」様の「WPFでも
 　BindableBaseを使ってINotifyPropertyChangedを実装する
- （ http://sourcechord.hatenablog.com/entry/20130303/1362315081 )」を、Xor514ク　ラスは、「和田維作」様の「Xorshift のＳＳＥ２を使った高速化(整数版) (
+ （ http://sourcechord.hatenablog.com/entry/20130303/1362315081 )」を、Xor514ク
+  ラスは、「和田維作」様の「Xorshift のＳＳＥ２を使った高速化(整数版) (
 　http://bit.ly/13sbL4p )」を、EnumRadioConverterクラスは、「omoisan」様の「WPF 
 　- トリガー、RadioButtonバインド( http://bit.ly/13sbT3V )」の記事を、
 　NumericBehaviorsクラスは、「なわ」様の「数値入力用テキストボックス　添付ビヘイ
