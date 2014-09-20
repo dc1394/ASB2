@@ -8,11 +8,11 @@
 #include <cassert>
 #include <ctime>
 #include <stdexcept>
+#include <tbb/parallel_for.h>
+#include <tbb/task_scheduler_init.h>
 
 #ifdef __cilk
 	#include <cilk/cilk.h>
-#else
-	#define cilk_for for
 #endif
 
 namespace {
@@ -89,11 +89,22 @@ DLLEXPORT void __stdcall memcmpparallel128(std::uint8_t * p1, std::uint8_t * p2,
     std::uint32_t write512loop;
 
     std::tie(availableSSE4_1, write512loop) = check(p1, p2, size);
-
+    
+#ifdef __cilk
 	// 実際に1回のループで64バイトずつ比較
 	cilk_for (std::uint32_t i = 0; i < write512loop; i++) {
         bufferCompareUseSimd(availableSSE4_1, i, p1, p2);
 	}
+#else
+    tbb::task_scheduler_init init;
+
+    tbb::parallel_for(
+        std::uint32_t(0),
+        write512loop,
+        std::uint32_t(1),
+        [=](std::uint32_t i) { bufferCompareUseSimd(availableSSE4_1, i, p1, p2); },
+        tbb::auto_partitioner());
+#endif
 }
 
 DLLEXPORT void __stdcall memfill128(std::uint8_t * p, std::uint32_t size)
@@ -121,7 +132,7 @@ DLLEXPORT void __stdcall memfill128(std::uint8_t * p, std::uint32_t size)
             xmm[j] = pxor.rand128();
 
         // アドレス
-        std::uint8_t * const d = p + (i << 6);
+        auto * const d = p + (i << 6);
         // 実際に書き込む
         for (auto j = 0; j < 4; j++)
             ::_mm_stream_si128(reinterpret_cast<__m128i *>(d + j * sizeof(__m128i)), xmm[j]);

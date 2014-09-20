@@ -89,6 +89,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>tbb.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Debug\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
