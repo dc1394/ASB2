@@ -94,7 +94,8 @@
     <PostBuildEvent>
       <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Debug\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
 copy "C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler\cilkrts20.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
-copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug</Command>
+copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
+copy C:\mylib64\tbb43_20140724oss\bin\ia32\vc12\tbb_debug.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -112,7 +113,10 @@ copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <PostBuildEvent>
-      <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\x64\Debug\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug</Command>
+      <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\x64\Debug\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug
+copy C:\mylib64\tbb43_20140724oss\bin\intel64\vc12\tbb_debug.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug
+copy "C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler\cilkrts20.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug
+copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -130,8 +134,6 @@ copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework
       <Cpp0xSupport>true</Cpp0xSupport>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <Optimization>MaxSpeedHighLevel</Optimization>
-      <WarningLevel>Level5</WarningLevel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
@@ -141,10 +143,11 @@ copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Release\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy "C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler\cilkrts20.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
+      <Command>copy "C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler\cilkrts20.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
+copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Release\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
+copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
+copy C:\mylib64\tbb43_20140724oss\bin\ia32\vc12\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -162,8 +165,6 @@ copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRA
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <Optimization>MaxSpeedHighLevel</Optimization>
-      <WarningLevel>Level5</WarningLevel>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
