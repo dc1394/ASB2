@@ -33,16 +33,19 @@
 　2013/04/09 ver.0.0.1α2  ドキュメントの整備。
 　2013/04/10 ver.0.0.1α3　小修正とドキュメントの整備。
 　2013/06/16 ver.0.0.1β1　「タイマの更新間隔」が反映されていなかったのを修正。
-　　　　　　　　　　　　　「タイマの更新間隔」を最大10秒にした。
-　　　　　　　　　　　　　Windows XP環境で起こるバグを修正。
-　　　　　　　　　　　　　SSE4.1命令が使えない環境で起こるバグを修正。
+　　　　　　　　　　　　　　「タイマの更新間隔」を最大10秒にした。
+			 　Windows XP環境で起こるバグを修正。
+　　　　　　　　　　　　　 SSE4.1命令が使えない環境で起こるバグを修正。
+　2014/09/21 ver.0.1	　 コードを全面的に整理した。
 
 ★謝辞
 　このソフトウェアのBindaleBaseクラスは、「id:minami_SC」様の「WPFでも
 　BindableBaseを使ってINotifyPropertyChangedを実装する
- （ http://sourcechord.hatenablog.com/entry/20130303/1362315081 )」を、Xor514ク　ラスは、「和田維作」様の「Xorshift のＳＳＥ２を使った高速化(整数版) (
-　http://bit.ly/13sbL4p )」を、EnumRadioConverterクラスは、「omoisan」様の「WPF 
-　- トリガー、RadioButtonバインド( http://bit.ly/13sbT3V )」の記事を、
+ （ http://sourcechord.hatenablog.com/entry/20130303/1362315081 )」を、Xor514ク
+　ラスは、「和田維作」様の「Xorshift のＳＳＥ２を使った高速化(整数版) (
+　http://bit.ly/13sbL4p )」を、EnumBooleanConverterクラスは、「ba」様の「Enum と
+  RadioButton をバインドする(
+  http://frog.raindrop.jp/knowledge/archives/002200.html )」の記事を、
 　NumericBehaviorsクラスは、「なわ」様の「数値入力用テキストボックス　添付ビヘイ
 　ビア編( http://bit.ly/13sbVst )の記事を、最後に、TaskTrayIconクラスは、「ほげ
 　たん」様の「タスクトレイにアイコンを表示する( http://bit.ly/13sc92P )」の記事
@@ -53,7 +56,7 @@
 　このソフトはフリーソフトウェアです（修正BSDライセンス）。
 --------------------------------------------------------------------------------
 　Aomin SSD Breaker 2
-　Copyright (C) 2013 @dc1394
+　Copyright (C) 2013-2014 @dc1394
 
 　1.ソースコード形式であれバイナリ形式であれ、変更の有無に関わらず、以下の条件を
 　満たす限りにおいて、再配布および利用を許可します。

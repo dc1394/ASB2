@@ -24,7 +24,7 @@
             <StackPanel VerticalAlignment="Center"
                         Margin="0,25,0,0">
                 <TextBlock Margin="0,5,0,5"
-                           Text="ASB2 ver.0.1α" />
+                           Text="ASB2 ver.0.1" />
                 <TextBlock Text="Copyright ©  2013-2014 @dc1394 All Rights Reserved." />
                 <TextBlock FontSize="13"
                            HorizontalAlignment="Center"
