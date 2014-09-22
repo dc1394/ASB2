@@ -5,16 +5,15 @@
 //-----------------------------------------------------------------------
 namespace ASB2
 {
-    using MyLogic;
     using System;
     using System.ComponentModel;
+    using MyLogic;
 
     /// <summary>
     /// SettingWindowに対応するView
     /// </summary>
     internal sealed class SettingViewModel : MyViewModelBase.BindableBase
     {
-
         #region フィールド
 
         /// <summary>
@@ -60,11 +59,6 @@ namespace ASB2
 
         #region プロパティ
 
-        public String DefaultBufSize
-        {
-            get { return DefaultData.DefaultDataDefinition.DEFAULTBUFSIZETEXT; }
-        }
-
         /// <summary>
         /// バッファサイズの文字列
         /// </summary>
@@ -81,11 +75,6 @@ namespace ASB2
             }
         }
 
-        public String DefaultTimerInterval
-        {
-            get { return DefaultData.DefaultDataDefinition.DEFAULTTIMERINTERVALTEXT; }
-        }
-
         /// <summary>
         /// タイマの更新間隔
         /// </summary>
@@ -93,7 +82,7 @@ namespace ASB2
         {
             get
             {
-                return timerIntervalText;
+                return this.timerIntervalText;
             }
 
             set
@@ -119,6 +108,5 @@ namespace ASB2
         }
 
         #endregion プロパティ
-
     }
 }

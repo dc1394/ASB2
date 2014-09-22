@@ -73,8 +73,8 @@ namespace ASB2
         /// <param name="ex">受け取る例外</param>
         private void ReportUnhandledException(Exception ex)
         {
-            /// 例外の内容からエラー文字列を生成
-            /// 生成したエラー文字列の内容をメッセージボックスで表示
+            // 例外の内容からエラー文字列を生成
+            // 生成したエラー文字列の内容をメッセージボックスで表示
             MyError.CallErrorMessageBox(this.CreateErrorMessage(ex));        
 
             // 例外の内容をログに書き込む
@@ -96,7 +96,7 @@ namespace ASB2
         {
             // 例外が処理されたことを指示
             e.Handled = true;
-            ReportUnhandledException(e.Exception);
+            this.ReportUnhandledException(e.Exception);
         }
 
         /// <summary>
@@ -129,7 +129,8 @@ namespace ASB2
 
             // WPF UIスレッドでの未処理例外
             this.DispatcherUnhandledException +=
-                new DispatcherUnhandledExceptionEventHandler(Application_DispatcherUnhandledException);
+                new DispatcherUnhandledExceptionEventHandler(
+                    this.Application_DispatcherUnhandledException);
         }
 
         /// <summary>
