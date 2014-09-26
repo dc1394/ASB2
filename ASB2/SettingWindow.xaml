@@ -26,7 +26,6 @@
                   Grid.Row="0"
                   Header="最小化時動作の設定" 
                   Height="60"
-                  HorizontalAlignment="Left" 
                   Margin="10,10,0,0"
                   VerticalAlignment="Top"
                   Width="380">
@@ -34,24 +33,21 @@
                 <RadioButton Content="タスクバー"
                              FontSize="14"
                              GroupName="ButtonVisibility"
-                             HorizontalAlignment="Left"
                              IsChecked="{Binding MyType, ConverterParameter=TASKBAR, Converter={StaticResource EnumBooleanConverter}}"
-                             Margin="20,10,0,0"
-                             VerticalAlignment="Top" />
+                             Margin="30,0,0,0"
+                             VerticalAlignment="Center" />
                 <RadioButton Content="タスクトレイ"
                              FontSize="14"
                              GroupName="ButtonVisibility"
-                             HorizontalAlignment="Left"
                              IsChecked="{Binding MyType, ConverterParameter=TASKTRAY, Converter={StaticResource EnumBooleanConverter}}"
-                             Margin="50,10,0,0"
-                             VerticalAlignment="Top" />
+                             Margin="50,0,0,0"
+                             VerticalAlignment="Center" />
                 <RadioButton Content="両方"
                              FontSize="14"
                              GroupName="ButtonVisibility"
-                             HorizontalAlignment="Left"
                              IsChecked="{Binding MyType, ConverterParameter=BOTH, Converter={StaticResource EnumBooleanConverter}}"
-                             Margin="80,10,0,0"
-                             VerticalAlignment="Top" />
+                             Margin="50,0,0,0"
+                             VerticalAlignment="Center" />
             </StackPanel>
         </GroupBox>
         <StackPanel Grid.Row="1"
@@ -61,7 +57,6 @@
                        FontSize="14"
                        VerticalAlignment="Center" />
             <TextBox Height="23"
-                     local:NumericBehaviors.Default="{Binding Path=DefaultBufferSize, Mode=OneTime}"
                      local:NumericBehaviors.IsNumeric="True"
                      local:NumericBehaviors.Minimum="1"
                      local:NumericBehaviors.Maximum="500000"
@@ -81,8 +76,6 @@
                        Text="タイマの更新間隔："
                        VerticalAlignment="Center" />
             <TextBox Height="23"
-                     HorizontalAlignment="Left"
-                     local:NumericBehaviors.Default="{Binding Path=DefaultTimerInterval, Mode=OneTime}"
                      local:NumericBehaviors.IsNumeric="True"
                      local:NumericBehaviors.Minimum="1"
                      local:NumericBehaviors.Maximum="10000"
@@ -92,7 +85,6 @@
                      Width="62"
                      x:Name="TimerIntervalTextBox"/>
             <TextBlock FontSize="14"
-                       HorizontalAlignment="Left"
                        Margin="5,0,10,0"
                        Text="ミリ秒"
                        VerticalAlignment="Center" />
@@ -107,7 +99,6 @@
                     Content="OK"
                     FontSize="14"
                     Height="23"
-                    HorizontalAlignment="Left"
                     Margin="10,0,25,0"
                     VerticalAlignment="Center"
                     Width="110" />
@@ -115,7 +106,6 @@
                     Content="キャンセル"
                     FontSize="15"
                     Height="23"
-                    HorizontalAlignment="Left"
                     Margin="0,0,25,0"
                     VerticalAlignment="Center"
                     Width="110" />

@@ -89,7 +89,6 @@
                          add:NumericBehaviors.Maximum="999"
                          add:NumericBehaviors.Default="{Binding Path=TempFileSizeText, Mode=OneTime}"
                          Height="23"
-                         HorizontalAlignment="Center"
                          MaxLength="3"
                          Text="{Binding Path=TempFileSizeText, Mode=TwoWay}"
                          VerticalAlignment="Center"
@@ -114,7 +113,6 @@
                         Content="開始"
                         FontSize="14"
                         Height="23"
-                        HorizontalAlignment="Left"
                         Margin="15,0,0,0"
                         VerticalAlignment="Center"
                         Width="85"
@@ -125,7 +123,6 @@
                              Width="240"
                              x:Name="ProgressBar" />
                 <TextBox Height="23"
-                         HorizontalAlignment="Left"
                          Margin="20,0,0,0"
                          VerticalAlignment="Center"
                          Width="55"

@@ -652,16 +652,7 @@ namespace ASB2
         {
             SaveDataManage.SaveDataManage.XMLFILENAME = MainWindow.DefaultDirrectory + SaveDataManage.SaveDataManage.XMLFILENAME;
 
-            try
-            {
-                this.sdm.dataRead();
-            }
-            catch (InvalidOperationException)
-            {
-                MyError.CallErrorMessageBox(@"データを保存したxmlファイルが壊れています。
-xmlファイルを削除してデフォルトデータを読み込みます");
-                File.Delete(SaveDataManage.SaveDataManage.XMLFILENAME);
-            }
+            this.sdm.dataRead();
 
             this.DataContext = this.mwvm = new MainWindowViewModel(this.sdm.SaveData);
 
