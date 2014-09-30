@@ -161,6 +161,9 @@ module SaveDataManage =
                                                          sd <- (new BinaryFormatter()).Deserialize(fs) :?> SaveData)
             with
                 | :? FileNotFoundException -> ()
+                | :? InvalidOperationException -> MyError.CallErrorMessageBox(
+                                                    String.Format("データを保存したxmlファイルが壊れています。{0}xmlファイルを削除してデフォルトデータを読み込みます"))
+                                                  File.Delete(SaveDataManage.XMLFILENAME);
                 | _ -> reraise ()
 
         /// <summary>
