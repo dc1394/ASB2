@@ -640,6 +640,8 @@ namespace ASB2
             if (this.tti != null)
             {
                 this.tti.Dispose();
+
+                this.tti = null;
             }
         }
 
