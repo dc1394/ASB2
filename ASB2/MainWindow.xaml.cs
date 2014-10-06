@@ -436,6 +436,21 @@ namespace ASB2
         }
 
         /// <summary>
+        /// 「ProgressBar」と「ProgressPercentTextBox」を更新する
+        /// </summary>
+        /// <param name="wrotebyte">トータルで書き込まれたバイト</param>
+        private void UpdateProgress(Double wrotebyte)
+        {
+            if (this.mwvm.IsVerify)
+            {
+                wrotebyte *= 0.5;
+            }
+
+            this.ProgressBar.Value = wrotebyte;
+            this.ProgressPercentTextBox.Text = (wrotebyte / this.ProgressBar.Maximum).ToString("0.0%");
+        }
+
+        /// <summary>
         /// 書き込み・読み込みに関わる部分以外のウィンドウの要素を更新する
         /// </summary>
         private void UpdateWindow()
@@ -453,9 +468,8 @@ namespace ASB2
         {
             this.UpdateWindow();
 
-            this.ProgressBar.Value = (this.ProgressBar.Maximum * 0.5) + (readbyte * 0.5);
+            this.UpdateProgress(this.ProgressBar.Maximum + readbyte);
 
-            this.ProgressPercentTextBox.Text = (((readbyte / this.ProgressBar.Maximum) * 0.5) + 0.5).ToString("0.0%");
             this.SpeedTextBlock.Text = String.Format(MainWindow.ReadSpeedText + "{0:0.00} MiB/s", readbytespeed / MainWindow.Mega);
             this.AverageSpeedTextBlock.Text = String.Format(
                 MainWindow.AverageReadSpeedText + "{0:0.00} MiB/s",
@@ -471,16 +485,7 @@ namespace ASB2
         {
             this.UpdateWindow();
 
-            if (this.mwvm.IsVerify)
-            {
-                this.ProgressBar.Value = wrotebyte * 0.5;
-                this.ProgressPercentTextBox.Text = (wrotebyte / this.ProgressBar.Maximum * 0.5).ToString("0.0%");
-            }
-            else
-            {
-                this.ProgressBar.Value = wrotebyte;
-                this.ProgressPercentTextBox.Text = (wrotebyte / this.ProgressBar.Maximum).ToString("0.0%");
-            }
+            this.UpdateProgress(wrotebyte);
             
             this.SpeedTextBlock.Text = String.Format(MainWindow.WriteSpeedText + "{0:0.00} MiB/s", writebytespeed / Mega);
             this.AverageSpeedTextBlock.Text = String.Format(
@@ -631,7 +636,9 @@ namespace ASB2
             if (this.fio != null)
             {
                 this.fio.Cts.Cancel();
+
                 this.fio.Dispose();
+                
                 this.fio = null;
             }
 

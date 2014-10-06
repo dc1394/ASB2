@@ -8,6 +8,7 @@
 #include <cassert>
 #include <ctime>
 #include <stdexcept>
+#include <smmintrin.h>
 
 #ifdef __cilk
 	#include <cilk/cilk.h>
