@@ -53,7 +53,7 @@
             </MenuItem>
             
             <MenuItem Header="設定">
-                <MenuItem Command="ApplicationCommands.New"
+                <MenuItem Command="Properties"
                           Header="設定(_T)"
                           InputGestureText="Ctrl+T" />
             </MenuItem>
