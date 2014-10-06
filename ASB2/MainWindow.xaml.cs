@@ -438,16 +438,16 @@ namespace ASB2
         /// <summary>
         /// 「ProgressBar」と「ProgressPercentTextBox」を更新する
         /// </summary>
-        /// <param name="wrotebyte">トータルで書き込まれたバイト</param>
-        private void UpdateProgress(Double wrotebyte)
+        /// <param name="wrotebyte">処理されたバイト</param>
+        private void UpdateProgress(Double bytes)
         {
             if (this.mwvm.IsVerify)
             {
-                wrotebyte *= 0.5;
+                bytes *= 0.5;
             }
 
-            this.ProgressBar.Value = wrotebyte;
-            this.ProgressPercentTextBox.Text = (wrotebyte / this.ProgressBar.Maximum).ToString("0.0%");
+            this.ProgressBar.Value = bytes;
+            this.ProgressPercentTextBox.Text = (bytes / this.ProgressBar.Maximum).ToString("0.0%");
         }
 
         /// <summary>
