@@ -87,7 +87,7 @@
                     <TextBox IsReadOnly="True"
                              Margin="20,0,0,0"
                              Style="{StaticResource MyTextBox}"
-                             Text="{Binding Mode=TwoWay, Path=TmpFileNameFullPath}"
+                             Text="{Binding Mode=TwoWay, Path=TempFileNameFullPath}"
                              Width="275" />
                     <Button Click="参照Button_Click"
                             Content="参照"

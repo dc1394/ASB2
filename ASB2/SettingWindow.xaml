@@ -1,4 +1,4 @@
-﻿<Window Height="270"
+﻿<Window Height="400"
         Icon="Images/app.ico"
         Loaded="SettingWindow_Loaded"
         Title="設定"
@@ -30,9 +30,10 @@
         <!-- 行定義 -->
         <Grid.RowDefinitions>
             <RowDefinition Height="*" />
-            <RowDefinition Height="0.6*" />
-            <RowDefinition Height="0.6*" />
-            <RowDefinition Height="0.6*" />
+            <RowDefinition Height="0.8*" />
+            <RowDefinition Height="0.8*" />
+            <RowDefinition Height="0.8*" />
+            <RowDefinition Height="0.8*" />
         </Grid.RowDefinitions>
 
         <GroupBox ForceCursor="True"
@@ -94,12 +95,17 @@
             <TextBlock Margin="5,0,10,0"
                        Style="{StaticResource MyTextBlock}"
                        Text="ミリ秒" />
-            <CheckBox Content="並列化を有効にする"
+        </StackPanel>
+        
+        <StackPanel Grid.Row="3"
+                    Style="{StaticResource MyStackPanel}">
+            <CheckBox Content="ベリファイ時に並列化を有効にする"
+                      Margin="10,0,25,0"
                       Style="{StaticResource MyBaseCheckBox}"
                       x:Name="IsParallelCheckBox"/>
         </StackPanel>
         
-        <StackPanel Grid.Row="3"
+        <StackPanel Grid.Row="4"
                     Style="{StaticResource MyStackPanel}">
             <Button Click="OK_Button_Click"
                     Content="OK"

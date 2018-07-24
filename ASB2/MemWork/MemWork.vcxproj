@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -22,31 +22,32 @@
     <ProjectGuid>{92819C50-762E-442E-921C-905FFE7216B5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MemWork</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler XE 14.0</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -93,9 +94,8 @@
     </Link>
     <PostBuildEvent>
       <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Debug\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
-copy "C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler\cilkrts20.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
-copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
-copy C:\mylib64\tbb43_20140724oss\bin\ia32\vc12\tbb_debug.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug</Command>
+copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.4.3.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
+copy C:\mylib64\tbb2018_20180411oss\bin\ia32\vc14\tbb_debug.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -114,9 +114,8 @@ copy C:\mylib64\tbb43_20140724oss\bin\ia32\vc12\tbb_debug.dll D:\DATA\PROGRAM\My
     </Link>
     <PostBuildEvent>
       <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\x64\Debug\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug
-copy C:\mylib64\tbb43_20140724oss\bin\intel64\vc12\tbb_debug.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug
-copy "C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\intel64\compiler\cilkrts20.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug
-copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug</Command>
+copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb_debug.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug
+copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.4.3.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Debug</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -143,8 +142,7 @@ copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy "C:\Program Files (x86)\Common Files\Intel\Shared Libraries\redist\ia32\compiler\cilkrts20.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.3.0.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
+      <Command>copy "C:\Program Files (x86)\Reference Assemblies\Microsoft\FSharp\.NETFramework\v4.0\4.4.3.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Release\MemWork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy C:\mylib64\tbb43_20140724oss\bin\ia32\vc12\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>

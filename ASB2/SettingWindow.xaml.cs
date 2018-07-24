@@ -6,9 +6,7 @@
 namespace ASB2
 {
     using System;
-    using System.Reflection;
     using System.Windows;
-    using System.Windows.Media.Imaging;
     using MyLogic;
     
     /// <summary>

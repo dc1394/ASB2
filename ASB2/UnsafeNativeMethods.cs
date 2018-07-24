@@ -82,13 +82,13 @@ namespace FileMemWork
             memfill128((Byte*)ma.Address64, (UInt32)ma.BufferSize);
         }
 
-        [DllImport("MemWork.dll")]
+        [DllImport("MemWork.dll", EntryPoint = "memcmp128")]
         private static unsafe extern void memcmp128(Byte* p1, Byte* p2, UInt32 size);
 
-        [DllImport("MemWork.dll")]
+        [DllImport("MemWork.dll", EntryPoint = "memcmpparallel128")]
         private static unsafe extern void memcmpparallel128(Byte* p1, Byte* p2, UInt32 size);
 
-        [DllImport("MemWork.dll")]
+        [DllImport("MemWork.dll", EntryPoint = "memfill128")]
         private static unsafe extern void memfill128(Byte* p, UInt32 size);
 
         #endregion メソッド

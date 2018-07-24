@@ -4,10 +4,8 @@ module MyError =
     open System
     open System.Collections
     open System.IO
-    open System.Reflection
     open System.Text
     open System.Windows
-    open log4net
     
     /// <summary>
     /// 例外の詳細をStringBuilderに追加する
@@ -59,11 +57,6 @@ module MyError =
             }
     
     /// <summary>
-    /// log4netインスタンス（ログ記録用）
-    /// </summary>
-    let Log = log4net.LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType)
-
-    /// <summary>
     /// 例外の詳細をStringBuilderに追加して、それをStringに変換して返す
     /// </summary>
     /// <param name="ex">例外</param>
@@ -84,7 +77,6 @@ module MyError =
     /// <typeparam name="T">例外の型</typeparam>
     /// <param name="errmsg">エラーメッセージ</param>
     let WriteAndThrow<'T> errmsg innerException =
-        Log.Error(errmsg);
         let ctor = typeof<'T>.GetConstructor([| typeof<String>; typeof<Exception>; |])
 
         raise (ctor.Invoke([| errmsg; innerException |]) :?> Exception)
@@ -93,5 +85,12 @@ module MyError =
     /// 例外をエラーとしてファイルに記録する
     /// </summary>
     /// <param name="ex">例外</param>
-    let WriteLog (ex : Exception) =
-        Log.Error(ex.ToString() + Environment.NewLine + ToFullDisplayString ex)
+    let WriteLog ex =
+        use sw = new StreamWriter(ErrorLogFilename, true, Encoding.UTF8)
+        sw.Write(String.Format("[{0}]{1}", DateTime.Now.ToString(), Environment.NewLine));
+        sw.Write(String.Format(
+                    "{0}{2}{1}{2}",
+                    ex.ToString(),
+                    ToFullDisplayString ex,
+                    Environment.NewLine))
+

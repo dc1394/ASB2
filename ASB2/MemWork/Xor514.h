@@ -65,7 +65,7 @@ Core i7 2600(turbo boost off)
 */
 
 #include <cstdint>
-#include <emmintrin.h>
+#include <intrin.h>
 
 #ifdef __GNUC__
     #define align32 __attribute__((aligned(32)))

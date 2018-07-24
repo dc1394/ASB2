@@ -38,7 +38,7 @@ namespace ASB2
         /// <summary>
         /// ドライブに書き出す一時ファイルのバイト数
         /// </summary>
-        private String tmpFileSizeText;
+        private String tempFileSizeText;
 
         #endregion フィールド
 
@@ -58,7 +58,7 @@ namespace ASB2
 
             this.tempFilenameFullPath = sd.TempFilenameFullPath;
             
-            this.tmpFileSizeText = sd.TempFileSizeText;
+            this.tempFileSizeText = sd.TempFileSizeText;
         }
 
         #endregion 構築
@@ -75,7 +75,7 @@ namespace ASB2
                 return this.isLoop;
             }
 
-            internal set
+            set
             {
                 this.SetProperty(ref this.isLoop, value);
                 this.sd.IsLoop = value;
@@ -92,7 +92,7 @@ namespace ASB2
                 return this.isVerify;
             }
 
-            internal set
+            set
             {
                 this.SetProperty(ref this.isVerify, value);
                 this.sd.IsVerify = value;
@@ -102,14 +102,14 @@ namespace ASB2
         /// <summary>
         /// ドライブに書き出す一時ファイル名のフルパス
         /// </summary>
-        public String TmpFileNameFullPath
+        public String TempFileNameFullPath
         {
             get
             {
                 return this.tempFilenameFullPath;
             }
 
-            internal set
+            set
             {
                 this.SetProperty(ref this.tempFilenameFullPath, value);
                 this.sd.TempFilenameFullPath = value;
@@ -123,12 +123,12 @@ namespace ASB2
         {
             get
             {
-                return this.tmpFileSizeText;
+                return this.tempFileSizeText;
             }
 
-            internal set
+            set
             {
-                this.SetProperty(ref this.tmpFileSizeText, value);
+                this.SetProperty(ref this.tempFileSizeText, value);
                 this.sd.TempFileSizeText = value;
             }
         }
