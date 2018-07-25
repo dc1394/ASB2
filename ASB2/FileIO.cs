@@ -76,7 +76,7 @@ namespace ASB2
         /// <summary>
         /// メモリー確保用のオブジェクト
         /// </summary>
-        private MemoryAllocate[] ma;
+        private MemoryAllocate ma;
 
         /// <summary>
         /// 読み込み専用のメモリー確保用のオブジェクト
@@ -117,6 +117,7 @@ namespace ASB2
             }
 
             this.bufBetweenDisk = this.BufferToDisk;
+            this.ma = new MemoryAllocate(this.bufferSize);
 
             if (this.isVerify)
             {
@@ -294,11 +295,8 @@ namespace ASB2
         /// </summary>
         public void Dispose()
         {
-            this.ma.ToList().ForEach(val =>
-            {
-                val.Dispose();
-                val = null;
-            });
+            this.ma.Dispose();
+            this.ma = null;
             
             if (this.maread != null)
             {
@@ -352,10 +350,6 @@ namespace ASB2
         /// </summary>
         internal async void FileIORun()
         {
-            var residue = (Int32)(this.FileSize % (Int64)this.bufferSize);
-            var len = this.FileSize / this.bufferSize;
-            this.ma = (new MemoryAllocate[residue == 0 ? len : len + 1]).Select(val => new MemoryAllocate(this.bufferSize)).ToArray();
-
             if (this.Cts == null)
             {
                 this.Cts = new CancellationTokenSource();
@@ -414,15 +408,10 @@ namespace ASB2
                 try
                 {
                     var max = this.FileSize / this.bufferSize;
+                    this.bufferWrite(this.ma);
                     for (var i = 0; i < max; i++)
                     {
-                        if (!this.MyWrite(
-                            () =>
-                            {
-                                this.bufferWrite(this.ma[i]);
-                            },
-                            bw,
-                            this.bufferSize))
+                        if (!this.MyWrite(bw, this.bufferSize))
                         {
                             return;
                         }
@@ -433,13 +422,7 @@ namespace ASB2
                     var residue = (Int32)(this.FileSize % (Int64)this.bufferSize);
                     if (residue != 0)
                     {
-                        if (!this.MyWrite(
-                            () =>
-                            {
-                                this.bufferWrite(this.ma[max]);
-                            },
-                            bw,
-                            residue))
+                        if (!this.MyWrite(bw, residue))
                         {
                             return;
                         }
@@ -546,18 +529,7 @@ namespace ASB2
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
 
-                foreach (var item in this.ma)
-                {
-                    this.bufferCompare(item, this.maread);
-                }
-
-                //for (var i = 0; i < this.ma.Buffer.Length; i++)
-                //{
-                //    if (this.ma.Buffer[i] != this.maread.Buffer[i])
-                //    {
-                //        int a = 1;
-                //    }
-                //}
+                this.bufferCompare(this.ma, this.maread);
             }
             catch (OperationCanceledException)
             {
@@ -596,11 +568,10 @@ namespace ASB2
         /// <summary>
         /// 一時ファイルに書き込み作業を行う
         /// </summary>
-        /// <param name="act">BinaryWriterによる書き込み作業用のデリゲート</param>
         /// <param name="bw">BinaryWriterオブジェクト</param>
         /// <param name="count">BinaryWriterで書き込むバイト数</param>
         /// <returns>書き込みが正常に終了したならtrue、それ以外の場合はfalse</returns>
-        private Boolean MyWrite(Action act, BinaryWriter bw, Int32 count)
+        private Boolean MyWrite(BinaryWriter bw, Int32 count)
         {
             try
             {
@@ -609,15 +580,7 @@ namespace ASB2
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
 
-                act();
-
-                // キャンセルされた場合例外をスロー           
-                ct.ThrowIfCancellationRequested();
-
-                foreach (var item in this.ma)
-                {
-                    bw.Write(item.Buffer, item.Offset, count);
-                }
+                bw.Write(this.ma.Buffer, this.ma.Offset, count);
 
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
