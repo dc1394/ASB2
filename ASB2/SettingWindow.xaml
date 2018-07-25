@@ -18,7 +18,7 @@
                     
                     <Style BasedOn="{StaticResource MyRadioButton}"
                            TargetType="RadioButton"
-                           x:Key="ASB2SettingRafdioButton">
+                           x:Key="ASB2SettingRadioButton">
                         <Setter Property="GroupName" Value="ButtonVisibility" />
                     </Style>
                 </ResourceDictionary>
@@ -47,18 +47,18 @@
                                                  ConverterParameter=TASKBAR, 
                                                  Path=MyType}"
                              Margin="20,0,55,0"
-                             Style="{StaticResource ASB2SettingRafdioButton}"/>
+                             Style="{StaticResource ASB2SettingRadioButton}"/>
                 <RadioButton Content="タスクトレイ"
                              IsChecked="{Binding Converter={StaticResource EnumBooleanConverter},
                                                  ConverterParameter=TASKTRAY,
                                                  Path=MyType}"
                              Margin="0,0,55,0"
-                             Style="{StaticResource ASB2SettingRafdioButton}"/>
+                             Style="{StaticResource ASB2SettingRadioButton}"/>
                 <RadioButton Content="両方"
                              IsChecked="{Binding Converter={StaticResource EnumBooleanConverter},
                                                  ConverterParameter=BOTH,
                                                  Path=MyType}"
-                             Style="{StaticResource ASB2SettingRafdioButton}"/>
+                             Style="{StaticResource ASB2SettingRadioButton}"/>
             </StackPanel>
         </GroupBox>
         

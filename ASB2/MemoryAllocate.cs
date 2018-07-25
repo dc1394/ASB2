@@ -3,7 +3,7 @@
 //     Copyright ©  2014 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace FileMemWork
+namespace ASB2
 {
     using System;
     using System.Runtime;

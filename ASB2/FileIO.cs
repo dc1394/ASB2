@@ -3,7 +3,7 @@
 //     Copyright ©  2014 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace FileMemWork
+namespace ASB2
 {
     using System;
     using System.Diagnostics;
@@ -35,22 +35,22 @@ namespace FileMemWork
         /// <summary>
         /// バッファとディスクとの間で処理を行うデリゲート
         /// </summary>
-        private Action bufBetweenDisk;
+        private readonly Action bufBetweenDisk;
 
         /// <summary>
         /// バッファのサイズ
         /// </summary>
-        private Int32 bufferSize;
+        private readonly Int32 bufferSize;
 
         /// <summary>
         /// バッファの内容を比較するデリゲート
         /// </summary>
-        private Action<MemoryAllocate, MemoryAllocate> bufferCompare;
+        private readonly Action<MemoryAllocate, MemoryAllocate> bufferCompare;
 
         /// <summary>
         /// バッファに書き込むデリゲート
         /// </summary>
-        private Action<MemoryAllocate> bufferWrite;
+        private readonly Action<MemoryAllocate> bufferWrite;
 
         /// <summary>
         /// バッファに書き込まれたかどうかを示すフラグ
@@ -66,12 +66,12 @@ namespace FileMemWork
         /// <summary>
         /// 並列化するかどうかを示すフラグ
         /// </summary>
-        private Boolean isParallel;
+        private readonly Boolean isParallel;
 
         /// <summary>
         /// ベリファイするかどうかを示すフラグ
         /// </summary>
-        private Boolean isVerify;
+        private readonly Boolean isVerify;
 
         /// <summary>
         /// メモリー確保用のオブジェクト
@@ -259,15 +259,9 @@ namespace FileMemWork
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
         internal Int32 IsNow
         {
-            get
-            {
-                return this.isNow;
-            }
+            get => this.isNow;
 
-            private set
-            {
-                Interlocked.Exchange(ref this.isNow, value);
-            }
+            private set => Interlocked.Exchange(ref this.isNow, value);
         }
 
         /// <summary>
@@ -282,15 +276,9 @@ namespace FileMemWork
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
         internal Int32 ReturnCode
         {
-            get
-            {
-                return this.returnCode;
-            }
+            get => this.returnCode;
 
-            private set
-            {
-                Interlocked.Exchange(ref this.returnCode, value);
-            }
+            private set => Interlocked.Exchange(ref this.returnCode, value);
         }
 
         /// <summary>
@@ -444,7 +432,7 @@ namespace FileMemWork
                             return;
                         }
 
-                        this.WroteBytes = (i + 1) * this.bufferSize;
+                        this.WroteBytes = (Int64)(i + 1) * (Int64)this.bufferSize;
                     }
 
                     var residue = (Int32)(this.FileSize % (Int64)this.bufferSize);
@@ -466,7 +454,7 @@ namespace FileMemWork
 
                         this.WroteBytes += (Int64)residue;
                     }
-
+                    
                     if (!this.isVerify)
                     {
                         FileIO.loopNum++;
@@ -507,7 +495,7 @@ namespace FileMemWork
                                     return;
                                 }
 
-                                this.ReadBytes = (i + 1) * this.bufferSize;
+                                this.ReadBytes = (Int64)(i + 1) * (Int64)this.bufferSize;
                             }
 
                             var residue = (Int32)(this.FileSize % (Int64)this.bufferSize);

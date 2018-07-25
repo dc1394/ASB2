@@ -103,10 +103,7 @@ namespace ASB2
 
             this.BufferSizeTextBox.Text = this.sd.BufferSizeText;
 
-            if (this.IsParallelCheckBox.IsEnabled = this.sd.IsVerify)
-            {
-                this.IsParallelCheckBox.IsChecked = this.sd.IsParallel;
-            }
+            this.IsParallelCheckBox.IsChecked = this.sd.IsParallel;
 
             this.sd.Minimize = this.svm.MyType;
 

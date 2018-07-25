@@ -13,21 +13,27 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ヘッダー ファイル\myrandom">
+      <UniqueIdentifier>{ebf136c0-56b1-41ff-ba00-68bb956d3f42}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MemWork.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="Xor514.h">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
+    <ClCompile Include="memwork.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="MemWork.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="Xor514.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
+    <ClInclude Include="memwork.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="myrandom\myrand.h">
+      <Filter>ヘッダー ファイル\myrandom</Filter>
+    </ClInclude>
+    <ClInclude Include="myrandom\myrandavx512.h">
+      <Filter>ヘッダー ファイル\myrandom</Filter>
+    </ClInclude>
+    <ClInclude Include="myrandom\myrandsfmt.h">
+      <Filter>ヘッダー ファイル\myrandom</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

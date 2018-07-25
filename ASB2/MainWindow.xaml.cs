@@ -12,7 +12,6 @@ namespace ASB2
     using System.Windows.Forms;
     using System.Windows.Input;
     using System.Windows.Threading;
-    using FileMemWork;
     using MyLogic;
 
     /// <summary>
@@ -260,7 +259,7 @@ namespace ASB2
             }
             else
             {
-                MyError.CallErrorMessageBox(String.Format("ドライブ{0}は利用できません。", this.mwvm.TempFileNameFullPath[0]));
+                MyError.CallErrorMessageBox($"ドライブ{this.mwvm.TempFileNameFullPath[0]}は利用できません。");
                 return false;
             }
         }
@@ -304,7 +303,7 @@ namespace ASB2
         /// <summary>
         /// ウィンドウのUI要素を、「書き込みモード」から「ベリファイモード」に変更する
         /// </summary>
-        private void From書込Toベリファイ()
+        private void From書込toベリファイ()
         {
             // タイトル変更
             this.Title = "ASB2 - 一時ファイルをベリファイ中";
@@ -354,10 +353,9 @@ namespace ASB2
             // ストップウォッチスタート
             this.sw.Start();
 
-            Int32 bufsize;
-            Int32.TryParse(this.sdm.SaveData.BufferSizeText, out bufsize);
+            Int32.TryParse(this.sdm.SaveData.BufferSizeText, out Int32 bufsize);
 
-            this.fio = new FileMemWork.FileIO(
+            this.fio = new FileIO(
                 bufsize * Kilo,
                 this.sdm.SaveData.IsParallel,
                 this.mwvm.IsVerify)
@@ -370,8 +368,7 @@ namespace ASB2
             // 処理開始
             this.fio.FileIORun();
 
-            Double interval;
-            Double.TryParse(this.sdm.SaveData.TimerIntervalText, out interval);
+            Double.TryParse(this.sdm.SaveData.TimerIntervalText, out Double interval);
 
             // タイマースタート
             this.dispatcherTimer.Interval = TimeSpan.FromMilliseconds(interval);
@@ -386,8 +383,7 @@ namespace ASB2
         /// </summary>
         private void Run()
         {
-            Int64 tmpFileSize;
-            Int64.TryParse(this.mwvm.TempFileSizeText, out tmpFileSize);
+            Int64.TryParse(this.mwvm.TempFileSizeText, out Int64 tmpFileSize);
             tmpFileSize *= MainWindow.Giga;
 
             if (!this.DriveAndSpaceCheck(tmpFileSize))
@@ -438,7 +434,7 @@ namespace ASB2
         /// <summary>
         /// 「ProgressBar」と「ProgressPercentTextBox」を更新する
         /// </summary>
-        /// <param name="wrotebyte">処理されたバイト</param>
+        /// <param name="bytes">処理されたバイト</param>
         private void UpdateProgress(Double bytes)
         {
             if (this.mwvm.IsVerify)
@@ -568,7 +564,7 @@ namespace ASB2
                     switch (this.書込ベリファイ状態)
                     {
                         case MainWindow.書込ベリファイ列挙型.書込:
-                            this.From書込Toベリファイ();
+                            this.From書込toベリファイ();
                             break;
 
                         case MainWindow.書込ベリファイ列挙型.ベリファイ:
