@@ -3,6 +3,11 @@
 //     Copyright ©  2014 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
+
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Windows.Forms.VisualStyles;
+
 namespace ASB2
 {
     using System;
@@ -53,11 +58,6 @@ namespace ASB2
         private readonly Action<MemoryAllocate> bufferWrite;
 
         /// <summary>
-        /// バッファに書き込まれたかどうかを示すフラグ
-        /// </summary>
-        private Boolean bufferWroteFlag = false;
-
-        /// <summary>
         /// IOが終わったかどうかを示すフラグ
         /// </summary>
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
@@ -76,7 +76,7 @@ namespace ASB2
         /// <summary>
         /// メモリー確保用のオブジェクト
         /// </summary>
-        private MemoryAllocate ma;
+        private MemoryAllocate[] ma;
 
         /// <summary>
         /// 読み込み専用のメモリー確保用のオブジェクト
@@ -153,8 +153,6 @@ namespace ASB2
                     {
                     }
                 };
-
-            this.ma = new MemoryAllocate(this.bufferSize);
         }
 
         #endregion 構築
@@ -296,10 +294,12 @@ namespace ASB2
         /// </summary>
         public void Dispose()
         {
-            this.ma.Dispose();
+            this.ma.ToList().ForEach(val =>
+            {
+                val.Dispose();
+                val = null;
+            });
             
-            this.ma = null;
-
             if (this.maread != null)
             {
                 this.maread.Dispose();
@@ -352,6 +352,10 @@ namespace ASB2
         /// </summary>
         internal async void FileIORun()
         {
+            var residue = (Int32)(this.FileSize % (Int64)this.bufferSize);
+            var len = this.FileSize / this.bufferSize;
+            this.ma = (new MemoryAllocate[residue == 0 ? len : len + 1]).Select(val => new MemoryAllocate(this.bufferSize)).ToArray();
+
             if (this.Cts == null)
             {
                 this.Cts = new CancellationTokenSource();
@@ -403,11 +407,6 @@ namespace ASB2
         /// </summary>
         private void BufferToDisk()
         {
-            if (this.isVerify)
-            {
-                this.bufferWroteFlag = false;
-            }
-
             using (var bw = new BinaryWriter(new FileStream(this.Filename, FileMode.Create, FileAccess.Write, FileShare.None)))
             {
                 var ct = this.Cts.Token;
@@ -420,11 +419,7 @@ namespace ASB2
                         if (!this.MyWrite(
                             () =>
                             {
-                                if (!(this.isVerify && this.bufferWroteFlag))
-                                {
-                                    this.bufferWrite(this.ma);
-                                    this.bufferWroteFlag = true;
-                                }
+                                this.bufferWrite(this.ma[i]);
                             },
                             bw,
                             this.bufferSize))
@@ -441,10 +436,7 @@ namespace ASB2
                         if (!this.MyWrite(
                             () =>
                             {
-                                if (!this.isVerify)
-                                {
-                                    this.bufferWrite(this.ma);
-                                }
+                                this.bufferWrite(this.ma[max]);
                             },
                             bw,
                             residue))
@@ -554,7 +546,18 @@ namespace ASB2
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
 
-                this.bufferCompare(this.ma, this.maread);
+                foreach (var item in this.ma)
+                {
+                    this.bufferCompare(item, this.maread);
+                }
+
+                //for (var i = 0; i < this.ma.Buffer.Length; i++)
+                //{
+                //    if (this.ma.Buffer[i] != this.maread.Buffer[i])
+                //    {
+                //        int a = 1;
+                //    }
+                //}
             }
             catch (OperationCanceledException)
             {
@@ -611,7 +614,10 @@ namespace ASB2
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
 
-                bw.Write(this.ma.Buffer, this.ma.Offset, count);
+                foreach (var item in this.ma)
+                {
+                    bw.Write(item.Buffer, item.Offset, count);
+                }
 
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
