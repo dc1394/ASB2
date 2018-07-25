@@ -82,59 +82,65 @@ AvailSIMDtype isAvailableSIMDtype();
 
 //! A global function.
 /*!
-    AVX2命令を使ってメモリを比較する
+    AVX2命令を使ってメモリの内容を比較する
     \param cmploopnum メモリを比較する際のループ回数
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
+    \return メモリの内容が一致したかどうか
 */
-void memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
-    メモリを比較する
+    メモリの内容を比較する
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
     \param size 比較するメモリのサイズ
+    \return メモリの内容が一致したかどうか
 */
-DLLEXPORT void __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
+DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
 
 //! A global function.
 /*!
-    SSE命令を使ってメモリを比較する
+    SSE命令を使ってメモリの内容を比較する
     \param availSSE41 SSE4.1が使用可能かどうか
-    \param cmploopnum メモリを比較する際のループ回数
+    \param cmploopnum メモリの内容を比較する際のループ回数
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
+    \return メモリの内容が一致したかどうか
 */
-void memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
-    メモリを比較する（並列化あり）
+    メモリの内容を比較する（並列化あり）
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
     \param size 比較するメモリのサイズ
+    \return メモリの内容が一致したかどうか
 */
-DLLEXPORT void __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
+DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
 
 //! A global function.
 /*!
-    メモリを比較する（AVX2を使う）
-    \param index メモリを比較するときに足すインデックス
+    メモリの内容を比較する（AVX2を使う）
+    \param index メモリの内容を比較するときに足すインデックス
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
+    \return メモリの内容が一致したかどうか
 */
-void memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
-    メモリを比較する（SSE4.1を使う）
+    メモリの内容を比較する（SSE4.1を使う）
     \param availableSSE41 SSE4.1が使用可能かどうか
-    \param index メモリを比較するときに足すインデックス
+    \param index メモリの内容を比較するときに足すインデックス
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
+    \return メモリの内容が一致したかどうか
 */
-void memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!

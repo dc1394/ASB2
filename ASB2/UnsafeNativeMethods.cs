@@ -21,11 +21,12 @@ namespace ASB2
         /// </summary>
         /// <param name="ma1">バッファのラッパーオブジェクト1</param>
         /// <param name="ma2">バッファのラッパーオブジェクト2</param>
-        internal static void MemoryCmp32(MemoryAllocate ma1, MemoryAllocate ma2)
+        /// <returns>比較した二つのバッファの内容が同じだったかどうか</returns>
+        internal static Boolean MemoryCompare32(MemoryAllocate ma1, MemoryAllocate ma2)
         {
             Debug.Assert(ma1.BufferSize == ma2.BufferSize, "バッファ1とバッファ2のサイズが等しくない！");
 
-            MemoryCmpSimd((IntPtr)ma1.Address32, (IntPtr)ma2.Address32, (UInt32)ma1.BufferSize);
+            return MemoryCmpSimd((IntPtr)ma1.Address32, (IntPtr)ma2.Address32, (UInt32)ma1.BufferSize);
         }
 
         /// <summary>
@@ -33,11 +34,12 @@ namespace ASB2
         /// </summary>
         /// <param name="ma1">バッファのラッパーオブジェクト1</param>
         /// <param name="ma2">バッファのラッパーオブジェクト2</param>
-        internal static void MemoryCmp32Parallel(MemoryAllocate ma1, MemoryAllocate ma2)
+        /// <returns>比較した二つのバッファの内容が同じだったかどうか</returns>
+        internal static Boolean MemoryCompare32Parallel(MemoryAllocate ma1, MemoryAllocate ma2)
         {
             Debug.Assert(ma1.BufferSize == ma2.BufferSize, "バッファ1とバッファ2のサイズが等しくない！");
 
-            MemoryCmpParallelSimd((IntPtr)ma1.Address32, (IntPtr)ma2.Address32, (UInt32)ma1.BufferSize);
+            return MemoryCmpParallelSimd((IntPtr)ma1.Address32, (IntPtr)ma2.Address32, (UInt32)ma1.BufferSize);
         }
 
         /// <summary>
@@ -45,11 +47,12 @@ namespace ASB2
         /// </summary>
         /// <param name="ma1">バッファのラッパーオブジェクト1</param>
         /// <param name="ma2">バッファのラッパーオブジェクト2</param>
-        internal static void MemoryCmp64(MemoryAllocate ma1, MemoryAllocate ma2)
+        /// <returns>比較した二つのバッファの内容が同じだったかどうか</returns>
+        internal static Boolean MemoryCompare64(MemoryAllocate ma1, MemoryAllocate ma2)
         {
             Debug.Assert(ma1.BufferSize == ma2.BufferSize, "バッファ1とバッファ2のサイズが等しくない！");
 
-            MemoryCmpSimd((IntPtr)ma1.Address64, (IntPtr)ma2.Address64, (UInt32)ma1.BufferSize);
+            return MemoryCmpSimd((IntPtr)ma1.Address64, (IntPtr)ma2.Address64, (UInt32)ma1.BufferSize);
         }
 
         /// <summary>
@@ -57,11 +60,12 @@ namespace ASB2
         /// </summary>
         /// <param name="ma1">バッファのラッパーオブジェクト1</param>
         /// <param name="ma2">バッファのラッパーオブジェクト2</param>
-        internal static void MemoryCmp64Parallel(MemoryAllocate ma1, MemoryAllocate ma2)
+        /// <returns>比較した二つのバッファの内容が同じだったかどうか</returns>
+        internal static Boolean MemoryCompare64Parallel(MemoryAllocate ma1, MemoryAllocate ma2)
         {
             Debug.Assert(ma1.BufferSize == ma2.BufferSize, "バッファ1とバッファ2のサイズが等しくない！");
 
-            MemoryCmpParallelSimd((IntPtr)ma1.Address64, (IntPtr)ma2.Address64, (UInt32)ma1.BufferSize);
+            return MemoryCmpParallelSimd((IntPtr)ma1.Address64, (IntPtr)ma2.Address64, (UInt32)ma1.BufferSize);
         }
 
         /// <summary>
@@ -83,10 +87,10 @@ namespace ASB2
         }
 
         [DllImport("memwork", EntryPoint = "memcmpsimd")]
-        private static extern void MemoryCmpSimd(IntPtr p1, IntPtr p2, UInt32 size);
+        private static extern Boolean MemoryCmpSimd(IntPtr p1, IntPtr p2, UInt32 size);
 
         [DllImport("memwork", EntryPoint = "memcmpparallelsimd")]
-        private static extern void MemoryCmpParallelSimd(IntPtr p1, IntPtr p2, UInt32 size);
+        private static extern Boolean MemoryCmpParallelSimd(IntPtr p1, IntPtr p2, UInt32 size);
 
         [DllImport("memwork", EntryPoint = "memfillsimd")]
         private static extern void MemoryFillSimd(IntPtr p, UInt32 size);

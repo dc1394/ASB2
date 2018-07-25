@@ -8,16 +8,15 @@
 #include "myrandom/myrand.h"
 //#include "myrandom/myrandavx512.h"
 //#include "myrandom/myrandsfmt.h"
-#include <bitset>
+#include <bitset>                   // for std::bitset
 #include <cassert>                  // for assert
-#include <stdexcept>                // for std::runtime_error
-#include <tuple>                    // for std::tuple
+#include <functional>               // for std::plus
+#include <tuple>                    // for std::tie
 #include <vector>                   // for std::vector
 #include <intrin.h>
 
-#include <tbb/parallel_for.h>       // for tbb::parallel_for
-
-#include <fstream>
+#include <tbb/parallel_for.h>       // for tbb::parallel_reduce
+#include <tbb/parallel_reduce.h>    // for tbb:parallel_reduce
 
 AvailSIMDtype check(std::uint8_t const * p, std::uint32_t size)
 {
@@ -109,15 +108,19 @@ AvailSIMDtype isAvailableSIMDtype()
     }
 }
 
-void memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
 {
     // 実際に1回のループで256バイトずつ比較
     for (std::uint32_t i = 0; i < cmploopnum; i++) {
-        memcmpuseAVX2(i, p1, p2);
+        if (!memcmpuseAVX2(i, p1, p2)) {
+            return false;
+        }
     }
+
+    return true;
 }
 
-DLLEXPORT void __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size)
+DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size)
 {
     AvailSIMDtype availsimdtype;
     std::uint32_t cmploopnum;
@@ -126,62 +129,87 @@ DLLEXPORT void __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::u
 
     switch (availsimdtype) {
     case AvailSIMDtype::NOAVAIL:
-        memcmpSSE(false, cmploopnum, p1, p2);
+        return memcmpSSE(false, cmploopnum, p1, p2);
         break;
 
     case AvailSIMDtype::AVAILSSE41:
-        memcmpSSE(true, cmploopnum, p1, p2);
+        return memcmpSSE(true, cmploopnum, p1, p2);
         break;
 
     case AvailSIMDtype::AVAILAVX2:
-        memcmpAVX2(cmploopnum, p1, p2);
+        return memcmpAVX2(cmploopnum, p1, p2);
         break;
     }
+
+    return false;
 }
 
-void memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
 {
     // 実際に1回のループで64バイトずつ比較
     for (auto i = 0U; i < cmploopnum; i++) {
-        memcmpuseSSE(availSSE41, i, p1, p2);
+        if (!memcmpuseSSE(availSSE41, i, p1, p2)) {
+            return false;
+        }
     }
+
+    return true;
 }
 
-DLLEXPORT void __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size)
+DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size)
 {
     AvailSIMDtype availsimdtype;
     std::uint32_t cmploopnum;
 
     std::tie(availsimdtype, cmploopnum) = check(p1, p2, size);
 
+    auto result = 0U;
+
     switch (availsimdtype) {
     case AvailSIMDtype::NOAVAIL:
-        tbb::parallel_for(
-            std::uint32_t(0),
-            cmploopnum,
-            std::uint32_t(1),
-            [=](std::uint32_t i) { memcmpuseSSE(false, i, p1, p2); });
+        result = tbb::parallel_reduce(
+            tbb::blocked_range<std::uint32_t>(0U, cmploopnum),
+            0,
+            [p1, p2](tbb::blocked_range<std::uint32_t> const & range, std::uint32_t sumlocal) {
+                for (auto && i = range.begin(); i != range.end(); ++i) {
+                    sumlocal += memcmpuseSSE(false, i, p1, p2) ? 1 : 0;
+                }
+                return sumlocal;
+            },
+            std::plus<>());
         break;
 
     case AvailSIMDtype::AVAILSSE41:
-        tbb::parallel_for(
-            std::uint32_t(0),
-            cmploopnum,
-            std::uint32_t(1),
-            [=](std::uint32_t i) { memcmpuseSSE(true, i, p1, p2); });
+        result = tbb::parallel_reduce(
+            tbb::blocked_range<std::uint32_t>(0, cmploopnum),
+            0,
+            [p1, p2](tbb::blocked_range<std::uint32_t> const & range, std::uint32_t sumlocal) {
+                for (auto && i = range.begin(); i != range.end(); ++i) {
+                    sumlocal += memcmpuseSSE(true, i, p1, p2) ? 1 : 0;
+                }
+                return sumlocal;
+            },
+            std::plus<>());
         break;
 
     case AvailSIMDtype::AVAILAVX2:
-        tbb::parallel_for(
-            std::uint32_t(0),
-            cmploopnum,
-            std::uint32_t(1),
-            [=](std::uint32_t i) { memcmpuseAVX2(i, p1, p2); });
+        result = tbb::parallel_reduce(
+            tbb::blocked_range<std::uint32_t>(0, cmploopnum),
+            0,
+            [p1, p2](tbb::blocked_range<std::uint32_t> const & range, std::uint32_t sumlocal) {
+                for (auto && i = range.begin(); i != range.end(); ++i) {
+                    sumlocal += memcmpuseSSE(false, i, p1, p2) ? 1 : 0;
+                }
+                return sumlocal;
+            },
+            std::plus<>());
         break;
     }
+
+    return result == cmploopnum;
 }
 
-void memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 {
     auto const s1 = reinterpret_cast<char const *>(p1) + (index << 8);
     auto const s2 = reinterpret_cast<char const *>(p2) + (index << 8);
@@ -201,12 +229,14 @@ void memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
         // 256ビット（16バイト）ごとに結果をチェック
         auto const subresult = _mm256_sub_epi64(ymm[j], ymm2[j]);
         if (!_mm256_testz_si256(subresult, subresult)) {
-            throw std::runtime_error("");
+            return false;
         }
     }
+
+    return true;
 }
 
-void memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 {
     auto const s1 = reinterpret_cast<char const *>(p1) + (index << 6);
     auto const s2 = reinterpret_cast<char const *>(p2) + (index << 6);
@@ -233,10 +263,13 @@ void memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, s
 
         // 64ビット（8バイト）ごとに結果をチェック
         for (auto k = 0; k < 2; k++) {
-            if (r[j].m128i_u64[k] != FFFFFFFFFFFFFFFFh)
-                throw std::runtime_error("");
+            if (r[j].m128i_u64[k] != FFFFFFFFFFFFFFFFh) {
+                return false;
+            }
         }
     }
+
+    return true;
 }
 
 void memfillAVX2(std::uint8_t * p, std::uint32_t size)

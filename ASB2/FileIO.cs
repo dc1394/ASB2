@@ -1,19 +1,14 @@
 ﻿//-----------------------------------------------------------------------
 // <copyright file="FileIO.cs" company="dc1394's software">
-//     Copyright ©  2014 @dc1394 All Rights Reserved.
+//     Copyright © 2014-2018 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Windows.Forms.VisualStyles;
 
 namespace ASB2
 {
     using System;
     using System.Diagnostics;
     using System.IO;
-    using System.Runtime.InteropServices;
     using System.Threading;
     using System.Threading.Tasks;
     using System.Windows;
@@ -50,7 +45,7 @@ namespace ASB2
         /// <summary>
         /// バッファの内容を比較するデリゲート
         /// </summary>
-        private readonly Action<MemoryAllocate, MemoryAllocate> bufferCompare;
+        private readonly Func<MemoryAllocate, MemoryAllocate, Boolean> bufferCompare;
 
         /// <summary>
         /// バッファに書き込むデリゲート
@@ -58,20 +53,15 @@ namespace ASB2
         private readonly Action<MemoryAllocate> bufferWrite;
 
         /// <summary>
+        /// ベリファイするかどうかを示すフラグ
+        /// </summary>
+        private readonly Boolean isVerify;
+
+        /// <summary>
         /// IOが終わったかどうかを示すフラグ
         /// </summary>
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
         private Int32 isNow;
-
-        /// <summary>
-        /// 並列化するかどうかを示すフラグ
-        /// </summary>
-        private readonly Boolean isParallel;
-
-        /// <summary>
-        /// ベリファイするかどうかを示すフラグ
-        /// </summary>
-        private readonly Boolean isVerify;
 
         /// <summary>
         /// メモリー確保用のオブジェクト
@@ -103,8 +93,6 @@ namespace ASB2
         {
             this.bufferSize = bufferSize;
 
-            this.isParallel = isParallel;
-
             this.isVerify = isVerify;
 
             if (Environment.Is64BitProcess)
@@ -121,21 +109,21 @@ namespace ASB2
 
             if (this.isVerify)
             {
-                if (Environment.Is64BitProcess && this.isParallel)
+                if (Environment.Is64BitProcess && isParallel)
                 {
-                    this.bufferCompare = UnsafeNativeMethods.MemoryCmp64Parallel;
+                    this.bufferCompare = UnsafeNativeMethods.MemoryCompare64Parallel;
                 }
                 else if (Environment.Is64BitProcess)
                 {
-                    this.bufferCompare = UnsafeNativeMethods.MemoryCmp64;
+                    this.bufferCompare = UnsafeNativeMethods.MemoryCompare64;
                 }
-                else if (this.isParallel)
+                else if (isParallel)
                 {
-                    this.bufferCompare = UnsafeNativeMethods.MemoryCmp32Parallel;
+                    this.bufferCompare = UnsafeNativeMethods.MemoryCompare32Parallel;
                 }
                 else
                 {
-                    this.bufferCompare = UnsafeNativeMethods.MemoryCmp32;
+                    this.bufferCompare = UnsafeNativeMethods.MemoryCompare32;
                 }
 
                 this.maread = new MemoryAllocate(this.bufferSize);
@@ -529,7 +517,16 @@ namespace ASB2
                 // キャンセルされた場合例外をスロー           
                 ct.ThrowIfCancellationRequested();
 
-                this.bufferCompare(this.ma, this.maread);
+                if (!this.bufferCompare(this.ma, this.maread))
+                {
+                    MyError.CallErrorMessageBox($"ベリファイに失敗しました。{Environment.NewLine}プログラムのバグか、SSD/HDDが壊れています。");
+
+                    this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
+
+                    this.IsNow = (Int32)FileIO.動作状態.終了待機中;
+
+                    return false;
+                }
             }
             catch (OperationCanceledException)
             {
@@ -542,16 +539,6 @@ namespace ASB2
             catch (IOException e)
             {
                 MyError.CallErrorMessageBox(e.Message);
-
-                this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
-
-                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
-
-                return false;
-            }
-            catch (SEHException)
-            {
-                MyError.CallErrorMessageBox($"ベリファイに失敗しました。{Environment.NewLine}プログラムのバグか、SSD/HDDが壊れています。");
 
                 this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
 
