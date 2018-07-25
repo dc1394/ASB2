@@ -284,7 +284,7 @@ namespace ASB2
             // パーセンテージを0に戻す
             this.ProgressPercentTextBox.Text = "0.0%";
 
-            // 書き込み速度のテキストを0.00 MiB/sに戻す
+            // 書き込み速度のテキストを元に戻す
             this.SpeedTextBlock.Text = MainWindow.WriteSpeedText;
 
             // ストップウォッチ停止

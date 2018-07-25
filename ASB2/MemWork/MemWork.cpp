@@ -17,6 +17,8 @@
 
 #include <tbb/parallel_for.h>       // for tbb::parallel_for
 
+#include <fstream>
+
 AvailSIMDtype check(std::uint8_t const * p, std::uint32_t size)
 {
     // アライメントはあっているか？
