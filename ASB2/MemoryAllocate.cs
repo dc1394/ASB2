@@ -44,7 +44,7 @@ namespace ASB2
         /// <summary>
         /// コンストラクタ
         /// </summary>
-        /// <param name="bufSize">バッファの大きさ</param>
+        /// <param name="bufSize">メモリの大きさ</param>
         internal unsafe MemoryAllocate(Int32 bufSize)
         {
             this.BufferSize = bufSize;
@@ -77,27 +77,27 @@ namespace ASB2
         #region プロパティ
 
         /// <summary>
-        /// x86におけるバッファの先頭アドレス
+        /// x86におけるメモリの先頭アドレス
         /// </summary>
         internal UInt32 Address32 { get; private set; }
 
         /// <summary>
-        /// x64におけるバッファの先頭アドレス
+        /// x64におけるメモリの先頭アドレス
         /// </summary>
         internal UInt64 Address64 { get; private set; }
 
         /// <summary>
-        /// バッファ
+        /// メモリ
         /// </summary>
         internal Byte[] Buffer { get; private set; }
 
         /// <summary>
-        /// バッファの大きさ
+        /// メモリの大きさ
         /// </summary>
         internal Int32 BufferSize { get; private set; }
 
         /// <summary>
-        /// バッファのオフセット
+        /// メモリのオフセット
         /// </summary>
         internal Int32 Offset { get; private set; }
 

@@ -16,7 +16,7 @@ module SaveDataManage =
         // #region フィールド
 
         /// <summary>
-        /// バッファサイズの文字列
+        /// メモリサイズの文字列
         /// </summary>
         let mutable bufferSizeText     = DefaultDataDefinition.DEFAULTBUFSIZETEXT
         
@@ -60,7 +60,7 @@ module SaveDataManage =
         // #region プロパティ 
 
         /// <summary>
-        /// バッファサイズの文字列
+        /// メモリサイズの文字列
         /// </summary>
         member public this.BufferSizeText
             with get() = bufferSizeText

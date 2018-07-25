@@ -8,14 +8,14 @@
 
 #pragma once
 
-#include <array>        // for std::array
-#include <cstdint>      // for std::int32_t
-#include <utility>      // for std::pair
+#include <array>    // for std::array
+#include <cstdint>  // for std::int32_t
+#include <utility>  // for std::pair
 
 #ifndef _WIN64
     #pragma comment(linker, "/export:memcmpsimd=_memcmpsimd@12")
     #pragma comment(linker, "/export:memcmpparallelsimd=_memcmpparallelsimd@12")
-    #pragma comment(linker, "/export:memfill128=_memfill128@8")
+    #pragma comment(linker, "/export:memfillsimd=_memfillsimd@8")
 #endif
 
 #ifdef __cplusplus
@@ -56,29 +56,19 @@ static auto constexpr PREFETCHSIZE = 4096;
 
 //! A global function.
 /*!
-    バッファを比較する（AVX2を使う）
-    \param index バッファを比較するときに足すインデックス
-    \param p1 比較するバッファ1の先頭アドレス
-    \param p2 比較するバッファ2の先頭アドレス
+    各種条件を確認する
+    \param p 書き込むメモリの先頭アドレス
+    \param size 書き込むメモリのサイズ
+    \return SSE4.1、AVX2およびAVX-512が使用可能かどうかの列挙型
 */
-void buffercompareuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
-
-//! A global function.
-/*!
-    バッファを比較する（SSE4.1を使う）
-    \param availableSSE41 SSE4.1が使用可能かどうか
-    \param index バッファを比較するときに足すインデックス
-    \param p1 比較するバッファ1の先頭アドレス
-    \param p2 比較するバッファ2の先頭アドレス
-*/
-void buffercompareuseSSE41(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+AvailSIMDtype check(std::uint8_t const * p, std::uint32_t size);
 
 //! A global function.
 /*!
     各種条件を確認する
-    \param p1 比較するバッファ1の先頭アドレス
-    \param p2 比較するバッファ2の先頭アドレス
-    \param size 比較するバッファのサイズ
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
+    \param size 比較するメモリのサイズ
     \return SSE4.1、AVX2およびAVX-512が使用可能かどうかと、比較する回数をセットにしたstd::pair
 */
 std::pair<AvailSIMDtype, std::uint32_t> check(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size);
@@ -90,34 +80,84 @@ std::pair<AvailSIMDtype, std::uint32_t> check(std::uint8_t const * p1, std::uint
 */
 AvailSIMDtype isAvailableSIMDtype();
 
-void memcmpAVX2(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size, std::uint32_t compareloopnum);
+//! A global function.
+/*!
+    AVX2命令を使ってメモリを比較する
+    \param cmploopnum メモリを比較する際のループ回数
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
+*/
+void memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
-    バッファを比較する
-    \param p1 比較するバッファ1の先頭アドレス
-    \param p2 比較するバッファ2の先頭アドレス
-    \param size 比較するバッファのサイズ
+    メモリを比較する
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
+    \param size 比較するメモリのサイズ
 */
 DLLEXPORT void __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
 
-void memcmpSSE(bool availableSSE41, std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size, std::uint32_t compareloopnum);
+//! A global function.
+/*!
+    SSE命令を使ってメモリを比較する
+    \param availSSE41 SSE4.1が使用可能かどうか
+    \param cmploopnum メモリを比較する際のループ回数
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
+*/
+void memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
-    バッファを比較する（並列化あり）
-    \param p1 比較するバッファ1の先頭アドレス
-    \param p2 比較するバッファ2の先頭アドレス
-    \param size 比較するバッファのサイズ
+    メモリを比較する（並列化あり）
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
+    \param size 比較するメモリのサイズ
 */
 DLLEXPORT void __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
 
 //! A global function.
 /*!
-    バッファの内容を乱数で埋める
-    \param p 比較するバッファ1の先頭アドレス
-    \param size 比較するバッファのサイズ
+    メモリを比較する（AVX2を使う）
+    \param index メモリを比較するときに足すインデックス
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
 */
-DLLEXPORT void __stdcall memfill128(std::uint8_t * p, std::uint32_t size);
+void memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+
+//! A global function.
+/*!
+    メモリを比較する（SSE4.1を使う）
+    \param availableSSE41 SSE4.1が使用可能かどうか
+    \param index メモリを比較するときに足すインデックス
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
+*/
+void memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+
+//! A global function.
+/*!
+    メモリの内容をSSE命令を使い乱数で埋める
+    \param p 比較するメモリ1の先頭アドレス
+    \param size 比較するメモリのサイズ
+*/
+DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size);
+
+//! A global function.
+/*!
+    メモリの内容をAVX命令を使い乱数で埋める
+    \param p 比較するメモリ1の先頭アドレス
+    \param size 比較するメモリのサイズ
+*/
+void memfillAVX2(std::uint8_t * p, std::uint32_t size);
+
+//! A global function.
+/*!
+    メモリの内容をSSE2命令を使い乱数で埋める
+    \param p 比較するメモリ1の先頭アドレス
+    \param size 比較するメモリのサイズ
+*/
+void memfillSSE2(std::uint8_t * p, std::uint32_t size);
 
 #endif  // _MEMWORK_H_

@@ -17,7 +17,7 @@ namespace ASB2
         #region フィールド
 
         /// <summary>
-        /// バッファサイズの文字列
+        /// メモリサイズの文字列
         /// </summary>
         private String bufferSizeText;
 
@@ -60,7 +60,7 @@ namespace ASB2
         #region プロパティ
 
         /// <summary>
-        /// バッファサイズの文字列
+        /// メモリサイズの文字列
         /// </summary>
         public String BufferSizeText
         {

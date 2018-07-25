@@ -70,7 +70,7 @@ namespace ASB2
         /// <param name="ma">バッファのラッパーオブジェクト</param>
         internal static void WriteMemory32(MemoryAllocate ma)
         {
-            MemoryFill128((IntPtr)ma.Address32, (UInt32)ma.BufferSize);
+            MemoryFillSimd((IntPtr)ma.Address32, (UInt32)ma.BufferSize);
         }
 
         /// <summary>
@@ -79,7 +79,7 @@ namespace ASB2
         /// <param name="ma">バッファのラッパーオブジェクト</param>
         internal static unsafe void WriteMemory64(MemoryAllocate ma)
         {
-            MemoryFill128((IntPtr)ma.Address64, (UInt32)ma.BufferSize);
+            MemoryFillSimd((IntPtr)ma.Address64, (UInt32)ma.BufferSize);
         }
 
         [DllImport("memwork", EntryPoint = "memcmpsimd")]
@@ -88,8 +88,8 @@ namespace ASB2
         [DllImport("memwork", EntryPoint = "memcmpparallelsimd")]
         private static extern void MemoryCmpParallelSimd(IntPtr p1, IntPtr p2, UInt32 size);
 
-        [DllImport("memwork", EntryPoint = "memfill128")]
-        private static extern void MemoryFill128(IntPtr p, UInt32 size);
+        [DllImport("memwork", EntryPoint = "memfillsimd")]
+        private static extern void MemoryFillSimd(IntPtr p, UInt32 size);
 
         #endregion メソッド
     }

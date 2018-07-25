@@ -19,7 +19,7 @@ module DefaultData =
     type DefaultDataDefinition =
         struct
             /// <summary>
-            /// デフォルトのバッファサイズ（kiB）
+            /// デフォルトのメモリサイズ（kiB）
             /// </summary>
             static member DEFAULTBUFSIZETEXT = "1024"
 

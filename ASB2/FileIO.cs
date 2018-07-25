@@ -576,9 +576,7 @@ namespace ASB2
             }
             catch (SEHException)
             {
-                MyError.CallErrorMessageBox(String.Format(
-                        "ベリファイに失敗しました。{0}プログラムのバグか、SSD/HDDが壊れています。",
-                        Environment.NewLine));
+                MyError.CallErrorMessageBox($"ベリファイに失敗しました。{Environment.NewLine}プログラムのバグか、SSD/HDDが壊れています。");
 
                 this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
 

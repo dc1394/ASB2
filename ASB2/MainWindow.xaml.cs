@@ -284,6 +284,9 @@ namespace ASB2
             // パーセンテージを0に戻す
             this.ProgressPercentTextBox.Text = "0.0%";
 
+            // 書き込み速度のテキストを0.00 MiB/sに戻す
+            this.SpeedTextBlock.Text = MainWindow.WriteSpeedText;
+
             // ストップウォッチ停止
             this.sw.Reset();
 
@@ -663,9 +666,7 @@ namespace ASB2
 
             if (File.Exists(this.sdm.SaveData.TempFilenameFullPath))
             {
-                var message = String.Format(
-                    "以前起動したときの一時ファイルと思われるファイルがあります。{0}削除しますか？",
-                    Environment.NewLine);
+                var message = $"以前起動したときの一時ファイルと思われるファイルがあります。{Environment.NewLine}削除しますか？";
                 
                 if (System.Windows.MessageBox.Show(
                     message,
