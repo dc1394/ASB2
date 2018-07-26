@@ -1,7 +1,7 @@
 ﻿/*! \file myrand.h
     \brief 自作乱数クラスの宣言
 
-    Copyright © 2015 @dc1394 All Rights Reserved.
+    Copyright © 2015-2017 @dc1394 All Rights Reserved.
     This software is released under the BSD 2-Clause License.
 */
 
@@ -50,9 +50,9 @@ namespace myrandom {
 
         // #endregion メンバ関数
 
-        // #region 禁止されたコンストラクタ・メンバ関数
+        // #region メンバ変数
 
-    public:
+    private:
         //! A private member variable.
         /*!
             乱数の分布
@@ -65,6 +65,9 @@ namespace myrandom {
         */
         std::mt19937 randengine_;
 
+        // #endregion メンバ変数
+
+    public:
         // #region 禁止されたコンストラクタ・メンバ関数
 
         //! A private copy constructor (deleted).
@@ -76,10 +79,10 @@ namespace myrandom {
         //! A private member function (deleted).
         /*!
             operator=()の宣言（禁止）
-            \param コピー元のオブジェクト（未使用）
+            \param dummy コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
-        MyRand & operator=(const MyRand &) = delete;
+        MyRand & operator=(const MyRand & dummy) = delete;
 
         // #endregion 禁止されたコンストラクタ・メンバ関数
     };

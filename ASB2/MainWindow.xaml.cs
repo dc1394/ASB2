@@ -70,7 +70,12 @@ namespace ASB2
         /// 単位をメガ（2の20乗）に変換するための定数
         /// </summary>
         private static readonly Double Mega = (Double)Pow.pow(2L, 20U);
-        
+
+        /// <summary>
+        /// 時間計測用のストップウォッチオブジェクト
+        /// </summary>
+        private readonly Stopwatch sw = new Stopwatch();
+
         /// <summary>
         /// 読み込みの平均速度を計算するためのオブジェクト
         /// </summary>
@@ -104,7 +109,7 @@ namespace ASB2
         /// <summary>
         /// 一時ファイル読み書きオブジェクト
         /// </summary>
-        private FileIO fio = null;
+        private FileIo fio = null;
 
         /// <summary>
         /// 対応するView
@@ -120,11 +125,6 @@ namespace ASB2
         /// タスクトレイアイコンオブジェクト
         /// </summary>
         private TaskTrayIcon tti = null;
-
-        /// <summary>
-        /// 時間計測用のストップウォッチオブジェクト
-        /// </summary>
-        private Stopwatch sw = new Stopwatch();
 
         /// <summary>
         /// 設定情報保存クラスのオブジェクト
@@ -271,19 +271,19 @@ namespace ASB2
         /// <param name="titleString">変更後のウィンドウタイトル</param>
         private void DoWriteEnd(String titleString)
         {
-            // タイマー停止
-            this.dispatcherTimer.Stop();
-
-            // 計測したデータをリセット
-            this.aiswrite.Reset();
-            this.aisread.Reset();
-
             // プログレスバーを元に戻す
             this.ProgressBar.Value = 0.0;
 
             // パーセンテージを0に戻す
             this.ProgressPercentTextBox.Text = "0.0%";
 
+            // タイマー停止
+            this.dispatcherTimer.Stop();
+
+            // 計測したデータをリセット
+            this.aiswrite.Reset();
+            this.aisread.Reset();
+            
             // 書き込み速度のテキストを元に戻す
             this.SpeedTextBlock.Text = MainWindow.WriteSpeedText;
 
@@ -326,7 +326,7 @@ namespace ASB2
             this.TaskTrayIconTextTo待機中();
 
             // アイコンにコンテキストメニューを追加する
-            var newcontitemary = new ToolStripMenuItem[4]
+            ToolStripItem[] newcontitemary =
             {
                 new ToolStripMenuItem("開始", null, new EventHandler(this.RightClick_開始)),
                 new ToolStripMenuItem("停止", null, new EventHandler(this.RightClick_停止)),
@@ -351,14 +351,14 @@ namespace ASB2
 
             // プログレスバー設定
             this.ProgressBar.Minimum = 0.0;
-            this.ProgressBar.Maximum = (Double)tmpFileSize;
+            this.ProgressBar.Maximum = this.mwvm.IsVerify ? (Double)tmpFileSize * 2 : (Double)tmpFileSize;
 
             // ストップウォッチスタート
             this.sw.Start();
 
             Int32.TryParse(this.sdm.SaveData.BufferSizeText, out Int32 bufsize);
 
-            this.fio = new FileIO(
+            this.fio = new FileIo(
                 bufsize * Kilo,
                 this.sdm.SaveData.IsParallel,
                 this.mwvm.IsVerify)
@@ -369,7 +369,7 @@ namespace ASB2
             };
 
             // 処理開始
-            this.fio.FileIORun();
+            this.fio.FileIoRun();
 
             Double.TryParse(this.sdm.SaveData.TimerIntervalText, out Double interval);
 
@@ -440,11 +440,6 @@ namespace ASB2
         /// <param name="bytes">処理されたバイト</param>
         private void UpdateProgress(Double bytes)
         {
-            if (this.mwvm.IsVerify)
-            {
-                bytes *= 0.5;
-            }
-
             this.ProgressBar.Value = bytes;
             this.ProgressPercentTextBox.Text = (bytes / this.ProgressBar.Maximum).ToString("0.0%");
         }
@@ -454,8 +449,8 @@ namespace ASB2
         /// </summary>
         private void UpdateWindow()
         {
-            this.LoopNumTextBlock.Text = FileIO.LoopNum.ToString() + MainWindow.LoopText;
-            this.TotalWriteTextBlock.Text = String.Format(MainWindow.TotalWriteText + "{0:N0} Bytes", FileIO.TotalWroteBytes);
+            this.LoopNumTextBlock.Text = FileIo.LoopNum.ToString() + MainWindow.LoopText;
+            this.TotalWriteTextBlock.Text = String.Format(MainWindow.TotalWriteText + "{0:N0} Bytes", FileIo.TotalWroteBytes);
         }
 
         /// <summary>
@@ -467,7 +462,7 @@ namespace ASB2
         {
             this.UpdateWindow();
 
-            this.UpdateProgress(this.ProgressBar.Maximum + readbyte);
+            this.UpdateProgress((this.ProgressBar.Maximum * 0.5) + readbyte);
 
             this.SpeedTextBlock.Text = String.Format(MainWindow.ReadSpeedText + "{0:0.00} MiB/s", readbytespeed / MainWindow.Mega);
             this.AverageSpeedTextBlock.Text = String.Format(
@@ -537,12 +532,12 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private void DispatcherTimer_Tick(object sender, EventArgs e)
         {
-            switch ((FileIO.動作状態)this.fio.IsNow)
+            switch ((FileIo.動作状態)this.fio.IsNow)
             {
-                case FileIO.動作状態.待機中:
+                case FileIo.動作状態.待機中:
                     break;
 
-                case FileIO.動作状態.書込中:
+                case FileIo.動作状態.書込中:
                     switch (this.書込ベリファイ状態)
                     {
                         case MainWindow.書込ベリファイ列挙型.書込:
@@ -563,7 +558,7 @@ namespace ASB2
 
                     break;
 
-                case FileIO.動作状態.ベリファイ中:
+                case FileIo.動作状態.ベリファイ中:
                     switch (this.書込ベリファイ状態)
                     {
                         case MainWindow.書込ベリファイ列挙型.書込:
@@ -584,18 +579,18 @@ namespace ASB2
 
                     break;
 
-                case FileIO.動作状態.終了待機中:
-                    switch ((FileIO.終了状態)this.fio.ReturnCode)
+                case FileIo.動作状態.終了待機中:
+                    switch ((FileIo.終了状態)this.fio.ReturnCode)
                     {
-                        case FileIO.終了状態.正常終了:
+                        case FileIo.終了状態.正常終了:
                             this.DoWriteEnd("ASB2 - 正常終了（実行待機中）");
                             break;
 
-                        case FileIO.終了状態.キャンセル終了:
+                        case FileIo.終了状態.キャンセル終了:
                             this.DoWriteEnd("ASB2 - ユーザーの要求によりキャンセル（実行待機中）");
                             break;
 
-                        case FileIO.終了状態.異常終了:
+                        case FileIo.終了状態.異常終了:
                             this.DoWriteEnd("ASB2 - IOエラーにより終了（実行待機中）");
                             break;
 

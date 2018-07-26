@@ -18,7 +18,7 @@ namespace ASB2
     /// <summary>
     /// ファイルIO用のクラス
     /// </summary>
-    internal sealed class FileIO : IDisposable
+    internal sealed class FileIo : IDisposable
     {
         #region フィールド
 
@@ -89,7 +89,7 @@ namespace ASB2
         /// <param name="bufferSize">バッファのサイズ</param>
         /// <param name="isParallel">並列化するかどうか</param>
         /// <param name="isVerify">ベリファイをかけるかどうか</param>
-        public FileIO(Int32 bufferSize, Boolean isParallel, Boolean isVerify)
+        public FileIo(Int32 bufferSize, Boolean isParallel, Boolean isVerify)
         {
             this.bufferSize = bufferSize;
 
@@ -207,18 +207,12 @@ namespace ASB2
         /// <summary>
         /// ループした回数
         /// </summary>
-        internal static Int64 LoopNum
-        {
-            get { return FileIO.loopNum; }
-        }
+        internal static Int64 LoopNum => FileIo.loopNum;
 
         /// <summary>
         /// 書き込まれたバイト数の合計
         /// </summary>
-        internal static Int64 TotalWroteBytes
-        {
-            get { return FileIO.totalWroteBytes; }
-        }
+        internal static Int64 TotalWroteBytes => FileIo.totalWroteBytes;
 
         /// <summary>
         /// 処理をキャンセルする場合のトークン
@@ -336,14 +330,14 @@ namespace ASB2
         /// <summary>
         /// 一時ファイルの読み書きを行う
         /// </summary>
-        internal async void FileIORun()
+        internal async void FileIoRun()
         {
             if (this.Cts == null)
             {
                 this.Cts = new CancellationTokenSource();
             }
 
-            this.IsNow = (Int32)FileIO.動作状態.書込中;
+            this.IsNow = (Int32)FileIo.動作状態.書込中;
 
             await Task.Run(
                 () =>
@@ -356,11 +350,11 @@ namespace ASB2
 
                             switch ((動作状態)this.IsNow)
                             {
-                                case FileIO.動作状態.書込中:
-                                case FileIO.動作状態.ベリファイ中:
+                                case FileIo.動作状態.書込中:
+                                case FileIo.動作状態.ベリファイ中:
                                     continue;
 
-                                case FileIO.動作状態.終了待機中:
+                                case FileIo.動作状態.終了待機中:
                                     break;
 
                                 default:
@@ -376,7 +370,7 @@ namespace ASB2
                         this.bufBetweenDisk();
                     }
 
-                    this.IsNow = (Int32)FileIO.動作状態.終了待機中;
+                    this.IsNow = (Int32)FileIo.動作状態.終了待機中;
                 },
                 this.Cts.Token);
 
@@ -420,11 +414,11 @@ namespace ASB2
                     
                     if (!this.isVerify)
                     {
-                        FileIO.loopNum++;
+                        FileIo.loopNum++;
                     }
                     else
                     {
-                        this.IsNow = (Int32)FileIO.動作状態.ベリファイ中;
+                        this.IsNow = (Int32)FileIo.動作状態.ベリファイ中;
                     }
                 }
                 catch (Exception ex)
@@ -432,7 +426,7 @@ namespace ASB2
                     // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
                     Application.Current.Dispatcher.Invoke(
                         DispatcherPriority.Send,
-                        new DispatcherOperationCallback(FileIO.ThrowMainThreadException),
+                        new DispatcherOperationCallback(FileIo.ThrowMainThreadException),
                         ex);
                 }
             }
@@ -445,7 +439,7 @@ namespace ASB2
         {
             switch ((動作状態)this.IsNow)
             {
-                case FileIO.動作状態.ベリファイ中:
+                case FileIo.動作状態.ベリファイ中:
                     try
                     {
                         using (var br = new BinaryReader(File.Open(this.Filename, FileMode.Open, FileAccess.Read, FileShare.None)))
@@ -473,22 +467,26 @@ namespace ASB2
                             }
                         }
 
-                        this.IsNow = (Int32)FileIO.動作状態.書込中;
+                        if (this.IsLoop)
+                        {
+                            this.WroteBytes = 0;
+                            this.IsNow = (Int32)FileIo.動作状態.書込中;
+                        }
 
-                        FileIO.loopNum++;
+                        FileIo.loopNum++;
                     }
                     catch (Exception ex)
                     {
                         // 例外をキャッチし、メイン UI スレッドのメソッドに例外を渡します。
                         Application.Current.Dispatcher.Invoke(
                             DispatcherPriority.Send,
-                            new DispatcherOperationCallback(FileIO.ThrowMainThreadException),
+                            new DispatcherOperationCallback(FileIo.ThrowMainThreadException),
                             ex);
                     }
 
                     break;
 
-                case FileIO.動作状態.終了待機中:
+                case FileIo.動作状態.終了待機中:
                     break;
 
                 default:
@@ -521,18 +519,18 @@ namespace ASB2
                 {
                     MyError.CallErrorMessageBox($"ベリファイに失敗しました。{Environment.NewLine}プログラムのバグか、SSD/HDDが壊れています。");
 
-                    this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
+                    this.ReturnCode = (Int32)FileIo.終了状態.異常終了;
 
-                    this.IsNow = (Int32)FileIO.動作状態.終了待機中;
+                    this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
                     return false;
                 }
             }
             catch (OperationCanceledException)
             {
-                this.ReturnCode = (Int32)FileIO.終了状態.キャンセル終了;
+                this.ReturnCode = (Int32)FileIo.終了状態.キャンセル終了;
 
-                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
+                this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
                 return false;
             }
@@ -540,14 +538,14 @@ namespace ASB2
             {
                 MyError.CallErrorMessageBox(e.Message);
 
-                this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
+                this.ReturnCode = (Int32)FileIo.終了状態.異常終了;
 
-                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
+                this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
                 return false;
             }
 
-            this.ReturnCode = (Int32)FileIO.終了状態.正常終了;
+            this.ReturnCode = (Int32)FileIo.終了状態.正常終了;
             
             return true;
         }
@@ -577,9 +575,9 @@ namespace ASB2
             }
             catch (OperationCanceledException)
             {
-                this.ReturnCode = (Int32)FileIO.終了状態.キャンセル終了;
+                this.ReturnCode = (Int32)FileIo.終了状態.キャンセル終了;
 
-                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
+                this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
                 return false;
             }
@@ -587,19 +585,19 @@ namespace ASB2
             {
                 MyError.CallErrorMessageBox(e.Message);
 
-                this.ReturnCode = (Int32)FileIO.終了状態.異常終了;
+                this.ReturnCode = (Int32)FileIo.終了状態.異常終了;
 
-                this.IsNow = (Int32)FileIO.動作状態.終了待機中;
+                this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
                 return false;
             }
 
             if (!this.isVerify)
             {
-                this.ReturnCode = (Int32)FileIO.終了状態.正常終了;
+                this.ReturnCode = (Int32)FileIo.終了状態.正常終了;
             }
 
-            FileIO.totalWroteBytes += (Int64)count;
+            FileIo.totalWroteBytes += (Int64)count;
 
             return true;
         }

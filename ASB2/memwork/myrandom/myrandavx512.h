@@ -117,8 +117,11 @@ namespace myrandom {
 		/*!
 			乱数が格納されたstd::array
 		*/
-		alignas(AVXREGBYTE) std::array<std::int32_t, AVXREGBYTE> rnd_;
-		
+		alignas(64) std::array<std::int32_t, AVXREGBYTE> rnd_;
+
+        // #endregion メンバ変数
+
+	public:
 		// #region 禁止されたコンストラクタ・メンバ関数
 
 		//! A private copy constructor (deleted).
@@ -130,7 +133,6 @@ namespace myrandom {
 		//! A private member function (deleted).
 		/*!
 			operator=()の宣言（禁止）
-			\param コピー元のオブジェクト（未使用）
 			\return コピー元のオブジェクト
 		*/
 		MyRandAvx512 & operator=(MyRandAvx512 const &) = delete;

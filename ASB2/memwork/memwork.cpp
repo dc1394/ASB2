@@ -6,7 +6,7 @@
 */
 #include "memwork.h"
 #include "myrandom/myrand.h"
-//#include "myrandom/myrandavx512.h"
+#include "myrandom/myrandavx512.h"
 //#include "myrandom/myrandsfmt.h"
 #include <bitset>                   // for std::bitset
 #include <cassert>                  // for assert
@@ -60,6 +60,14 @@ std::pair<AvailSIMDtype, std::uint32_t> check(std::uint8_t const * p1, std::uint
     case AvailSIMDtype::AVAILAVX2:
         compareloopnum = size >> 8;
         break;
+
+    case AvailSIMDtype::AVAILAVX512:
+        compareloopnum = size >> 10;
+        break;
+
+    default:
+        assert(!"switchのdefaultに来てしまった！");
+        break;
     }
     
     return std::make_pair(availsimdtype, compareloopnum);
@@ -94,10 +102,10 @@ AvailSIMDtype isAvailableSIMDtype()
         f_7_ebx = data[7][1];
     }
 
-/*    if (f_7_ebx[16]) {
+    if (f_7_ebx[16]) {
         return AvailSIMDtype::AVAILAVX512;
     }
-    else*/ if (f_7_ebx[5]) {
+    else if (f_7_ebx[5]) {
         return AvailSIMDtype::AVAILAVX2;
     }
     else if (f_1_ecx[19]) {
@@ -111,8 +119,20 @@ AvailSIMDtype isAvailableSIMDtype()
 bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
 {
     // 実際に1回のループで256バイトずつ比較
-    for (std::uint32_t i = 0; i < cmploopnum; i++) {
+    for (auto i = 0U; i < cmploopnum; i++) {
         if (!memcmpuseAVX2(i, p1, p2)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
+{
+    // 実際に1回のループで256バイトずつ比較
+    for (auto i = 0U; i < cmploopnum; i++) {
+        if (!memcmpuseAVX512(i, p1, p2)) {
             return false;
         }
     }
@@ -138,6 +158,14 @@ DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::u
 
     case AvailSIMDtype::AVAILAVX2:
         return memcmpAVX2(cmploopnum, p1, p2);
+        break;
+
+    case AvailSIMDtype::AVAILAVX512:
+        return memcmpAVX512(cmploopnum, p1, p2);
+        break;
+
+    default:
+        assert(!"switchのdefaultに来てしまった！");
         break;
     }
 
@@ -198,11 +226,28 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
             0,
             [p1, p2](tbb::blocked_range<std::uint32_t> const & range, std::uint32_t sumlocal) {
                 for (auto && i = range.begin(); i != range.end(); ++i) {
-                    sumlocal += memcmpuseSSE(false, i, p1, p2) ? 1 : 0;
+                    sumlocal += memcmpuseAVX2(i, p1, p2) ? 1 : 0;
                 }
                 return sumlocal;
             },
             std::plus<>());
+        break;
+
+    case AvailSIMDtype::AVAILAVX512:
+        result = tbb::parallel_reduce(
+            tbb::blocked_range<std::uint32_t>(0, cmploopnum),
+            0,
+            [p1, p2](tbb::blocked_range<std::uint32_t> const & range, std::uint32_t sumlocal) {
+                for (auto && i = range.begin(); i != range.end(); ++i) {
+                    sumlocal += memcmpuseAVX512(i, p1, p2) ? 1 : 0;
+                }
+                return sumlocal;
+            },
+            std::plus<>());
+        break;
+
+    default:
+        assert(!"switchのdefaultに来てしまった！");
         break;
     }
 
@@ -229,6 +274,33 @@ bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
         // 256ビット（16バイト）ごとに結果をチェック
         auto const subresult = _mm256_sub_epi64(ymm[j], ymm2[j]);
         if (!_mm256_testz_si256(subresult, subresult)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
+{
+    auto const s1 = reinterpret_cast<char const *>(p1) + (index << 10);
+    auto const s2 = reinterpret_cast<char const *>(p2) + (index << 10);
+
+    // キャッシュ汚染を防ぐ
+    ::_mm_prefetch(s1 + PREFETCHSIZE, _MM_HINT_NTA);
+
+    // メモリからzmm0～32にロード
+    std::array<__m512i, 16> zmm{}, zmm2{};
+    for (auto j = 0; j < 16; j++) {
+        zmm[j] = _mm512_loadu_si512(reinterpret_cast<__m512i const *>(s1 + j * sizeof(__m512i)));
+        zmm2[j] = _mm512_loadu_si512(reinterpret_cast<__m512i const *>(s2 + j * sizeof(__m512i)));
+    }
+
+    // 結果を比較
+    for (auto j = 0; j < 16; j++) {
+        // 1024ビット（128バイト）ごとに結果をチェック
+        auto const mask = _mm512_cmpeq_epu64_mask(zmm[j], zmm2[j]);
+        if (mask != 0xFF) {
             return false;
         }
     }
@@ -313,6 +385,7 @@ DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size)
         break;
 
     case AvailSIMDtype::AVAILAVX2:
+    case AvailSIMDtype::AVAILAVX512:
         memfillAVX2(p, size);
         break;
     }    

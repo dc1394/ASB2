@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include "../../SFMT-src-1.5.1/SFMT.h"
+#include "../SFMT-src-1.5.1/SFMT.h"
 #include <algorithm>					// for std::generate
 #include <cstdint>						// for std::uint32_t, std::uint_least32_t
 #include <functional>					// for std::ref
@@ -67,8 +67,11 @@ namespace myrandom {
         */
 		sfmt_t sfmt;
 
+        // #endregion メンバ変数
+
         // #region 禁止されたコンストラクタ・メンバ関数
 
+    public:
         //! A private copy constructor (deleted).
         /*!
             コピーコンストラクタ（禁止）
@@ -78,7 +81,6 @@ namespace myrandom {
         //! A private member function (deleted).
         /*!
             operator=()の宣言（禁止）
-            \param コピー元のオブジェクト（未使用）
             \return コピー元のオブジェクト
         */
         MyRandSfmt & operator=(const MyRandSfmt &) = delete;
@@ -86,7 +88,7 @@ namespace myrandom {
         // #endregion 禁止されたコンストラクタ・メンバ関数
     };
 
-    MyRandSfmt::MyRandSfmt()
+    inline MyRandSfmt::MyRandSfmt()
     {
         // ランダムデバイス
         std::random_device rnd;

@@ -115,7 +115,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="BindableBase.cs" />
-    <Compile Include="FileIO.cs" />
+    <Compile Include="FileIo.cs" />
     <Compile Include="MemoryAllocate.cs" />
     <Compile Include="TaskTrayIcon.cs" />
     <Compile Include="UnsafeNativeMethods.cs" />
@@ -179,7 +179,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <AppDesigner Include="Properties\" />
-    <None Include="StyleCop.CSharp.Rules.targets" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

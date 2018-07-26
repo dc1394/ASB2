@@ -70,10 +70,7 @@ namespace ASB2
         /// </summary>
         public Boolean IsLoop
         {
-            get
-            {
-                return this.isLoop;
-            }
+            get => this.isLoop;
 
             set
             {
@@ -87,10 +84,7 @@ namespace ASB2
         /// </summary>
         public Boolean IsVerify
         {
-            get
-            {
-                return this.isVerify;
-            }
+            get => this.isVerify;
 
             set
             {
@@ -104,10 +98,7 @@ namespace ASB2
         /// </summary>
         public String TempFileNameFullPath
         {
-            get
-            {
-                return this.tempFilenameFullPath;
-            }
+            get => this.tempFilenameFullPath;
 
             set
             {
@@ -121,10 +112,7 @@ namespace ASB2
         /// </summary>
         public String TempFileSizeText
         {
-            get
-            {
-                return this.tempFileSizeText;
-            }
+            get => this.tempFileSizeText;
 
             set
             {

@@ -92,6 +92,16 @@ bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
+    AVX-512命令を使ってメモリの内容を比較する
+    \param cmploopnum メモリを比較する際のループ回数
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
+    \return メモリの内容が一致したかどうか
+*/
+bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
+
+//! A global function.
+/*!
     メモリの内容を比較する
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
@@ -130,6 +140,16 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
     \return メモリの内容が一致したかどうか
 */
 bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+
+//! A global function.
+/*!
+    メモリの内容を比較する（AVX-512を使う）
+    \param index メモリの内容を比較するときに足すインデックス
+    \param p1 比較するメモリ1の先頭アドレス
+    \param p2 比較するメモリ2の先頭アドレス
+    \return メモリの内容が一致したかどうか
+*/
+bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
