@@ -102,7 +102,7 @@ bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2
 
 //! A global function.
 /*!
-    メモリの内容を比較する
+    SIMDを使ってメモリの内容を比較する
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
     \param size 比較するメモリのサイズ
@@ -123,7 +123,7 @@ bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std
 
 //! A global function.
 /*!
-    メモリの内容を比較する（並列化あり）
+    SIMDを使ってメモリの内容を比較する（スレッド並列化あり）
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
     \param size 比較するメモリのサイズ
@@ -133,7 +133,7 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
 
 //! A global function.
 /*!
-    メモリの内容を比較する（AVX2を使う）
+    メモリの内容を、AVX2命令を使って比較する
     \param index メモリの内容を比較するときに足すインデックス
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
@@ -143,7 +143,7 @@ bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
-    メモリの内容を比較する（AVX-512を使う）
+    メモリの内容を、AVX-512命令を使って比較する
     \param index メモリの内容を比較するときに足すインデックス
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
@@ -153,7 +153,7 @@ bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
 
 //! A global function.
 /*!
-    メモリの内容を比較する（SSE4.1を使う）
+    メモリの内容を、SSE4.1命令を使って比較する
     \param availableSSE41 SSE4.1が使用可能かどうか
     \param index メモリの内容を比較するときに足すインデックス
     \param p1 比較するメモリ1の先頭アドレス
@@ -164,19 +164,27 @@ bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, s
 
 //! A global function.
 /*!
+    メモリの内容をAVX2命令を使い乱数で埋める
+    \param p 比較するメモリ1の先頭アドレス
+    \param size 比較するメモリのサイズ
+*/
+void memfillAVX2(std::uint8_t * p, std::uint32_t size);
+
+//! A global function.
+/*!
+    メモリの内容をAVX512命令を使い乱数で埋める
+    \param p 比較するメモリ1の先頭アドレス
+    \param size 比較するメモリのサイズ
+*/
+void memfillAVX512(std::uint8_t * p, std::uint32_t size);
+
+//! A global function.
+/*!
     メモリの内容をSSE命令を使い乱数で埋める
     \param p 比較するメモリ1の先頭アドレス
     \param size 比較するメモリのサイズ
 */
 DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size);
-
-//! A global function.
-/*!
-    メモリの内容をAVX命令を使い乱数で埋める
-    \param p 比較するメモリ1の先頭アドレス
-    \param size 比較するメモリのサイズ
-*/
-void memfillAVX2(std::uint8_t * p, std::uint32_t size);
 
 //! A global function.
 /*!

@@ -13,7 +13,10 @@
 #include <functional>               // for std::plus
 #include <tuple>                    // for std::tie
 #include <vector>                   // for std::vector
-#include <intrin.h>
+#include <emmintrin.h>
+#include <smmintrin.h>
+#include <immintrin.h>
+#include <zmmintrin.h>
 
 #include <tbb/parallel_for.h>       // for tbb::parallel_reduce
 #include <tbb/parallel_reduce.h>    // for tbb:parallel_reduce
@@ -130,7 +133,7 @@ bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
 
 bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
 {
-    // 実際に1回のループで256バイトずつ比較
+    // 実際に1回のループで1024バイトずつ比較
     for (auto i = 0U; i < cmploopnum; i++) {
         if (!memcmpuseAVX512(i, p1, p2)) {
             return false;
@@ -362,14 +365,44 @@ void memfillAVX2(std::uint8_t * p, std::uint32_t size)
             for (auto && item : ymmtemp) {
                 item = mr.myrand();
             }
-            ymm[j] = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(ymmtemp.data()));
+            ymm[j] = _mm256_load_si256(reinterpret_cast<__m256i const *>(ymmtemp.data()));
         }
 
         // アドレス
         auto * const d = p + (i << 9);
         // 実際に書き込む
         for (auto j = 0; j < 16; j++) {
-            _mm256_storeu_si256(reinterpret_cast<__m256i *>(d + j * sizeof(__m256i)), ymm[j]);
+            _mm256_store_si256(reinterpret_cast<__m256i *>(d + j * sizeof(__m256i)), ymm[j]);
+        }
+    }
+}
+
+void memfillAVX512(std::uint8_t * p, std::uint32_t size)
+{
+    // 1回のループで書き込む回数（2048バイト（16384ビット）ずつ）
+    auto const writeloop = size >> 11;
+
+    // 乱数オブジェクト生成
+    myrandom::MyRand mr;
+
+    // 実際に1回のループで2048バイトずつ書き込む
+    for (auto i = 0U; i < writeloop; i++) {
+        std::array<__m512i, 32> zmm{};
+
+        // ymm0～15レジスタ上に乱数生成
+        for (auto j = 0; j < 32; j++) {
+            alignas(64) std::array<std::uint32_t, 32> zmmtemp{};
+            for (auto && item : zmmtemp) {
+                item = mr.myrand();
+            }
+            zmm[j] = _mm512_load_si512(reinterpret_cast<__m512i const *>(zmmtemp.data()));
+        }
+
+        // アドレス
+        auto * const d = p + (i << 11);
+        // 実際に書き込む
+        for (auto j = 0; j < 16; j++) {
+            _mm512_store_si512(reinterpret_cast<__m512i *>(d + j * sizeof(__m512i)), zmm[j]);
         }
     }
 }
@@ -385,8 +418,15 @@ DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size)
         break;
 
     case AvailSIMDtype::AVAILAVX2:
-    case AvailSIMDtype::AVAILAVX512:
         memfillAVX2(p, size);
+        break;
+
+    case AvailSIMDtype::AVAILAVX512:
+        memfillAVX512(p, size);
+        break;
+
+    default:
+        assert(!"switchのdefaultに来てしまった！");
         break;
     }    
 }
