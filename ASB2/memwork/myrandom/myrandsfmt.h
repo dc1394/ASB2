@@ -10,10 +10,11 @@
 
 #pragma once
 
-#include "../SFMT-src-1.5.1/SFMT.h"
+#include "../../SFMT-src-1.5.1/SFMT.h"
 #include <algorithm>					// for std::generate
 #include <cstdint>						// for std::uint32_t, std::uint_least32_t
 #include <functional>					// for std::ref
+#include <random>                       // for std::random_device
 #include <vector>						// for std::vector
 
 namespace myrandom {

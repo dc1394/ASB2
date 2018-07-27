@@ -11,14 +11,13 @@
 #pragma once
 
 #include <algorithm>    // for std::generate
-#include <array>		// for std::array
 #include <cstdint>      // for std::int32_t, std::uint_least32_t
 #include <functional>   // for std::ref
 #include <memory>       // for std::unique_ptr
 #include <limits>		// for std::numeric_limits
 #include <random>		// for std::random_device
 #include <vector>       // for std::vector
-#include <immintrin.h>	// for _mm512_store_si512
+#include <immintrin.h>	// for __m512i
 #include <svrng.h>		// for svrng_new_uniform_distribution_int, svrng_new_mt19937_engine, svrng_generate16_int
 
 namespace myrandom {
@@ -68,20 +67,9 @@ namespace myrandom {
 		/*!
 			[0, UINT32_MAX)の区間で一様乱数を生成する
 		*/
-		std::uint32_t myrand()
+		__m512i myrand()
         {
-			if (!cnt_) {
-                _mm512_store_si512(rnd_.data(), svrng_generate16_int(*prandengine_, *pdistribution_));			
-				return static_cast<std::uint32_t>(rnd_[cnt_++]);
-			}
-			else if (cnt_ == AVXREGBYTE) {
-				cnt_ = 0;
-				_mm512_store_si512(rnd_.data(), svrng_generate16_int(*prandengine_, *pdistribution_));
-				return static_cast<std::uint32_t>(rnd_[cnt_++]);
-			}
-			else {
-				return static_cast<std::uint32_t>(rnd_[cnt_++]);
-			}
+			return svrng_generate16_int(*prandengine_, *pdistribution_);			
 		}
 
 		// #endregion メンバ関数
@@ -89,18 +77,6 @@ namespace myrandom {
 		// #region メンバ変数
 
 	private:
-		//! A private member variable.
-		/*!
-			AVX-512レジスタのバイト数
-		*/
-		static auto constexpr AVXREGBYTE = 16;
-
-		//! A private member variable.
-		/*!
-			乱数のカウント
-		*/
-		std::int32_t cnt_ = 0;
-
 		//! A private member variable.
 		/*!
 			乱数の分布へのスマートポインタ
@@ -113,17 +89,11 @@ namespace myrandom {
 		*/
         std::unique_ptr<svrng_engine_t, decltype(svrng_engine_deleter)> prandengine_;
 
-		//! A private member variable.
-		/*!
-			乱数が格納されたstd::array
-		*/
-		alignas(64) std::array<std::int32_t, AVXREGBYTE> rnd_;
-
         // #endregion メンバ変数
 
-	public:
 		// #region 禁止されたコンストラクタ・メンバ関数
-
+        
+    public:
 		//! A private copy constructor (deleted).
 		/*!
 			コピーコンストラクタ（禁止）
@@ -140,7 +110,7 @@ namespace myrandom {
 		// #endregion 禁止されたコンストラクタ・メンバ関数
 	};
 
-	MyRandAvx512::MyRandAvx512()
+	inline MyRandAvx512::MyRandAvx512()
         : pdistribution_(new svrng_distribution_t(svrng_new_uniform_distribution_int(std::numeric_limits<std::int32_t>::min(), std::numeric_limits<std::int32_t>::max())), distribution_deleter),
 		  prandengine_(nullptr, svrng_engine_deleter)
 	{

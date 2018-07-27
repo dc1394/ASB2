@@ -10,8 +10,8 @@
     <ClInclude Include="myrandom\myrandsfmt.h">
       <Filter>ヘッダー ファイル\myrandom</Filter>
     </ClInclude>
-    <ClInclude Include="myrandom\myrand.h">
-      <Filter>ヘッダー ファイル\myrandom</Filter>
+    <ClInclude Include="..\SFMT-src-1.5.1\SFMT.h">
+      <Filter>ヘッダー ファイル\SFMT</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -24,10 +24,19 @@
     <Filter Include="ヘッダー ファイル\myrandom">
       <UniqueIdentifier>{6be741df-1f29-441d-8b75-8e9b057e0c70}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\SFMT">
+      <UniqueIdentifier>{82adcd2b-319e-4903-b2a5-cb12d57aaad4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\SFMT">
+      <UniqueIdentifier>{c5232d35-0eb7-4941-8a7c-fc65e4a8df2d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="memwork.cpp">
       <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SFMT-src-1.5.1\SFMT.c">
+      <Filter>ソース ファイル\SFMT</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

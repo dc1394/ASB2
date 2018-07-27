@@ -5,57 +5,69 @@
     This software is released under the BSD 2-Clause License.
 */
 #include "memwork.h"
-#include "myrandom/myrand.h"
-#include "myrandom/myrandavx512.h"
-//#include "myrandom/myrandsfmt.h"
+
+#ifdef __INTEL_COMPILER
+    #include "myrandom/myrandavx512.h"
+#endif
+
+#include "myrandom/myrandsfmt.h"
 #include <bitset>                   // for std::bitset
 #include <cassert>                  // for assert
 #include <functional>               // for std::plus
 #include <tuple>                    // for std::tie
 #include <vector>                   // for std::vector
-#include <emmintrin.h>
-#include <smmintrin.h>
-#include <immintrin.h>
-#include <zmmintrin.h>
+#include <emmintrin.h>              // for _mm_cmpeq_epi32, _mm_load_si128, _mm_prefetch, _mm_stream_si128
+#include <smmintrin.h>              // for _mm_cmpeq_epi64
+#include <immintrin.h>              // for _mm256_load_si256, _mm256_store_si256, _mm256_sub_epi64, _mm256_testz_si256
+
+#ifdef __INTEL_COMPILER
+    #include <zmmintrin.h>          // for _mm512_cmpeq_epu64_mask, _mm512_load_si512, _mm512_store_si512
+#endif
 
 #include <tbb/parallel_for.h>       // for tbb::parallel_reduce
 #include <tbb/parallel_reduce.h>    // for tbb:parallel_reduce
 
-AvailSIMDtype check(std::uint8_t const * p, std::uint32_t size)
+AvailSIMDtype checksimd(std::uint32_t size)
 {
-    // アライメントはあっているか？
-#ifdef _WIN64
-    assert(!(reinterpret_cast<std::uint64_t>(p) & 0x0F));
-#else
-    assert(!(reinterpret_cast<std::uint32_t>(p) & 0x0F));
-#endif
-    // 書き込むバイト数は64バイトの倍数か？
-    assert(!(size & 0x3F));
+    // SIMD命令はどれが使用可能か
+    auto const availsimdtype = isAvailableSIMDtype();
+
+    switch (availsimdtype) {
+    case AvailSIMDtype::AVAILSSE2:
+    case AvailSIMDtype::AVAILSSE41:
+        // 書き込むバイト数は128バイトの倍数か？
+        assert(!(size & 0x7F));
+        break;
+
+    case AvailSIMDtype::AVAILAVX2:
+        // 書き込むバイト数は512バイトの倍数か？
+        assert(!(size & 0x01FF));
+
+        break;
+
+    case AvailSIMDtype::AVAILAVX512:
+        // 書き込むバイト数は2048バイトの倍数か？
+        assert(!(size & 0x07FF));
+        break;
+
+    default:
+        assert(!"switchのdefaultに来てしまった！");
+        break;
+    }
 
     return isAvailableSIMDtype();
 }
 
-std::pair<AvailSIMDtype, std::uint32_t> check(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
+std::pair<AvailSIMDtype, std::uint32_t> getinfo(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
 {
-    // アライメントはあっているか？
-#ifdef _WIN64
-        assert(!(reinterpret_cast<std::uint64_t>(p1)& 0x0F));
-        assert(!(reinterpret_cast<std::uint64_t>(p2)& 0x0F));
-#else
-        assert(!(reinterpret_cast<std::uint32_t>(p1)& 0x0F));
-        assert(!(reinterpret_cast<std::uint32_t>(p2)& 0x0F));
-#endif
-    // 書き込むバイト数は64バイトの倍数か？
-    assert(!(size & 0x3F));
+    // 比較する回数
+    std::uint32_t compareloopnum;
 
     // SIMD命令はどれが使用可能か
     auto const availsimdtype = isAvailableSIMDtype();
 
-    // 比較する回数
-    std::uint32_t compareloopnum;
-
     switch (availsimdtype) {
-    case AvailSIMDtype::NOAVAIL:
+    case AvailSIMDtype::AVAILSSE2:
     case AvailSIMDtype::AVAILSSE41:
         compareloopnum = size >> 6;
         break;
@@ -105,17 +117,20 @@ AvailSIMDtype isAvailableSIMDtype()
         f_7_ebx = data[7][1];
     }
 
+#ifdef __INTEL_COMPILER
     if (f_7_ebx[16]) {
         return AvailSIMDtype::AVAILAVX512;
     }
-    else if (f_7_ebx[5]) {
+#endif
+
+    if (f_7_ebx[5]) {
         return AvailSIMDtype::AVAILAVX2;
     }
     else if (f_1_ecx[19]) {
         return AvailSIMDtype::AVAILSSE41;
     }
     else {
-        return AvailSIMDtype::NOAVAIL;
+        return AvailSIMDtype::AVAILSSE2;
     }
 }
 
@@ -131,6 +146,7 @@ bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
     return true;
 }
 
+#ifdef __INTEL_COMPILER
 bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
 {
     // 実際に1回のループで1024バイトずつ比較
@@ -142,16 +158,17 @@ bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2
 
     return true;
 }
+#endif
 
 DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size)
 {
     AvailSIMDtype availsimdtype;
     std::uint32_t cmploopnum;
 
-    std::tie(availsimdtype, cmploopnum) = check(p1, p2, size);
+    std::tie(availsimdtype, cmploopnum) = getinfo(p1, p2, size);
 
     switch (availsimdtype) {
-    case AvailSIMDtype::NOAVAIL:
+    case AvailSIMDtype::AVAILSSE2:
         return memcmpSSE(false, cmploopnum, p1, p2);
         break;
 
@@ -163,9 +180,11 @@ DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::u
         return memcmpAVX2(cmploopnum, p1, p2);
         break;
 
+#ifdef __INTEL_COMPILER
     case AvailSIMDtype::AVAILAVX512:
         return memcmpAVX512(cmploopnum, p1, p2);
         break;
+#endif
 
     default:
         assert(!"switchのdefaultに来てしまった！");
@@ -192,12 +211,12 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
     AvailSIMDtype availsimdtype;
     std::uint32_t cmploopnum;
 
-    std::tie(availsimdtype, cmploopnum) = check(p1, p2, size);
+    std::tie(availsimdtype, cmploopnum) = getinfo(p1, p2, size);
 
     auto result = 0U;
 
     switch (availsimdtype) {
-    case AvailSIMDtype::NOAVAIL:
+    case AvailSIMDtype::AVAILSSE2:
         result = tbb::parallel_reduce(
             tbb::blocked_range<std::uint32_t>(0U, cmploopnum),
             0,
@@ -236,6 +255,7 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
             std::plus<>());
         break;
 
+#ifdef __INTEL_COMPILER
     case AvailSIMDtype::AVAILAVX512:
         result = tbb::parallel_reduce(
             tbb::blocked_range<std::uint32_t>(0, cmploopnum),
@@ -248,6 +268,7 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
             },
             std::plus<>());
         break;
+#endif
 
     default:
         assert(!"switchのdefaultに来てしまった！");
@@ -268,8 +289,8 @@ bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
     // メモリからymm0～16にロード
     std::array<__m256i, 8> ymm{}, ymm2{};
     for (auto j = 0; j < 8; j++) {
-        ymm[j] = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(s1 + j * sizeof(__m256i)));
-        ymm2[j] = _mm256_loadu_si256(reinterpret_cast<__m256i const *>(s2 + j * sizeof(__m256i)));
+        ymm[j] = _mm256_load_si256(reinterpret_cast<__m256i const *>(s1 + j * sizeof(__m256i)));
+        ymm2[j] = _mm256_load_si256(reinterpret_cast<__m256i const *>(s2 + j * sizeof(__m256i)));
     }
 
     // 結果を比較
@@ -295,8 +316,8 @@ bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
     // メモリからzmm0～32にロード
     std::array<__m512i, 16> zmm{}, zmm2{};
     for (auto j = 0; j < 16; j++) {
-        zmm[j] = _mm512_loadu_si512(reinterpret_cast<__m512i const *>(s1 + j * sizeof(__m512i)));
-        zmm2[j] = _mm512_loadu_si512(reinterpret_cast<__m512i const *>(s2 + j * sizeof(__m512i)));
+        zmm[j] = _mm512_load_si512(reinterpret_cast<__m512i const *>(s1 + j * sizeof(__m512i)));
+        zmm2[j] = _mm512_load_si512(reinterpret_cast<__m512i const *>(s2 + j * sizeof(__m512i)));
     }
 
     // 結果を比較
@@ -322,18 +343,18 @@ bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, s
     // メモリからxmm0～7にロード
     std::array<__m128i, 4> xmm{}, xmm2{};
     for (auto j = 0; j < 4; j++) {
-        xmm[j] = ::_mm_load_si128(reinterpret_cast<__m128i const *>(s1 + j * sizeof(__m128i)));
-        xmm2[j] = ::_mm_load_si128(reinterpret_cast<__m128i const *>(s2 + j * sizeof(__m128i)));
+        xmm[j] = _mm_load_si128(reinterpret_cast<__m128i const *>(s1 + j * sizeof(__m128i)));
+        xmm2[j] = _mm_load_si128(reinterpret_cast<__m128i const *>(s2 + j * sizeof(__m128i)));
     }
 
     // 結果を比較
     std::array<__m128i, 4> r{};
     for (auto j = 0; j < 4; j++) {
         if (availableSSE41) {
-            r[j] = ::_mm_cmpeq_epi64(xmm[j], xmm2[j]);
+            r[j] = _mm_cmpeq_epi64(xmm[j], xmm2[j]);
         }
         else {
-            r[j] = ::_mm_cmpeq_epi32(xmm[j], xmm2[j]);
+            r[j] = _mm_cmpeq_epi32(xmm[j], xmm2[j]);
         }
 
         // 64ビット（8バイト）ごとに結果をチェック
@@ -353,7 +374,7 @@ void memfillAVX2(std::uint8_t * p, std::uint32_t size)
     auto const writeloop = size >> 9;
 
     // 乱数オブジェクト生成
-    myrandom::MyRand mr;
+    myrandom::MyRandSfmt mr;
 
     // 実際に1回のループで512バイトずつ書き込む
     for (auto i = 0U; i < writeloop; i++) {
@@ -377,13 +398,14 @@ void memfillAVX2(std::uint8_t * p, std::uint32_t size)
     }
 }
 
+#ifdef __INTEL_COMPILER
 void memfillAVX512(std::uint8_t * p, std::uint32_t size)
 {
     // 1回のループで書き込む回数（2048バイト（16384ビット）ずつ）
     auto const writeloop = size >> 11;
 
     // 乱数オブジェクト生成
-    myrandom::MyRand mr;
+    myrandom::MyRandAvx512 mr;
 
     // 実際に1回のループで2048バイトずつ書き込む
     for (auto i = 0U; i < writeloop; i++) {
@@ -391,11 +413,7 @@ void memfillAVX512(std::uint8_t * p, std::uint32_t size)
 
         // ymm0～15レジスタ上に乱数生成
         for (auto j = 0; j < 32; j++) {
-            alignas(64) std::array<std::uint32_t, 32> zmmtemp{};
-            for (auto && item : zmmtemp) {
-                item = mr.myrand();
-            }
-            zmm[j] = _mm512_load_si512(reinterpret_cast<__m512i const *>(zmmtemp.data()));
+            zmm[j] = mr.myrand();
         }
 
         // アドレス
@@ -406,13 +424,14 @@ void memfillAVX512(std::uint8_t * p, std::uint32_t size)
         }
     }
 }
+#endif
 
 DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size)
 {
-    auto const availsimdtype = check(p, size);
+    auto const availsimdtype = checksimd(size);
 
     switch (availsimdtype) {
-    case AvailSIMDtype::NOAVAIL:
+    case AvailSIMDtype::AVAILSSE2:
     case AvailSIMDtype::AVAILSSE41:
         memfillSSE2(p, size);
         break;
@@ -421,9 +440,11 @@ DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size)
         memfillAVX2(p, size);
         break;
 
+#ifdef __INTEL_COMPILER
     case AvailSIMDtype::AVAILAVX512:
         memfillAVX512(p, size);
         break;
+#endif
 
     default:
         assert(!"switchのdefaultに来てしまった！");
@@ -437,7 +458,7 @@ void memfillSSE2(std::uint8_t * p, std::uint32_t size)
     auto const writeloop = size >> 7;
 
     // 乱数オブジェクト生成
-    myrandom::MyRand mr;
+    myrandom::MyRandSfmt mr;
 
     // 実際に1回のループで128バイトずつ書き込む
     for (auto i = 0U; i < writeloop; i++) {
@@ -445,14 +466,14 @@ void memfillSSE2(std::uint8_t * p, std::uint32_t size)
         // xmm0～7レジスタ上に乱数生成
         for (auto j = 0; j < 8; j++) {
             alignas(16) std::array<std::uint32_t, 4> xmmtemp = { mr.myrand(), mr.myrand(), mr.myrand(), mr.myrand() };
-            xmm[j] = ::_mm_load_si128(reinterpret_cast<__m128i const *>(xmmtemp.data()));
+            xmm[j] = _mm_load_si128(reinterpret_cast<__m128i const *>(xmmtemp.data()));
         }
 
         // アドレス
         auto * const d = p + (i << 7);
         // 実際に書き込む
         for (auto j = 0; j < 8; j++) {
-            ::_mm_stream_si128(reinterpret_cast<__m128i *>(d + j * sizeof(__m128i)), xmm[j]);
+            _mm_stream_si128(reinterpret_cast<__m128i *>(d + j * sizeof(__m128i)), xmm[j]);
         }
     }
 }

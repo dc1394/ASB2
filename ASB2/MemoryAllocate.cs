@@ -19,17 +19,17 @@ namespace ASB2
         /// <summary>
         /// 15を表す定数
         /// </summary>
-        private const Byte FIFTEEN = 15;
+        private const Byte SIXTYTHREE = 63;
 
         /// <summary>
         /// x86のときのビットマスク
         /// </summary>
-        private const UInt32 MASKOfFFFFFFF0h = 0xFFFFFFF0;
+        private const UInt32 MASKOfFFFFFFC0h = 0xFFFFFFC0;
 
         /// <summary>
         /// x64のときのビットマスク
         /// </summary>
-        private const UInt64 MASKOfFFFFFFFFFFFFFFF0h = 0xFFFFFFFFFFFFFFF0;
+        private const UInt64 MASKOfFFFFFFFFFFFFFFC0h = 0xFFFFFFFFFFFFFFC0;
 
         /// <summary>
         /// 1MByte以上のメモリを確保するときに使う
@@ -53,20 +53,20 @@ namespace ASB2
             
             this.mfp = (i != 0) ? new MemoryFailPoint(i) : null;
             
-            this.Buffer = new Byte[this.BufferSize + FIFTEEN];
+            this.Buffer = new Byte[this.BufferSize + MemoryAllocate.SIXTYTHREE];
 
             fixed (Byte* p = &this.Buffer[0])
             {
                 if (Environment.Is64BitProcess)
                 {
                     var ptr = (UInt64)p;
-                    this.Address64 = (ptr + (UInt64)MemoryAllocate.FIFTEEN) & MemoryAllocate.MASKOfFFFFFFFFFFFFFFF0h;
+                    this.Address64 = (ptr + (UInt64)MemoryAllocate.SIXTYTHREE) & MemoryAllocate.MASKOfFFFFFFFFFFFFFFC0h;
                     this.Offset = (Int32)(this.Address64 - ptr);
                 }
                 else
                 {
                     var ptr = (UInt32)p;
-                    this.Address32 = (ptr + (UInt32)MemoryAllocate.FIFTEEN) & MemoryAllocate.MASKOfFFFFFFF0h;
+                    this.Address32 = (ptr + (UInt32)MemoryAllocate.SIXTYTHREE) & MemoryAllocate.MASKOfFFFFFFC0h;
                     this.Offset = (Int32)(this.Address32 - ptr);
                 }
             }

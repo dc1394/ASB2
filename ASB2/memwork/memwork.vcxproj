@@ -159,7 +159,7 @@ copy C:\mylib64\tbb2018_20180411oss\bin\ia32\vc12\tbb.dll D:\DATA\PROGRAM\My_Win
       <PrecompiledHeader>
       </PrecompiledHeader>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MEMWORK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MEMWORK_EXPORTS;HAVE_SSE2=1;SFMT_MEXP=19937;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <FlushDenormalResultsToZero>true</FlushDenormalResultsToZero>
       <LoopUnrolling>4</LoopUnrolling>
@@ -172,6 +172,7 @@ copy C:\mylib64\tbb2018_20180411oss\bin\ia32\vc12\tbb.dll D:\DATA\PROGRAM\My_Win
       <GenerateAlternateCodePaths>CORE512</GenerateAlternateCodePaths>
       <UseProcessorExtensions>CORE512</UseProcessorExtensions>
       <CCppSupport>Cpp17Support</CCppSupport>
+      <AdditionalOptions>/Qvc14 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -189,11 +190,12 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\SFMT-src-1.5.1\SFMT.c" />
     <ClCompile Include="memwork.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\SFMT-src-1.5.1\SFMT.h" />
     <ClInclude Include="memwork.h" />
-    <ClInclude Include="myrandom\myrand.h" />
     <ClInclude Include="myrandom\myrandavx512.h" />
     <ClInclude Include="myrandom\myrandsfmt.h" />
   </ItemGroup>
