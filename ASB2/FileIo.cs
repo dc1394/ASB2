@@ -47,7 +47,6 @@ namespace ASB2
         /// </summary>
         private readonly Func<MemoryAllocate, MemoryAllocate, Boolean> bufferCompare;
 
-
         /// <summary>
         /// ベリファイするかどうかを示すフラグ
         /// </summary>

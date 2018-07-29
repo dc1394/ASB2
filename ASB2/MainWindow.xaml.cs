@@ -625,14 +625,14 @@ namespace ASB2
         private void MainWindow_Closed(object sender, EventArgs e)
         {
             // タイマーストップ
-            this.dispatcherTimer.Stop();
+            this.dispatcherTimer?.Stop();
 
             if (this.fio != null)
             {
                 this.fio.Cts.Cancel();
 
                 this.fio.Dispose();
-                
+
                 this.fio = null;
             }
 
