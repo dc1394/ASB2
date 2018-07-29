@@ -136,10 +136,10 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <FlushDenormalResultsToZero>true</FlushDenormalResultsToZero>
       <LoopUnrolling>4</LoopUnrolling>
-      <Cpp0xSupport>true</Cpp0xSupport>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <CCppSupport>Cpp17Support</CCppSupport>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -151,7 +151,7 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
       <Command>copy "C:\Program Files (x86)\Microsoft SDKs\F#\10.1\Framework\v4.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Release\memwork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy C:\mylib64\tbb2018_20180411oss\bin\ia32\vc12\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
+copy C:\mylib64\tbb2018_20180411oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -196,7 +196,6 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
   <ItemGroup>
     <ClInclude Include="..\SFMT-src-1.5.1\SFMT.h" />
     <ClInclude Include="memwork.h" />
-    <ClInclude Include="myrandom\myrandavx512.h" />
     <ClInclude Include="myrandom\myrandsfmt.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

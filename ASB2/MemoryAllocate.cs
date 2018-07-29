@@ -60,14 +60,14 @@ namespace ASB2
                 if (Environment.Is64BitProcess)
                 {
                     var ptr = (UInt64)p;
-                    this.Address64 = (ptr + (UInt64)MemoryAllocate.SIXTYTHREE) & MemoryAllocate.MASKOfFFFFFFFFFFFFFFC0h;
-                    this.Offset = (Int32)(this.Address64 - ptr);
+                    var address = (ptr + (UInt64)MemoryAllocate.SIXTYTHREE) & MemoryAllocate.MASKOfFFFFFFFFFFFFFFC0h;
+                    this.Offset = (Int32)(address - ptr);
                 }
                 else
                 {
                     var ptr = (UInt32)p;
-                    this.Address32 = (ptr + (UInt32)MemoryAllocate.SIXTYTHREE) & MemoryAllocate.MASKOfFFFFFFC0h;
-                    this.Offset = (Int32)(this.Address32 - ptr);
+                    var address = (ptr + (UInt32)MemoryAllocate.SIXTYTHREE) & MemoryAllocate.MASKOfFFFFFFC0h;
+                    this.Offset = (Int32)(address - ptr);
                 }
             }
         }
@@ -77,29 +77,19 @@ namespace ASB2
         #region プロパティ
 
         /// <summary>
-        /// x86におけるメモリの先頭アドレス
-        /// </summary>
-        internal UInt32 Address32 { get; private set; }
-
-        /// <summary>
-        /// x64におけるメモリの先頭アドレス
-        /// </summary>
-        internal UInt64 Address64 { get; private set; }
-
-        /// <summary>
         /// メモリ
         /// </summary>
-        internal Byte[] Buffer { get; private set; }
+        internal Byte[] Buffer { get; }
 
         /// <summary>
         /// メモリの大きさ
         /// </summary>
-        internal Int32 BufferSize { get; private set; }
+        internal Int32 BufferSize { get; }
 
         /// <summary>
         /// メモリのオフセット
         /// </summary>
-        internal Int32 Offset { get; private set; }
+        internal Int32 Offset { get; }
 
         #endregion プロパティ
 

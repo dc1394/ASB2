@@ -17,73 +17,53 @@ namespace ASB2
         #region メソッド
 
         /// <summary>
-        /// 引数で指定された二つのバッファの内容を比較する（x86）
+        /// 引数で指定された二つのバッファの内容を比較する
         /// </summary>
         /// <param name="ma1">バッファのラッパーオブジェクト1</param>
         /// <param name="ma2">バッファのラッパーオブジェクト2</param>
         /// <returns>比較した二つのバッファの内容が同じだったかどうか</returns>
-        internal static Boolean MemoryCompare32(MemoryAllocate ma1, MemoryAllocate ma2)
+        internal static unsafe Boolean MyMemoryCompare(MemoryAllocate ma1, MemoryAllocate ma2)
         {
             Debug.Assert(ma1.BufferSize == ma2.BufferSize, "バッファ1とバッファ2のサイズが等しくない！");
 
-            return MemoryCmpSimd((IntPtr)ma1.Address32, (IntPtr)ma2.Address32, (UInt32)ma1.BufferSize);
+            fixed (Byte* p1 = &ma1.Buffer[0])
+            {
+                fixed (Byte* p2 = &ma2.Buffer[0])
+                {
+                    return MemoryCmpSimd((IntPtr)(p1 + ma1.Offset), (IntPtr)(p2 + ma2.Offset), (UInt32)ma1.BufferSize);
+                }
+            }
         }
 
         /// <summary>
-        /// 引数で指定された二つのバッファの内容を並列で比較する（x86）
+        /// 引数で指定された二つのバッファの内容を並列で比較する
         /// </summary>
         /// <param name="ma1">バッファのラッパーオブジェクト1</param>
         /// <param name="ma2">バッファのラッパーオブジェクト2</param>
         /// <returns>比較した二つのバッファの内容が同じだったかどうか</returns>
-        internal static Boolean MemoryCompare32Parallel(MemoryAllocate ma1, MemoryAllocate ma2)
+        internal static unsafe Boolean MyMemoryCompareParallel(MemoryAllocate ma1, MemoryAllocate ma2)
         {
             Debug.Assert(ma1.BufferSize == ma2.BufferSize, "バッファ1とバッファ2のサイズが等しくない！");
 
-            return MemoryCmpParallelSimd((IntPtr)ma1.Address32, (IntPtr)ma2.Address32, (UInt32)ma1.BufferSize);
+            fixed (Byte* p1 = &ma1.Buffer[0])
+            {
+                fixed (Byte* p2 = &ma2.Buffer[0])
+                {
+                    return MemoryCmpParallelSimd((IntPtr)(p1 + ma1.Offset), (IntPtr)(p2 + ma2.Offset), (UInt32)ma1.BufferSize);
+                }
+            }
         }
 
         /// <summary>
-        /// 引数で指定された二つのバッファの内容を比較する（x64）
-        /// </summary>
-        /// <param name="ma1">バッファのラッパーオブジェクト1</param>
-        /// <param name="ma2">バッファのラッパーオブジェクト2</param>
-        /// <returns>比較した二つのバッファの内容が同じだったかどうか</returns>
-        internal static Boolean MemoryCompare64(MemoryAllocate ma1, MemoryAllocate ma2)
-        {
-            Debug.Assert(ma1.BufferSize == ma2.BufferSize, "バッファ1とバッファ2のサイズが等しくない！");
-
-            return MemoryCmpSimd((IntPtr)ma1.Address64, (IntPtr)ma2.Address64, (UInt32)ma1.BufferSize);
-        }
-
-        /// <summary>
-        /// 引数で指定された二つのバッファの内容を並列で比較する（x64）
-        /// </summary>
-        /// <param name="ma1">バッファのラッパーオブジェクト1</param>
-        /// <param name="ma2">バッファのラッパーオブジェクト2</param>
-        /// <returns>比較した二つのバッファの内容が同じだったかどうか</returns>
-        internal static Boolean MemoryCompare64Parallel(MemoryAllocate ma1, MemoryAllocate ma2)
-        {
-            Debug.Assert(ma1.BufferSize == ma2.BufferSize, "バッファ1とバッファ2のサイズが等しくない！");
-
-            return MemoryCmpParallelSimd((IntPtr)ma1.Address64, (IntPtr)ma2.Address64, (UInt32)ma1.BufferSize);
-        }
-
-        /// <summary>
-        /// 引数で指定されたバッファに書き込む（x86）
+        /// 引数で指定されたバッファに書き込む
         /// </summary>
         /// <param name="ma">バッファのラッパーオブジェクト</param>
-        internal static void WriteMemory32(MemoryAllocate ma)
+        internal static unsafe void WriteMemory(MemoryAllocate ma)
         {
-            MemoryFillSimd((IntPtr)ma.Address32, (UInt32)ma.BufferSize);
-        }
-
-        /// <summary>
-        /// 引数で指定されたバッファに書き込む（x64）
-        /// </summary>
-        /// <param name="ma">バッファのラッパーオブジェクト</param>
-        internal static unsafe void WriteMemory64(MemoryAllocate ma)
-        {
-            MemoryFillSimd((IntPtr)ma.Address64, (UInt32)ma.BufferSize);
+            fixed (Byte* p = &ma.Buffer[0])
+            {
+                MemoryFillSimd((IntPtr)(p + ma.Offset), (UInt32)ma.BufferSize);
+            }
         }
 
         [DllImport("memwork", EntryPoint = "memcmpsimd")]

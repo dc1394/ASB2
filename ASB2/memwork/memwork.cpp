@@ -6,10 +6,6 @@
 */
 #include "memwork.h"
 
-#ifdef __INTEL_COMPILER
-    #include "myrandom/myrandavx512.h"
-#endif
-
 #include "myrandom/myrandsfmt.h"
 #include <bitset>                   // for std::bitset
 #include <cassert>                  // for assert
@@ -24,8 +20,8 @@
     #include <zmmintrin.h>          // for _mm512_cmpeq_epu64_mask, _mm512_load_si512, _mm512_store_si512
 #endif
 
-#include <tbb/parallel_for.h>       // for tbb::parallel_reduce
-#include <tbb/parallel_reduce.h>    // for tbb:parallel_reduce
+#include <tbb/parallel_for.h>       // for tbb::blocked_range
+#include <tbb/parallel_reduce.h>    // for tbb::parallel_reduce
 
 AvailSIMDtype checksimd(std::uint32_t size)
 {
@@ -280,6 +276,7 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
 
 bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 {
+    // 1回のループで256バイト（2048ビット）ずつ比較
     auto const s1 = reinterpret_cast<char const *>(p1) + (index << 8);
     auto const s2 = reinterpret_cast<char const *>(p2) + (index << 8);
 
@@ -295,7 +292,7 @@ bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 
     // 結果を比較
     for (auto j = 0; j < 8; j++) {
-        // 256ビット（16バイト）ごとに結果をチェック
+        // 256ビット（32バイト）ごとに結果をチェック
         auto const subresult = _mm256_sub_epi64(ymm[j], ymm2[j]);
         if (!_mm256_testz_si256(subresult, subresult)) {
             return false;
@@ -307,6 +304,7 @@ bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 
 bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 {
+    // 1回のループで1024バイト（8192ビット）ずつ比較
     auto const s1 = reinterpret_cast<char const *>(p1) + (index << 10);
     auto const s2 = reinterpret_cast<char const *>(p2) + (index << 10);
 
@@ -322,7 +320,7 @@ bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 
     // 結果を比較
     for (auto j = 0; j < 16; j++) {
-        // 1024ビット（128バイト）ごとに結果をチェック
+        // 512ビット（64バイト）ごとに結果をチェック
         auto const mask = _mm512_cmpeq_epu64_mask(zmm[j], zmm2[j]);
         if (mask != 0xFF) {
             return false;
@@ -334,6 +332,7 @@ bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 
 bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
 {
+    // 1回のループで64バイト（512ビット）ずつ比較
     auto const s1 = reinterpret_cast<char const *>(p1) + (index << 6);
     auto const s2 = reinterpret_cast<char const *>(p2) + (index << 6);
 
@@ -350,17 +349,20 @@ bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, s
     // 結果を比較
     std::array<__m128i, 4> r{};
     for (auto j = 0; j < 4; j++) {
-        if (availableSSE41) {
-            r[j] = _mm_cmpeq_epi64(xmm[j], xmm2[j]);
-        }
-        else {
-            r[j] = _mm_cmpeq_epi32(xmm[j], xmm2[j]);
-        }
+        // 128ビット（8バイト）ごとに結果をチェック
+        {
+            if (availableSSE41) {
+                r[j] = _mm_cmpeq_epi64(xmm[j], xmm2[j]);
+            }
+            else {
+                r[j] = _mm_cmpeq_epi32(xmm[j], xmm2[j]);
+            }
 
-        // 64ビット（8バイト）ごとに結果をチェック
-        for (auto k = 0; k < 2; k++) {
-            if (r[j].m128i_u64[k] != FFFFFFFFFFFFFFFFh) {
-                return false;
+            // 64ビット（8バイト）ごとに結果をチェック
+            for (auto k = 0; k < 2; k++) {
+                if (r[j].m128i_u64[k] != FFFFFFFFFFFFFFFFh) {
+                    return false;
+                }
             }
         }
     }
@@ -382,7 +384,7 @@ void memfillAVX2(std::uint8_t * p, std::uint32_t size)
         
         // ymm0～15レジスタ上に乱数生成
         for (auto j = 0; j < 16; j++) {
-            alignas(32) std::array<std::uint32_t, 16> ymmtemp{};
+            alignas(32) std::array<std::uint32_t, 8> ymmtemp{};
             for (auto && item : ymmtemp) {
                 item = mr.myrand();
             }
@@ -405,21 +407,25 @@ void memfillAVX512(std::uint8_t * p, std::uint32_t size)
     auto const writeloop = size >> 11;
 
     // 乱数オブジェクト生成
-    myrandom::MyRandAvx512 mr;
+    myrandom::MyRandSfmt mr;
 
     // 実際に1回のループで2048バイトずつ書き込む
     for (auto i = 0U; i < writeloop; i++) {
         std::array<__m512i, 32> zmm{};
 
-        // ymm0～15レジスタ上に乱数生成
+        // zmm0～31レジスタ上に乱数生成
         for (auto j = 0; j < 32; j++) {
-            zmm[j] = mr.myrand();
+            alignas(64) std::array<std::uint32_t, 16> zmmtemp{};
+            for (auto && item : zmmtemp) {
+                item = mr.myrand();
+            }
+            zmm[j] = _mm512_load_si512(reinterpret_cast<__m512i const *>(zmmtemp.data()));
         }
 
         // アドレス
         auto * const d = p + (i << 11);
         // 実際に書き込む
-        for (auto j = 0; j < 16; j++) {
+        for (auto j = 0; j < 32; j++) {
             _mm512_store_si512(reinterpret_cast<__m512i *>(d + j * sizeof(__m512i)), zmm[j]);
         }
     }

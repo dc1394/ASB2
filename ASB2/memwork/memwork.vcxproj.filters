@@ -4,9 +4,6 @@
     <ClInclude Include="memwork.h">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="myrandom\myrandavx512.h">
-      <Filter>ヘッダー ファイル\myrandom</Filter>
-    </ClInclude>
     <ClInclude Include="myrandom\myrandsfmt.h">
       <Filter>ヘッダー ファイル\myrandom</Filter>
     </ClInclude>

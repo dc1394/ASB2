@@ -48,6 +48,14 @@ namespace ASB2
         {
             this.bufferSizeText = sd.BufferSizeText;
 
+            Int32.TryParse(DefaultData.DefaultDataDefinition.DEFAULTBUFSIZETEXT, out Int32 defaultBufferSize);
+
+            this.DefaultBufferSize = defaultBufferSize;
+
+            Int32.TryParse(DefaultData.DefaultDataDefinition.DEFAULTTIMERINTERVALTEXT, out Int32 defaultTimerInterval);
+
+            this.DefaultTimerInterval = defaultTimerInterval;
+
             this.myType = sd.Minimize;
 
             this.isParallel = sd.IsParallel;
@@ -60,35 +68,33 @@ namespace ASB2
         #region プロパティ
 
         /// <summary>
-        /// メモリサイズの文字列
+        /// バッファサイズの文字列
         /// </summary>
         public String BufferSizeText
         {
-            get
-            {
-                return this.bufferSizeText;
-            }
+            get => this.bufferSizeText;
 
-            set
-            {
-                this.SetProperty(ref this.bufferSizeText, value);
-            }
+            set => this.SetProperty(ref this.bufferSizeText, value);
         }
+
+        /// <summary>
+        /// デフォルトのバッファサイズ
+        /// </summary>
+        public Int32 DefaultBufferSize { get; }
+
+        /// <summary>
+        /// デフォルトのタイマの更新間隔
+        /// </summary>
+        public Int32 DefaultTimerInterval { get; }
 
         /// <summary>
         /// タイマの更新間隔
         /// </summary>
         public String TimerIntervalText
         {
-            get
-            {
-                return this.timerIntervalText;
-            }
+            get => this.timerIntervalText;
 
-            set
-            {
-                this.SetProperty(ref this.timerIntervalText, value);
-            }
+            set => this.SetProperty(ref this.timerIntervalText, value);
         }
 
         /// <summary>
@@ -96,15 +102,9 @@ namespace ASB2
         /// </summary>
         public DefaultData.MinimizeType MyType
         {
-            get
-            {
-                return this.myType;
-            }
+            get => this.myType;
 
-            set
-            {
-                this.SetProperty(ref this.myType, value);
-            }
+            set => this.SetProperty(ref this.myType, value);
         }
 
         #endregion プロパティ

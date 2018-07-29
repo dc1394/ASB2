@@ -47,10 +47,6 @@ namespace ASB2
         /// </summary>
         private readonly Func<MemoryAllocate, MemoryAllocate, Boolean> bufferCompare;
 
-        /// <summary>
-        /// バッファに書き込むデリゲート
-        /// </summary>
-        private readonly Action<MemoryAllocate> bufferWrite;
 
         /// <summary>
         /// ベリファイするかどうかを示すフラグ
@@ -95,35 +91,18 @@ namespace ASB2
 
             this.isVerify = isVerify;
 
-            if (Environment.Is64BitProcess)
-            {
-                this.bufferWrite = UnsafeNativeMethods.WriteMemory64;
-            }
-            else
-            {
-                this.bufferWrite = UnsafeNativeMethods.WriteMemory32;
-            }
-
             this.bufBetweenDisk = this.BufferToDisk;
             this.ma = new MemoryAllocate(this.bufferSize);
 
             if (this.isVerify)
             {
-                if (Environment.Is64BitProcess && isParallel)
+                if (isParallel)
                 {
-                    this.bufferCompare = UnsafeNativeMethods.MemoryCompare64Parallel;
-                }
-                else if (Environment.Is64BitProcess)
-                {
-                    this.bufferCompare = UnsafeNativeMethods.MemoryCompare64;
-                }
-                else if (isParallel)
-                {
-                    this.bufferCompare = UnsafeNativeMethods.MemoryCompare32Parallel;
+                    this.bufferCompare = UnsafeNativeMethods.MyMemoryCompareParallel;
                 }
                 else
                 {
-                    this.bufferCompare = UnsafeNativeMethods.MemoryCompare32;
+                    this.bufferCompare = UnsafeNativeMethods.MyMemoryCompare;
                 }
 
                 this.maread = new MemoryAllocate(this.bufferSize);
@@ -390,7 +369,7 @@ namespace ASB2
                 try
                 {
                     var max = this.FileSize / this.bufferSize;
-                    this.bufferWrite(this.ma);
+                    UnsafeNativeMethods.WriteMemory(this.ma);
                     for (var i = 0; i < max; i++)
                     {
                         if (!this.MyWrite(bw, this.bufferSize))
@@ -517,6 +496,14 @@ namespace ASB2
 
                 if (!this.bufferCompare(this.ma, this.maread))
                 {
+                    for (var i = 0; i < this.ma.BufferSize; i++)
+                    {
+                        if (this.ma.Buffer[i + this.ma.Offset] != this.maread.Buffer[i + this.maread.Offset])
+                        {
+                            int n = 1;
+                        }
+                    }
+
                     MyError.CallErrorMessageBox($"ベリファイに失敗しました。{Environment.NewLine}プログラムのバグか、SSD/HDDが壊れています。");
 
                     this.ReturnCode = (Int32)FileIo.終了状態.異常終了;
