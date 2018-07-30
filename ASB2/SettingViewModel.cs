@@ -12,7 +12,7 @@ namespace ASB2
     /// <summary>
     /// SettingWindowに対応するView
     /// </summary>
-    internal sealed class SettingViewModel : MyViewModelBase.BindableBase
+    internal sealed class SettingViewModel : ASB2.BindableBase
     {
         #region フィールド
 

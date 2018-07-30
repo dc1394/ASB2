@@ -89,7 +89,6 @@ AvailSIMDtype isAvailableSIMDtype()
     std::bitset<32> f_1_ecx = { 0 };
     std::bitset<32> f_7_ebx = { 0 };
     std::vector< std::array<std::int32_t, 4> > data{};
-    std::vector< std::array<std::int32_t, 4> > extdata{};
 
     std::array<std::int32_t, 4> cpuinfo = { -1 };
 
@@ -98,7 +97,7 @@ AvailSIMDtype isAvailableSIMDtype()
     __cpuid(cpuinfo.data(), 0);
     auto const nids = cpuinfo[0];
 
-    for (auto i = 0; i <= nids; ++i) {
+    for (auto i = 0; i <= nids; i++) {
         __cpuidex(cpuinfo.data(), i, 0);
         data.push_back(cpuinfo);
     }

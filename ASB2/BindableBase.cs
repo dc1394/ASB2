@@ -5,7 +5,7 @@
 //     Copyright ©  2014 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-namespace MyViewModelBase
+namespace ASB2
 {
     using System;
     using System.ComponentModel;
@@ -36,10 +36,7 @@ namespace MyViewModelBase
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
             var eventHandler = this.PropertyChanged;
-            if (eventHandler != null)
-            {
-                eventHandler(this, new PropertyChangedEventArgs(propertyName));
-            }
+            eventHandler?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         #region == implement of INotifyPropertyChanged ==
@@ -50,10 +47,7 @@ namespace MyViewModelBase
         /// <param name="propertyName">プロパティの名前</param>
         protected virtual void RaisePropertyChanged(string propertyName)
         {
-            if (this.PropertyChanged != null)
-            {
-                this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         /// <summary>

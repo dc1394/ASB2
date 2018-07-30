@@ -17,14 +17,14 @@ namespace ASB2
         #region フィールド
 
         /// <summary>
+        /// 保存された設定情報のオブジェクト
+        /// </summary>
+        private readonly SaveDataManage.SaveData sd;
+
+        /// <summary>
         /// SettingWindowに対応するView
         /// </summary>
         private SettingViewModel svm;
-
-        /// <summary>
-        /// 保存された設定情報のオブジェクト
-        /// </summary>
-        private SaveDataManage.SaveData sd;
 
         #endregion フィールド
 

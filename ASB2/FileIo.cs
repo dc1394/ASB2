@@ -158,19 +158,14 @@ namespace ASB2
         internal enum 終了状態
         {
             /// <summary>
-            /// 処理が終了していない
-            /// </summary>
-            未終了 = 0,
-
-            /// <summary>
             /// 正常に終了
             /// </summary>
-            正常終了 = 1,
+            正常終了 = 0,
 
             /// <summary>
             /// キャンセルされた
             /// </summary>
-            キャンセル終了 = 2,
+            キャンセル終了 = 1,
 
             /// <summary>
             /// 何らかの異常があって終了した
@@ -299,8 +294,10 @@ namespace ASB2
         /// <returns>なし</returns>
         internal static Object ThrowMainThreadException(Object arg)
         {
-            var ex = arg as Exception;
-            MyError.WriteAndThrow<SystemException>(ex.Message, ex);
+            if (arg is Exception ex)
+            {
+                MyError.WriteAndThrow<SystemException>(ex.Message, ex);
+            }
 
             return null;
         }
@@ -310,10 +307,7 @@ namespace ASB2
         /// </summary>
         internal async void FileIoRun()
         {
-            if (this.Cts == null)
-            {
-                this.Cts = new CancellationTokenSource();
-            }
+            this.Cts = this.Cts ?? new CancellationTokenSource();
 
             this.IsNow = (Int32)FileIo.動作状態.書込中;
 
@@ -495,14 +489,6 @@ namespace ASB2
 
                 if (!this.bufferCompare(this.ma, this.maread))
                 {
-                    for (var i = 0; i < this.ma.BufferSize; i++)
-                    {
-                        if (this.ma.Buffer[i + this.ma.Offset] != this.maread.Buffer[i + this.maread.Offset])
-                        {
-                            int n = 1;
-                        }
-                    }
-
                     MyError.CallErrorMessageBox($"ベリファイに失敗しました。{Environment.NewLine}プログラムのバグか、SSD/HDDが壊れています。");
 
                     this.ReturnCode = (Int32)FileIo.終了状態.異常終了;

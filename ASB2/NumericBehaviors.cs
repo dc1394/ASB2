@@ -163,15 +163,13 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private static void IsNumericChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
         {
-            var textBox = sender as TextBox;
-            if (textBox != null)
+            if (sender is TextBox textBox)
             {
                 textBox.KeyDown -= OnKeyDown;
                 textBox.LostFocus -= OnLostFocus;
                 DataObject.RemovePastingHandler(textBox, TextBoxPastingEventHandler);
 
-                var newIsNumeric = (Boolean)e.NewValue;
-                if (newIsNumeric)
+                if ((Boolean)e.NewValue)
                 {
                     textBox.KeyDown += OnKeyDown;
                     textBox.LostFocus += OnLostFocus;
@@ -187,8 +185,7 @@ namespace ASB2
         /// <param name="e">入力されたキー</param>
         private static void OnKeyDown(object sender, KeyEventArgs e)
         {
-           var textBox = sender as TextBox;
-            if (textBox != null)
+            if (sender is TextBox textBox)
             {
                 if ((Key.D0 <= e.Key && e.Key <= Key.D9) ||
                     (Key.NumPad0 <= e.Key && e.Key <= Key.NumPad9) ||
@@ -212,15 +209,11 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private static void OnLostFocus(object sender, RoutedEventArgs e)
         {
-            var textBox = sender as TextBox;
-            
-            if (textBox != null)
+            if (sender is TextBox textBox)
             {
                 if (!string.IsNullOrEmpty(textBox.Text))
                 {
-                    Int32 val;
-                    
-                    Int32.TryParse(textBox.Text, out val);
+                    Int32.TryParse(textBox.Text, out Int32 val);
 
                     var max = NumericBehaviors.GetMaximum(textBox);
                     if (val < NumericBehaviors.GetMinimum(textBox))
@@ -248,12 +241,8 @@ namespace ASB2
         /// <param name="e">ペーストされた値</param>
         private static void TextBoxPastingEventHandler(object sender, DataObjectPastingEventArgs e)
         {
-            var textBox = sender as TextBox;
-            
-            Int32 val;
-
-            if (textBox != null &&
-                Int32.TryParse(e.DataObject.GetData(typeof(string)) as string, out val) &&
+            if (sender is TextBox textBox &&
+                Int32.TryParse(e.DataObject.GetData(typeof(string)) as string, out Int32 val) &&
                 val >= NumericBehaviors.GetMinimum(textBox))
             {
                 var max = NumericBehaviors.GetMaximum(textBox);

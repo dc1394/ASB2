@@ -55,10 +55,7 @@ namespace ASB2
             }
             catch (Win32Exception)
             {
-                MyError.CallErrorMessageBox(
-                    String.Format(
-                        "カレントフォルダにreadme.txtが見つかりません。{0}readme.txtを削除しないで下さい。",
-                        Environment.NewLine));
+                MyError.CallErrorMessageBox($"カレントフォルダにreadme.txtが見つかりません。{Environment.NewLine}readme.txtを削除しないで下さい。");
             }
         }
 

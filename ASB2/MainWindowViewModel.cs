@@ -11,7 +11,7 @@ namespace ASB2
     /// <summary>
     /// MainWindowに対応するView
     /// </summary>
-    internal sealed class MainWindowViewModel : MyViewModelBase.BindableBase
+    internal sealed class MainWindowViewModel : ASB2.BindableBase
     {
         #region フィールド
 

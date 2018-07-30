@@ -36,6 +36,11 @@ namespace ASB2
         #region フィールド
 
         /// <summary>
+        /// バルーンチップを表示する時間（ミリ秒）
+        /// </summary>
+        private readonly Int32 balloonTipTimeout = 1000;
+
+        /// <summary>
         /// タスクトレイに表示するアイコン
         /// </summary>
         private NotifyIcon notifyIcon = new NotifyIcon();
@@ -134,11 +139,6 @@ namespace ASB2
         }
 
         /// <summary>
-        /// バルーンチップを表示する時間（ミリ秒）
-        /// </summary>
-        private Int32 BalloonTipTimeout { get; set; }
-
-        /// <summary>
         /// バルーンチップに表示するタイトル
         /// 文字列中に含まれる改行文字は無視します。
         /// </summary>
@@ -159,10 +159,7 @@ namespace ASB2
         /// </summary>
         public void Dispose()
         {
-            if (this.notifyIcon != null)
-            {
-                this.notifyIcon.Dispose();
-            }
+            this.notifyIcon?.Dispose();
 
             // ウィンドウから切断
             if (this.targetWindow != null)
@@ -232,21 +229,13 @@ namespace ASB2
 
                          case DefaultData.MinimizeType.TASKTRAY:
                              this.targetWindow.Hide();
-                     
-                             if (this.notifyIcon != null)
-                             {
-                                 this.notifyIcon.ShowBalloonTip(this.BalloonTipTimeout);
-                             }
+                             this.notifyIcon?.ShowBalloonTip(this.balloonTipTimeout);
 
                              break;
 
                          case DefaultData.MinimizeType.BOTH:
                              this.notifyIcon.Visible = true;
-                     
-                             if (this.notifyIcon != null)
-                             {
-                                 this.notifyIcon.ShowBalloonTip(this.BalloonTipTimeout);
-                             }
+                             this.notifyIcon?.ShowBalloonTip(this.balloonTipTimeout);
                      
                              break;
 

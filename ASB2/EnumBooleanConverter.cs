@@ -28,20 +28,19 @@ namespace ASB2
         public Object Convert(Object value, Type targetType, Object parameter, CultureInfo culture)
         {
             // バインドする列挙値の文字列表記がパラメータに渡されているか
-            var paramString = parameter as String;
-            if (paramString == null)
+            if (parameter is String paramString)
             {
-                return DependencyProperty.UnsetValue;
+                // パラメータが Enum の値として正しいか
+                if (value == null || !Enum.IsDefined(value.GetType(), paramString))
+                {
+                    return DependencyProperty.UnsetValue;
+                }
+
+                // パラメータを Enum に変換し、値が一致すればtrueを返す
+                return value.Equals(Enum.Parse(value.GetType(), paramString));
             }
 
-            // パラメータが Enum の値として正しいか
-            if (!Enum.IsDefined(value.GetType(), paramString))
-            {
-                return DependencyProperty.UnsetValue;
-            }
-
-            // パラメータを Enum に変換し、値が一致すればtrueを返す
-            return value.Equals(Enum.Parse(value.GetType(), paramString));
+            return DependencyProperty.UnsetValue;
         }
 
         /// <summary>
@@ -55,14 +54,13 @@ namespace ASB2
         public Object ConvertBack(Object value, Type targetType, Object parameter, CultureInfo culture)
         {
             // バインドするEnum値の文字列表記がパラメータに渡されているか
-            var paramString = parameter as String;
-            if (paramString == null)
+            if (parameter is String paramString)
             {
-                return DependencyProperty.UnsetValue;
+                // Enum型にパースして返す
+                return Enum.Parse(targetType, paramString);
             }
 
-            // Enum型にパースして返す
-            return Enum.Parse(targetType, paramString);
+            return DependencyProperty.UnsetValue;
         }
     }
 }

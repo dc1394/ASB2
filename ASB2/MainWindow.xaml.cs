@@ -773,20 +773,21 @@ namespace ASB2
             {
                 // はじめのファイル名を指定する
                 // はじめに「ファイル名」で表示される文字列を指定する
-                FileName = Path.GetFileName(this.sdm.SaveData.TempFilenameFullPath),
+                FileName = Path.GetFileName(this.sdm.SaveData.TempFilenameFullPath) ?? "asb.temp",
 
                 // [ファイルの種類]に表示される選択肢を指定する
                 Filter = "一時ファイル(*.tmp;*.temp)|*.tmp;*.temp|すべてのファイル(*.*)|*.*",
 
                 // はじめに表示されるフォルダを指定する
                 // 指定しない（空の文字列）の時は、現在のディレクトリが表示される
-                InitialDirectory = Path.GetDirectoryName(this.sdm.SaveData.TempFilenameFullPath),
+                InitialDirectory = Path.GetDirectoryName(this.sdm.SaveData.TempFilenameFullPath) ?? String.Empty,
 
                 // タイトルを設定する
                 Title = "一時ファイルのファイル名を指定："
             };
 
             // ダイアログを表示する
+            // ReSharper disable once PossibleInvalidOperationException
             if (sfd.ShowDialog().Value)
             {
                 // フルパスを含むファイル名を保存
