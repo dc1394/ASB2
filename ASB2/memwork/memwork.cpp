@@ -23,37 +23,6 @@
 #include <tbb/parallel_for.h>       // for tbb::blocked_range
 #include <tbb/parallel_reduce.h>    // for tbb::parallel_reduce
 
-AvailSIMDtype checksimd(std::uint32_t size)
-{
-    // SIMD命令はどれが使用可能か
-    auto const availsimdtype = isAvailableSIMDtype();
-
-    switch (availsimdtype) {
-    case AvailSIMDtype::AVAILSSE2:
-    case AvailSIMDtype::AVAILSSE41:
-        // 書き込むバイト数は128バイトの倍数か？
-        assert(!(size & 0x7F));
-        break;
-
-    case AvailSIMDtype::AVAILAVX2:
-        // 書き込むバイト数は512バイトの倍数か？
-        assert(!(size & 0x01FF));
-
-        break;
-
-    case AvailSIMDtype::AVAILAVX512:
-        // 書き込むバイト数は2048バイトの倍数か？
-        assert(!(size & 0x07FF));
-        break;
-
-    default:
-        assert(!"switchのdefaultに来てしまった！");
-        break;
-    }
-
-    return isAvailableSIMDtype();
-}
-
 std::pair<AvailSIMDtype, std::uint32_t> getinfo(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
 {
     // 比較する回数
@@ -129,7 +98,7 @@ AvailSIMDtype isAvailableSIMDtype()
     }
 }
 
-bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2)
 {
     // 実際に1回のループで256バイトずつ比較
     for (auto i = 0U; i < cmploopnum; i++) {
@@ -142,7 +111,7 @@ bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
 }
 
 #ifdef __INTEL_COMPILER
-bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2)
 {
     // 実際に1回のループで1024バイトずつ比較
     for (auto i = 0U; i < cmploopnum; i++) {
@@ -155,7 +124,7 @@ bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2
 }
 #endif
 
-DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size)
+DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
 {
     AvailSIMDtype availsimdtype;
     std::uint32_t cmploopnum;
@@ -189,7 +158,7 @@ DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::u
     return false;
 }
 
-bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2)
 {
     // 実際に1回のループで64バイトずつ比較
     for (auto i = 0U; i < cmploopnum; i++) {
@@ -201,7 +170,7 @@ bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std
     return true;
 }
 
-DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size)
+DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
 {
     AvailSIMDtype availsimdtype;
     std::uint32_t cmploopnum;
@@ -273,7 +242,7 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
     return result == cmploopnum;
 }
 
-bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpuseAVX2(std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2)
 {
     // 1回のループで256バイト（2048ビット）ずつ比較
     auto const s1 = reinterpret_cast<char const *>(p1) + (index << 8);
@@ -301,7 +270,7 @@ bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
     return true;
 }
 
-bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpuseAVX512(std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2)
 {
     // 1回のループで1024バイト（8192ビット）ずつ比較
     auto const s1 = reinterpret_cast<char const *>(p1) + (index << 10);
@@ -329,7 +298,7 @@ bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
     return true;
 }
 
-bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2)
+bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2)
 {
     // 1回のループで64バイト（512ビット）ずつ比較
     auto const s1 = reinterpret_cast<char const *>(p1) + (index << 6);
@@ -428,12 +397,27 @@ void memfillAVX512(std::uint8_t * p, std::uint32_t size)
             _mm512_store_si512(reinterpret_cast<__m512i *>(d + j * sizeof(__m512i)), zmm[j]);
         }
     }
+
+    // sizeを2048バイトで割った余り
+    auto const remainder = size & 0x07FF;
+
+    // 余りの分のループ回数
+    auto const loop = remainder / 4;
+
+    // 余りの分の開始アドレス
+    auto const address = p + (writeloop << 11);
+
+    // 余りを4バイトずつ書き込む
+    for (auto i = 0U; i < loop; i++) {
+        auto * const d = reinterpret_cast<std::uint32_t * const>(address + i * 4);
+        *d = mr.myrand();
+    }
 }
 #endif
 
 DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size)
 {
-    auto const availsimdtype = checksimd(size);
+    auto const availsimdtype = isAvailableSIMDtype();
 
     switch (availsimdtype) {
     case AvailSIMDtype::AVAILSSE2:

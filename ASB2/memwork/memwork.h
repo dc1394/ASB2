@@ -58,14 +58,6 @@ static auto constexpr PREFETCHSIZE = 4096;
 //! A global function.
 /*!
     各種条件を確認する
-    \param size 書き込むメモリのサイズ
-    \return SSE4.1、AVX2およびAVX-512が使用可能かどうかの列挙型
-*/
-AvailSIMDtype checksimd(std::uint32_t size);
-
-//! A global function.
-/*!
-    各種条件を確認する
     \param size 比較するメモリのサイズ
     \return SSE4.1、AVX2およびAVX-512が使用可能かどうかと、比較する回数をセットにしたstd::pair
 */
@@ -74,7 +66,7 @@ std::pair<AvailSIMDtype, std::uint32_t> getinfo(std::uint8_t const * p1, std::ui
 //! A global function.
 /*!
     SSE4.1、AVX2、AVX-512が使用可能かどうかチェックする
-    \return SSE4.1、AVX2、AVX-512が使用可能かどうか
+    \return SSE4.1、AVX2、AVX-512が使用可能かどうかの列挙型
 */
 AvailSIMDtype isAvailableSIMDtype();
 
@@ -86,7 +78,7 @@ AvailSIMDtype isAvailableSIMDtype();
     \param p2 比較するメモリ2の先頭アドレス
     \return メモリの内容が一致したかどうか
 */
-bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2);
 
 #ifdef __INTEL_COMPILER
 //! A global function.
@@ -97,7 +89,7 @@ bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
     \param p2 比較するメモリ2の先頭アドレス
     \return メモリの内容が一致したかどうか
 */
-bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2);
 #endif
 
 //! A global function.
@@ -108,7 +100,7 @@ bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2
     \param size 比較するメモリのサイズ
     \return メモリの内容が一致したかどうか
 */
-DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
+DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size);
 
 //! A global function.
 /*!
@@ -119,7 +111,7 @@ DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t * p1, std::uint8_t * p2, std::u
     \param p2 比較するメモリ2の先頭アドレス
     \return メモリの内容が一致したかどうか
 */
-bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2);
 
 //! A global function.
 /*!
@@ -129,7 +121,7 @@ bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t * p1, std
     \param size 比較するメモリのサイズ
     \return メモリの内容が一致したかどうか
 */
-DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2, std::uint32_t size);
+DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size);
 
 //! A global function.
 /*!
@@ -139,7 +131,7 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t * p1, std::uint8_t * p2
     \param p2 比較するメモリ2の先頭アドレス
     \return メモリの内容が一致したかどうか
 */
-bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpuseAVX2(std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2);
 
 #ifdef __INTEL_COMPILER
 //! A global function.
@@ -150,7 +142,7 @@ bool memcmpuseAVX2(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
     \param p2 比較するメモリ2の先頭アドレス
     \return メモリの内容が一致したかどうか
 */
-bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpuseAVX512(std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2);
 #endif
 
 //! A global function.
@@ -162,7 +154,7 @@ bool memcmpuseAVX512(std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
     \param p2 比較するメモリ2の先頭アドレス
     \return メモリの内容が一致したかどうか
 */
-bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t * p1, std::uint8_t * p2);
+bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2);
 
 //! A global function.
 /*!
