@@ -134,20 +134,16 @@ DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const 
     switch (availsimdtype) {
     case AvailSIMDtype::AVAILSSE2:
         return memcmpSSE(false, cmploopnum, p1, p2);
-        break;
 
     case AvailSIMDtype::AVAILSSE41:
         return memcmpSSE(true, cmploopnum, p1, p2);
-        break;
 
     case AvailSIMDtype::AVAILAVX2:
         return memcmpAVX2(cmploopnum, p1, p2);
-        break;
 
 #ifdef __INTEL_COMPILER
     case AvailSIMDtype::AVAILAVX512:
         return memcmpAVX512(cmploopnum, p1, p2);
-        break;
 #endif
 
     default:
@@ -417,9 +413,7 @@ void memfillAVX512(std::uint8_t * p, std::uint32_t size)
 
 DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size)
 {
-    auto const availsimdtype = isAvailableSIMDtype();
-
-    switch (availsimdtype) {
+    switch (isAvailableSIMDtype()) {
     case AvailSIMDtype::AVAILSSE2:
     case AvailSIMDtype::AVAILSSE41:
         memfillSSE2(p, size);

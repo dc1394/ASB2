@@ -10,32 +10,30 @@
 　ちょっとしたベンチマークにも使えるかもしれません。
 
 ★既知のバグについて
-　現状では既知のバグとして、開発環境がWindows 8であるため、Windows 7（とたぶんそ
-　れ以下のバージョンのWindows）ではレイアウトが崩れるバグがあります。
+　現状では既知のバグとして、開発環境がWindows 10であるため、Windows 7ではレイア
+  ウトが崩れるバグがあります。
 
 ★更新履歴
 　2013/04/08 ver.0.0.1α   コードを全面的に書き直し。
 　2013/04/09 ver.0.0.1α2  ドキュメントの整備。
-　2013/04/10 ver.0.0.1α3　小修正とドキュメントの整備。
-　2013/06/16 ver.0.0.1β1　「タイマの更新間隔」が反映されていなかったのを修正。
+　2013/04/10 ver.0.0.1α3  小修正とドキュメントの整備。
+　2013/06/16 ver.0.0.1β1  「タイマの更新間隔」が反映されていなかったのを修正。
 　　　　　　　　　　　　　　「タイマの更新間隔」を最大10秒にした。
 						   Windows XP環境で起こるバグを修正。
 　　　　　　　　　　　　　 SSE4.1命令が使えない環境で起こるバグを修正。
-　2014/09/21 ver.0.1コードを全面的に整理した。
+　2014/09/21 ver.0.1       コードを全面的に整理した。
+　2018/08/02 ver.0.2       AVX2/AVX-512命令に対応。
 
 ★謝辞
 　このソフトウェアのBindaleBaseクラスは、「id:minami_SC」様の「WPFでも
 　BindableBaseを使ってINotifyPropertyChangedを実装する
- （ http://sourcechord.hatenablog.com/entry/20130303/1362315081 )」を、Xor514ク
-　ラスは、「和田維作」様の「Xorshift のＳＳＥ２を使った高速化(整数版) (
-　http://bit.ly/13sbL4p )」を、EnumBooleanConverterクラスは、「ba」様の「Enum と
-  RadioButton をバインドする(
-  http://frog.raindrop.jp/knowledge/archives/002200.html )」の記事を、
+　（ http://sourcechord.hatenablog.com/entry/20130303/1362315081 )」を、
+　EnumBooleanConverterクラスは、「ba」様の「Enum と RadioButton をバインドする(
+　http://frog.raindrop.jp/knowledge/archives/002200.html )」の記事を、
 　NumericBehaviorsクラスは、「なわ」様の「数値入力用テキストボックス　添付ビヘイ
-　ビア編( http://bit.ly/13sbVst )の記事を、最後に、TaskTrayIconクラスは、「ほげ
-　たん」様の「タスクトレイにアイコンを表示する( http://bit.ly/13sc92P )」の記事
-　を、それぞれ参考にさせて頂きました。
-　この場をお借りしまして御礼申し上げます。
+　ビア編」の記事を、最後に、TaskTrayIconクラスは、「ほげたん」様の「タスクトレイ
+　にアイコンを表示する( http://hogetan.blogspot.com/2008/10/blog-post.html )」の
+　記事を、それぞれ参考にさせて頂きました。この場をお借りしまして御礼申し上げます。
 
 ★ライセンス
 　このソフトはフリーソフトウェアです（修正BSDライセンス）。
@@ -56,7 +54,7 @@
 
 　3.著作権者の名前を、広告や宣伝に勝手に使用しないでください。
 
-  Copyright (c) 2013-2014, @dc1394
+  Copyright (c) 2013-2018, @dc1394
   All rights reserved.
   
   Redistribution and use in source and binary forms, with or without
