@@ -96,7 +96,7 @@ namespace ASB2
         /// <summary>
         /// ドライブに書き出す一時ファイル名のフルパス
         /// </summary>
-        public String TempFileNameFullPath
+        public String TempFilenameFullPath
         {
             get => this.tempFilenameFullPath;
 

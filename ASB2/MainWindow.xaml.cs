@@ -247,7 +247,7 @@ namespace ASB2
         /// </returns>
         private bool DriveAndSpaceCheck(Int64 necessarySpace)
         {
-            var drive = new DriveInfo(this.mwvm.TempFileNameFullPath[0].ToString());
+            var drive = new DriveInfo(this.mwvm.TempFilenameFullPath[0].ToString());
             if (drive.IsReady && drive.AvailableFreeSpace >= necessarySpace)
             {
                 return true;
@@ -259,7 +259,7 @@ namespace ASB2
             }
             else
             {
-                MyError.CallErrorMessageBox($"ドライブ{this.mwvm.TempFileNameFullPath[0]}は利用できません。");
+                MyError.CallErrorMessageBox($"ドライブ{this.mwvm.TempFilenameFullPath[0]}は利用できません。");
                 return false;
             }
         }
@@ -363,7 +363,7 @@ namespace ASB2
                 this.sdm.SaveData.IsParallel,
                 this.mwvm.IsVerify)
             {
-                Filename = this.mwvm.TempFileNameFullPath,
+                Filename = this.mwvm.TempFilenameFullPath,
                 FileSize = tmpFileSize,
                 IsLoop = this.mwvm.IsLoop
             };
@@ -739,7 +739,7 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private void デフォルトに戻すButton_Click(object sender, RoutedEventArgs e)
         {
-            this.mwvm.TempFileNameFullPath = DefaultData.DefaultDataDefinition.DEFAULTTEMPFILENAMEFULLPATH;
+            this.mwvm.TempFilenameFullPath = DefaultData.DefaultDataDefinition.DEFAULTTEMPFILENAMEFULLPATH;
             this.mwvm.TempFileSizeText = DefaultData.DefaultDataDefinition.DEFAULTTEMPFILESIZETEXT;
             this.mwvm.IsLoop = DefaultData.DefaultDataDefinition.DEFAULTLOOP;
             this.mwvm.IsVerify = DefaultData.DefaultDataDefinition.DEFAULTVERIFY;
@@ -791,8 +791,7 @@ namespace ASB2
             if (sfd.ShowDialog().Value)
             {
                 // フルパスを含むファイル名を保存
-                this.mwvm.TempFileNameFullPath =
-                    this.sdm.SaveData.TempFilenameFullPath = sfd.FileName;
+                this.mwvm.TempFilenameFullPath = sfd.FileName;
             }
         }
 
