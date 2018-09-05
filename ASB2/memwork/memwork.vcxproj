@@ -97,7 +97,7 @@
     <PostBuildEvent>
       <Command>copy "C:\Program Files (x86)\Microsoft SDKs\F#\10.1\Framework\v4.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
 copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Debug\memwork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
-copy C:\mylib64\tbb2018_20180411oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug</Command>
+copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -150,7 +150,7 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
       <Command>copy "C:\Program Files (x86)\Microsoft SDKs\F#\10.1\Framework\v4.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Release\memwork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
 copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy C:\mylib64\tbb2018_20180411oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
+copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">

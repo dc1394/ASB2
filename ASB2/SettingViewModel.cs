@@ -22,11 +22,6 @@ namespace ASB2
         private String bufferSizeText;
 
         /// <summary>
-        /// 並列化を有効にするかどうか
-        /// </summary>
-        private Boolean isParallel;
-
-        /// <summary>
         /// 最小化のときの状態
         /// </summary>
         private DefaultData.MinimizeType myType;
@@ -57,8 +52,6 @@ namespace ASB2
             this.DefaultTimerInterval = defaultTimerInterval;
 
             this.myType = sd.Minimize;
-
-            this.isParallel = sd.IsParallel;
 
             this.timerIntervalText = sd.TimerIntervalText;
         }
