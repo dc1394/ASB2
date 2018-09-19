@@ -149,7 +149,7 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\Release\memwork.dll ..\bin\x86\Release
-copy ..\..\ASB2\Document\readme.txt ..\bin\x86\Release
+copy ..\Document\readme.txt ..\bin\x86\Release
 copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -183,7 +183,7 @@ copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_Win
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\x64\Release\memwork.dll ..\bin\x64\Release
-copy ..\..\ASB2\Document\readme.txt ..\bin\x64\Release
+copy ..\Document\readme.txt ..\bin\x64\Release
 copy C:\mylib64\tbb2018_20180618oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
