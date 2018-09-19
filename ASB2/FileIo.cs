@@ -72,7 +72,7 @@ namespace ASB2
         /// IOが終わったかどうかを示すフラグ
         /// </summary>
         /// <remarks>複数のスレッドからアクセスされる！</remarks>
-        private Int32 returnCode;
+        private FileIo.終了状態 returnCode;
 
         #endregion フィールド
         
@@ -225,17 +225,6 @@ namespace ASB2
         internal Int64 ReadBytes { get; private set; }
 
         /// <summary>
-        /// 処理が終了した場合のエラーコード
-        /// </summary>
-        /// <remarks>複数のスレッドからアクセスされる！</remarks>
-        internal Int32 ReturnCode
-        {
-            get => this.returnCode;
-
-            private set => Interlocked.Exchange(ref this.returnCode, value);
-        }
-
-        /// <summary>
         /// 書き込んだ合計のバイト数
         /// </summary>
         /// <remarks>必ず初期化すること！</remarks>
@@ -305,49 +294,49 @@ namespace ASB2
         /// <summary>
         /// 一時ファイルの読み書きを行う
         /// </summary>
-        internal async void FileIoRun()
+        internal async Task<FileIo.終了状態> FileIoRunAsync()
         {
-            this.Cts = this.Cts ?? new CancellationTokenSource();
+            using (this.Cts = this.Cts ?? new CancellationTokenSource())
+            {
+                this.IsNow = (Int32) FileIo.動作状態.書込中;
 
-            this.IsNow = (Int32)FileIo.動作状態.書込中;
-
-            await Task.Run(
-                () =>
-                {
-                    if (this.IsLoop)
+                return await Task.Run(
+                    () =>
                     {
-                        while (true)
+                        if (this.IsLoop)
+                        {
+                            while (true)
+                            {
+                                this.bufBetweenDisk();
+
+                                switch ((動作状態) this.IsNow)
+                                {
+                                    case FileIo.動作状態.書込中:
+                                    case FileIo.動作状態.ベリファイ中:
+                                        continue;
+
+                                    case FileIo.動作状態.終了待機中:
+                                        break;
+
+                                    default:
+                                        Debug.Assert(false, "IsNowがありえない値になっている！");
+                                        break;
+                                }
+
+                                break;
+                            }
+                        }
+                        else
                         {
                             this.bufBetweenDisk();
-
-                            switch ((動作状態)this.IsNow)
-                            {
-                                case FileIo.動作状態.書込中:
-                                case FileIo.動作状態.ベリファイ中:
-                                    continue;
-
-                                case FileIo.動作状態.終了待機中:
-                                    break;
-
-                                default:
-                                    Debug.Assert(false, "IsNowがありえない値になっている！");
-                                    break;
-                            }
-
-                            break;
                         }
-                    }
-                    else
-                    {
-                        this.bufBetweenDisk();
-                    }
 
-                    this.IsNow = (Int32)FileIo.動作状態.終了待機中;
-                },
-                this.Cts.Token);
+                        this.IsNow = (Int32) FileIo.動作状態.終了待機中;
 
-            this.Cts.Dispose();
-            this.Cts = null;
+                        return this.returnCode;
+                    },
+                    this.Cts.Token);
+            }
         }
 
         /// <summary>
@@ -491,7 +480,7 @@ namespace ASB2
                 {
                     MyError.CallErrorMessageBox($"ベリファイに失敗しました。{Environment.NewLine}プログラムのバグか、SSD/HDDが壊れています。");
 
-                    this.ReturnCode = (Int32)FileIo.終了状態.異常終了;
+                    this.returnCode = FileIo.終了状態.異常終了;
 
                     this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
@@ -500,7 +489,7 @@ namespace ASB2
             }
             catch (OperationCanceledException)
             {
-                this.ReturnCode = (Int32)FileIo.終了状態.キャンセル終了;
+                this.returnCode = FileIo.終了状態.キャンセル終了;
 
                 this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
@@ -510,14 +499,14 @@ namespace ASB2
             {
                 MyError.CallErrorMessageBox(e.Message);
 
-                this.ReturnCode = (Int32)FileIo.終了状態.異常終了;
+                this.returnCode = FileIo.終了状態.異常終了;
 
                 this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
                 return false;
             }
 
-            this.ReturnCode = (Int32)FileIo.終了状態.正常終了;
+            this.returnCode = (Int32)FileIo.終了状態.正常終了;
             
             return true;
         }
@@ -547,7 +536,7 @@ namespace ASB2
             }
             catch (OperationCanceledException)
             {
-                this.ReturnCode = (Int32)FileIo.終了状態.キャンセル終了;
+                this.returnCode = FileIo.終了状態.キャンセル終了;
 
                 this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
@@ -557,7 +546,7 @@ namespace ASB2
             {
                 MyError.CallErrorMessageBox(e.Message);
 
-                this.ReturnCode = (Int32)FileIo.終了状態.異常終了;
+                this.returnCode = FileIo.終了状態.異常終了;
 
                 this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
@@ -566,7 +555,7 @@ namespace ASB2
 
             if (!this.isVerify)
             {
-                this.ReturnCode = (Int32)FileIo.終了状態.正常終了;
+                this.returnCode = FileIo.終了状態.正常終了;
             }
 
             FileIo.totalWroteBytes += (Int64)count;

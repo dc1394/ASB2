@@ -11,8 +11,7 @@ module DefaultData =
          | TASKBAR   = 0
          | TASKTRAY  = 1
          | BOTH      = 2
-
-    
+             
     /// <summary>
     /// ASB2のデフォルト値を集めた構造体
     /// </summary>

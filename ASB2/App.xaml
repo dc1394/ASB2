@@ -1,8 +1,7 @@
 ﻿<Application x:Class="ASB2.App"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             StartupUri="MainWindow.xaml" Startup="OnStartup" Exit="OnExit">
-    <Application.Resources>
-         
-    </Application.Resources>
+             Exit="OnExit"
+             Startup="OnStartup" 
+             StartupUri="MainWindow.xaml">
 </Application>

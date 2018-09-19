@@ -56,7 +56,7 @@ namespace ASB2
         }
 
         /// <summary>
-        /// 「デフォルト」ボタンをクリックしたとき呼び出される
+        /// 「デフォルトに戻す」ボタンをクリックしたとき呼び出される
         /// </summary>
         /// <param name="sender">The parameter is not used.</param>
         /// <param name="e">The parameter is not used.</param>

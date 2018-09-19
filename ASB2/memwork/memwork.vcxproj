@@ -182,10 +182,9 @@ copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_Win
       <AdditionalDependencies>libirng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy "C:\Program Files (x86)\Microsoft SDKs\F#\10.1\Framework\v4.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release
-copy D:\DATA\PROGRAM\My_WinProjects\ASB2\x64\Release\memwork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release
+      <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\x64\Release\memwork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release
 copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release
-copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release</Command>
+copy C:\mylib64\tbb2018_20180618oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -3,6 +3,9 @@
 //     Copyright ©  2014 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
+
+using System.Threading.Tasks;
+
 namespace ASB2
 {
     using System;
@@ -344,7 +347,7 @@ namespace ASB2
         /// 実際に一時ファイルの読み書き処理を行う
         /// </summary>
         /// <param name="tmpFileSize">一時ファイルのバイト数（単位はKiB）</param>
-        private void PreparationAndStart(Int64 tmpFileSize)
+        private Task<FileIo.終了状態> PreparationAndStart(Int64 tmpFileSize)
         {
             // タイトル等変更
             this.To書込();
@@ -358,6 +361,9 @@ namespace ASB2
 
             Int32.TryParse(this.sdm.SaveData.BufferSizeText, out Int32 bufsize);
 
+            // ボタンのテキストを「停止」にする
+            this.開始停止Button.Content = MainWindow.ButtonState.停止.ToString();
+
             this.fio = new FileIo(
                 bufsize * Kilo,
                 this.sdm.SaveData.IsParallel,
@@ -368,23 +374,20 @@ namespace ASB2
                 IsLoop = this.mwvm.IsLoop
             };
 
-            // 処理開始
-            this.fio.FileIoRun();
-
             Double.TryParse(this.sdm.SaveData.TimerIntervalText, out Double interval);
 
             // タイマースタート
             this.dispatcherTimer.Interval = TimeSpan.FromMilliseconds(interval);
             this.dispatcherTimer.Start();
-
-            // ボタンのテキストを「停止」にする
-            this.開始停止Button.Content = MainWindow.ButtonState.停止.ToString();
+            
+            // 処理開始
+            return this.fio.FileIoRunAsync();
         }
 
         /// <summary>
         /// 処理を開始する
         /// </summary>
-        private void Run()
+        private async Task RunAsync()
         {
             Int64.TryParse(this.mwvm.TempFileSizeText, out Int64 tmpFileSize);
             tmpFileSize *= MainWindow.Giga;
@@ -395,7 +398,26 @@ namespace ASB2
             }
 
             // 処理スタート
-            this.PreparationAndStart(tmpFileSize);
+            var returnCode = await this.PreparationAndStart(tmpFileSize);
+
+            switch (returnCode)
+            {
+                case FileIo.終了状態.正常終了:
+                    this.DoWriteEnd("ASB2 - 正常終了（実行待機中）");
+                    break;
+
+                case FileIo.終了状態.キャンセル終了:
+                    this.DoWriteEnd("ASB2 - ユーザーの要求によりキャンセル（実行待機中）");
+                    break;
+
+                case FileIo.終了状態.異常終了:
+                    this.DoWriteEnd("ASB2 - IOエラーにより終了（実行待機中）");
+                    break;
+
+                default:
+                    Debug.Assert(false, "FileIO.ErrorCodeがありえない値になっている！");
+                    break;
+            }
         }
 
         /// <summary>
@@ -580,25 +602,6 @@ namespace ASB2
                     break;
 
                 case FileIo.動作状態.終了待機中:
-                    switch ((FileIo.終了状態)this.fio.ReturnCode)
-                    {
-                        case FileIo.終了状態.正常終了:
-                            this.DoWriteEnd("ASB2 - 正常終了（実行待機中）");
-                            break;
-
-                        case FileIo.終了状態.キャンセル終了:
-                            this.DoWriteEnd("ASB2 - ユーザーの要求によりキャンセル（実行待機中）");
-                            break;
-
-                        case FileIo.終了状態.異常終了:
-                            this.DoWriteEnd("ASB2 - IOエラーにより終了（実行待機中）");
-                            break;
-
-                        default:
-                            Debug.Assert(false, "FileIO.ErrorCodeがありえない値になっている！");
-                            break;
-                    }
-
                     break;
 
                 default:
@@ -695,7 +698,7 @@ namespace ASB2
         {
             if (this.fio == null)
             {
-                this.Run();
+                this.RunAsync().ContinueWith(_ => {});
             }
         }
 
@@ -754,7 +757,7 @@ namespace ASB2
         {
             if (this.fio == null)
             {
-                this.Run();
+                this.RunAsync().ContinueWith(_ => {});
             }
             else
             {
