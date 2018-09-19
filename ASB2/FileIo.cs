@@ -294,11 +294,12 @@ namespace ASB2
         /// <summary>
         /// 一時ファイルの読み書きを行う
         /// </summary>
+        /// <returns>FileIoクラスの終了状態をTask型でラップしたクラス</returns>
         internal async Task<FileIo.終了状態> FileIoRunAsync()
         {
             using (this.Cts = this.Cts ?? new CancellationTokenSource())
             {
-                this.IsNow = (Int32) FileIo.動作状態.書込中;
+                this.IsNow = (Int32)FileIo.動作状態.書込中;
 
                 return await Task.Run(
                     () =>
@@ -309,7 +310,7 @@ namespace ASB2
                             {
                                 this.bufBetweenDisk();
 
-                                switch ((動作状態) this.IsNow)
+                                switch ((動作状態)this.IsNow)
                                 {
                                     case FileIo.動作状態.書込中:
                                     case FileIo.動作状態.ベリファイ中:
@@ -331,7 +332,7 @@ namespace ASB2
                             this.bufBetweenDisk();
                         }
 
-                        this.IsNow = (Int32) FileIo.動作状態.終了待機中;
+                        this.IsNow = (Int32)FileIo.動作状態.終了待機中;
 
                         return this.returnCode;
                     },

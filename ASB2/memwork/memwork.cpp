@@ -124,7 +124,7 @@ bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_
 }
 #endif
 
-DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
+DLLEXPORT std::int32_t __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
 {
     AvailSIMDtype availsimdtype;
     std::uint32_t cmploopnum;
@@ -133,21 +133,21 @@ DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const 
 
     switch (availsimdtype) {
     case AvailSIMDtype::AVAILSSE2:
-        return memcmpSSE(false, cmploopnum, p1, p2);
+        return memcmpSSE(false, cmploopnum, p1, p2) ? 1 : 0;
 
     case AvailSIMDtype::AVAILSSE41:
-        return memcmpSSE(true, cmploopnum, p1, p2);
+        return memcmpSSE(true, cmploopnum, p1, p2) ? 1 : 0;
 
     case AvailSIMDtype::AVAILAVX2:
-        return memcmpAVX2(cmploopnum, p1, p2);
+        return memcmpAVX2(cmploopnum, p1, p2) ? 1 : 0;
 
 #ifdef __INTEL_COMPILER
     case AvailSIMDtype::AVAILAVX512:
-        return memcmpAVX512(cmploopnum, p1, p2);
+        return memcmpAVX512(cmploopnum, p1, p2) ? 1 : 0;
 #endif
 
     default:
-        assert(!"switchのdefaultに来てしまった！");
+        assert(!"AvailSIMDtypeがあり得ない値になっている！");
         break;
     }
 
@@ -166,7 +166,7 @@ bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t const * p
     return true;
 }
 
-DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
+DLLEXPORT std::int32_t __stdcall memcmpparallelsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
 {
     AvailSIMDtype availsimdtype;
     std::uint32_t cmploopnum;
@@ -231,11 +231,11 @@ DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t const * p1, std::uint8_
 #endif
 
     default:
-        assert(!"switchのdefaultに来てしまった！");
+        assert(!"AvailSIMDtypeがあり得ない値になっている！");
         break;
     }
 
-    return result == cmploopnum;
+    return result == cmploopnum ? 1 : 0;
 }
 
 bool memcmpuseAVX2(std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2)

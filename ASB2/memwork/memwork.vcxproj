@@ -106,7 +106,7 @@ copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_Win
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;MEMWORK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Cpp0xSupport>true</Cpp0xSupport>
       <AssemblerOutput>AssemblyAndSourceCode</AssemblerOutput>
       <GenerateAlternateCodePaths>CORE512</GenerateAlternateCodePaths>
@@ -127,7 +127,7 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
     <ClCompile>
       <PrecompiledHeader>
       </PrecompiledHeader>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;MEMWORK_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
@@ -139,6 +139,7 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <CCppSupport>Cpp17Support</CCppSupport>
+      <Optimization>MaxSpeedHighLevel</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -147,9 +148,8 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
     <PostBuildEvent>
-      <Command>copy "C:\Program Files (x86)\Microsoft SDKs\F#\10.1\Framework\v4.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy D:\DATA\PROGRAM\My_WinProjects\ASB2\Release\memwork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
-copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release
+      <Command>copy ..\..\Release\memwork.dll ..\bin\x86\Release
+copy ..\..\ASB2\Document\readme.txt ..\bin\x86\Release
 copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -182,8 +182,8 @@ copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_Win
       <AdditionalDependencies>libirng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>copy D:\DATA\PROGRAM\My_WinProjects\ASB2\x64\Release\memwork.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release
-copy D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\Document\readme.txt D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release
+      <Command>copy ..\..\x64\Release\memwork.dll ..\bin\x64\Release
+copy ..\..\ASB2\Document\readme.txt ..\bin\x64\Release
 copy C:\mylib64\tbb2018_20180618oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>

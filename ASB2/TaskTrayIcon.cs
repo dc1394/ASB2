@@ -2,7 +2,7 @@
 // <copyright file="TaskTrayIcon.cs" company="dc1394's software">
 //     but this is originally adapted by ほげたん
 //     cf. http://hogetan.blogspot.jp/2008/10/blog-post.html
-//     Copyright ©  2014 @dc1394 All Rights Reserved.
+//     Copyright © 2014-2018 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace ASB2

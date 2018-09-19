@@ -2,7 +2,7 @@
 // <copyright file="NumericBehaviors.cs" company="dc1394's software">
 //     but this is originally adapted by Nine Works
 //     cf. http://nine-works.blog.ocn.ne.jp/blog/2011/03/post_7f40.html
-//     Copyright ©  2014 @dc1394 All Rights Reserved.
+//     Copyright © 2014-2018 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace ASB2

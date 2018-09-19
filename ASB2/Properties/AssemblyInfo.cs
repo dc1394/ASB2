@@ -1,6 +1,6 @@
 ﻿//-----------------------------------------------------------------------
 // <copyright file="AssemblyInfo.cs" company="dc1394's software">
-//     Copyright ©  2014 @dc1394 All Rights Reserved.
+//     Copyright © 2014-2018 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 using System.Reflection;

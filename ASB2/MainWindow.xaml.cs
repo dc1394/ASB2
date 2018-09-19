@@ -1,16 +1,14 @@
 ﻿//-----------------------------------------------------------------------
 // <copyright file="MainWindow.xaml.cs" company="dc1394's software">
-//     Copyright ©  2014 @dc1394 All Rights Reserved.
+//     Copyright © 2014-2018 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
-
-using System.Threading.Tasks;
-
 namespace ASB2
 {
     using System;
     using System.Diagnostics;
     using System.IO;
+    using System.Threading.Tasks;
     using System.Windows;
     using System.Windows.Forms;
     using System.Windows.Input;
@@ -274,37 +272,38 @@ namespace ASB2
         /// <param name="titleString">変更後のウィンドウタイトル</param>
         private void DoWriteEnd(String titleString)
         {
-            // プログレスバーを元に戻す
-            this.ProgressBar.Value = 0.0;
-
-            // パーセンテージを0に戻す
-            this.ProgressPercentTextBox.Text = "0.0%";
-
             // タイマー停止
             this.dispatcherTimer.Stop();
-
-            // 計測したデータをリセット
-            this.aiswrite.Reset();
-            this.aisread.Reset();
-            
-            // 書き込み速度のテキストを元に戻す
-            this.SpeedTextBlock.Text = MainWindow.WriteSpeedText;
 
             // ストップウォッチ停止
             this.sw.Reset();
 
-            // タイトル変更
-            this.Title = titleString;
-
-            this.TaskTrayIconTextTo待機中();
+            // WriteFileオブジェクトをGCの対象にする
+            this.fio.Dispose();
+            this.fio = null;
+            
+            // 計測したデータをリセット
+            this.aiswrite.Reset();
+            this.aisread.Reset();
 
             // ボタンのテキストを「開始」にする
             this.開始停止Button.Content = MainWindow.ButtonState.開始;
 
-            // WriteFileオブジェクトをGCの対象にする
-            this.fio.Dispose();
-            this.fio = null;
-        }
+            // 書き込み速度のテキストを元に戻す
+            this.SpeedTextBlock.Text = MainWindow.WriteSpeedText;
+
+            // パーセンテージを0に戻す
+            this.ProgressPercentTextBox.Text = "0.0%";
+
+            // プログレスバーを元に戻す
+            this.ProgressBar.Value = 0.0;
+
+            // タスクトレイのアイコンのテキストを「ASB2 待機中」に変更する
+            this.TaskTrayIconTextTo待機中();
+
+            // タイトル変更
+            this.Title = titleString;
+　       }
 
         /// <summary>
         /// ウィンドウのUI要素を、「書き込みモード」から「ベリファイモード」に変更する
@@ -356,9 +355,6 @@ namespace ASB2
             this.ProgressBar.Minimum = 0.0;
             this.ProgressBar.Maximum = this.mwvm.IsVerify ? (Double)tmpFileSize * 2 : (Double)tmpFileSize;
 
-            // ストップウォッチスタート
-            this.sw.Start();
-
             Int32.TryParse(this.sdm.SaveData.BufferSizeText, out Int32 bufsize);
 
             // ボタンのテキストを「停止」にする
@@ -376,10 +372,13 @@ namespace ASB2
 
             Double.TryParse(this.sdm.SaveData.TimerIntervalText, out Double interval);
 
+            // ストップウォッチスタート
+            this.sw.Start();
+
             // タイマースタート
             this.dispatcherTimer.Interval = TimeSpan.FromMilliseconds(interval);
             this.dispatcherTimer.Start();
-            
+
             // 処理開始
             return this.fio.FileIoRunAsync();
         }
@@ -698,7 +697,7 @@ namespace ASB2
         {
             if (this.fio == null)
             {
-                this.RunAsync().ContinueWith(_ => {});
+                this.RunAsync().ContinueWith(_ => { });
             }
         }
 
@@ -757,7 +756,7 @@ namespace ASB2
         {
             if (this.fio == null)
             {
-                this.RunAsync().ContinueWith(_ => {});
+                this.RunAsync().ContinueWith(_ => { });
             }
             else
             {

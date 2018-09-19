@@ -1,6 +1,6 @@
 ﻿//-----------------------------------------------------------------------
 // <copyright file="UnsafeNativeMethods.cs" company="dc1394's software">
-//     Copyright ©  2014 @dc1394 All Rights Reserved.
+//     Copyright © 2014-2018 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
 namespace ASB2
@@ -30,7 +30,7 @@ namespace ASB2
             {
                 fixed (Byte* p2 = &ma2.Buffer[0])
                 {
-                    return MemoryCmpSimd((IntPtr)(p1 + ma1.Offset), (IntPtr)(p2 + ma2.Offset), (UInt32)ma1.BufferSize);
+                    return MemoryCmpSimd((IntPtr)(p1 + ma1.Offset), (IntPtr)(p2 + ma2.Offset), (UInt32)ma1.BufferSize) == 1;
                 }
             }
         }
@@ -49,7 +49,7 @@ namespace ASB2
             {
                 fixed (Byte* p2 = &ma2.Buffer[0])
                 {
-                    return MemoryCmpParallelSimd((IntPtr)(p1 + ma1.Offset), (IntPtr)(p2 + ma2.Offset), (UInt32)ma1.BufferSize);
+                    return MemoryCmpParallelSimd((IntPtr)(p1 + ma1.Offset), (IntPtr)(p2 + ma2.Offset), (UInt32)ma1.BufferSize) == 1;
                 }
             }
         }
@@ -67,10 +67,10 @@ namespace ASB2
         }
 
         [DllImport("memwork", EntryPoint = "memcmpsimd")]
-        private static extern Boolean MemoryCmpSimd(IntPtr p1, IntPtr p2, UInt32 size);
+        private static extern Int32 MemoryCmpSimd(IntPtr p1, IntPtr p2, UInt32 size);
 
         [DllImport("memwork", EntryPoint = "memcmpparallelsimd")]
-        private static extern Boolean MemoryCmpParallelSimd(IntPtr p1, IntPtr p2, UInt32 size);
+        private static extern Int32 MemoryCmpParallelSimd(IntPtr p1, IntPtr p2, UInt32 size);
 
         [DllImport("memwork", EntryPoint = "memfillsimd")]
         private static extern void MemoryFillSimd(IntPtr p, UInt32 size);

@@ -13,12 +13,6 @@
 #include <cstdint>  // for std::int32_t
 #include <utility>  // for std::pair
 
-#ifndef _WIN64
-    #pragma comment(linker, "/export:memcmpsimd=_memcmpsimd@12")
-    #pragma comment(linker, "/export:memcmpparallelsimd=_memcmpparallelsimd@12")
-    #pragma comment(linker, "/export:memfillsimd=_memfillsimd@8")
-#endif
-
 #ifdef __cplusplus
     #define DLLEXPORT extern "C" __declspec(dllexport)
 #else
@@ -98,9 +92,9 @@ bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
     \param size 比較するメモリのサイズ
-    \return メモリの内容が一致したかどうか
+    \return メモリの内容が一致したら1、一致しなかったら0
 */
-DLLEXPORT bool __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size);
+DLLEXPORT std::int32_t __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size);
 
 //! A global function.
 /*!
@@ -119,9 +113,9 @@ bool memcmpSSE(bool availSSE41, std::uint32_t cmploopnum, std::uint8_t const * p
     \param p1 比較するメモリ1の先頭アドレス
     \param p2 比較するメモリ2の先頭アドレス
     \param size 比較するメモリのサイズ
-    \return メモリの内容が一致したかどうか
+    \return メモリの内容が一致したら1、一致しなかったら0
 */
-DLLEXPORT bool __stdcall memcmpparallelsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size);
+DLLEXPORT std::int32_t __stdcall memcmpparallelsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size);
 
 //! A global function.
 /*!
