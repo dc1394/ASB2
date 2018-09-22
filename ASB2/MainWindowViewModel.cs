@@ -16,6 +16,11 @@ namespace ASB2
         #region フィールド
 
         /// <summary>
+        /// ファイルに保存される設定情報データのオブジェクト
+        /// </summary>
+        private readonly SaveDataManage.SaveData sd;
+
+        /// <summary>
         /// ループするかどうかを示すフラグ
         /// </summary>
         private Boolean isLoop;
@@ -24,12 +29,7 @@ namespace ASB2
         /// ベリファイするかどうかを示すフラグ
         /// </summary>
         private Boolean isVerify;
-
-        /// <summary>
-        /// ファイルに保存される設定情報データのオブジェクト
-        /// </summary>
-        private SaveDataManage.SaveData sd;
-
+        
         /// <summary>
         /// ドライブに書き出す一時ファイル名のフルパス
         /// </summary>

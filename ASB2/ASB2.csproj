@@ -134,7 +134,7 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="EnumBooleanConverter.cs" />
-    <Compile Include="SettingViewModel.cs" />
+    <Compile Include="SettingWindowViewModel.cs" />
     <Compile Include="NumericBehaviors.cs" />
     <Compile Include="SettingWindow.xaml.cs">
       <DependentUpon>SettingWindow.xaml</DependentUpon>

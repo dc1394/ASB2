@@ -15,7 +15,7 @@ namespace ASB2
     /// <summary>
     /// App.xaml の相互作用ロジック
     /// </summary>
-    public partial class App : Application
+    public partial class App
     {
         #region フィールド
 
@@ -39,7 +39,7 @@ namespace ASB2
         /// <summary>
         /// 二重起動確認用のMutex
         /// </summary>
-        private static Mutex mutex = null;
+        private static Mutex mutex;
 
         #endregion フィールド
 
@@ -129,8 +129,7 @@ namespace ASB2
 
             // WPF UIスレッドでの未処理例外
             this.DispatcherUnhandledException +=
-                new DispatcherUnhandledExceptionEventHandler(
-                    this.Application_DispatcherUnhandledException);
+                this.Application_DispatcherUnhandledException;
         }
 
         /// <summary>

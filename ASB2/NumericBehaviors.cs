@@ -185,7 +185,7 @@ namespace ASB2
         /// <param name="e">入力されたキー</param>
         private static void OnKeyDown(object sender, KeyEventArgs e)
         {
-            if (sender is TextBox textBox)
+            if (sender is TextBox)
             {
                 if ((Key.D0 <= e.Key && e.Key <= Key.D9) ||
                     (Key.NumPad0 <= e.Key && e.Key <= Key.NumPad9) ||

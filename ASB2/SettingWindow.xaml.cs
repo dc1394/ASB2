@@ -12,7 +12,7 @@ namespace ASB2
     /// <summary>
     /// SettingWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class SettingWindow : Window
+    public partial class SettingWindow
     {
         #region フィールド
 
@@ -24,7 +24,7 @@ namespace ASB2
         /// <summary>
         /// SettingWindowに対応するView
         /// </summary>
-        private SettingViewModel svm;
+        private SettingWindowViewModel svm;
 
         #endregion フィールド
 
@@ -99,7 +99,7 @@ namespace ASB2
         /// <param name="e">The parameter is not used.</param>
         private void SettingWindow_Loaded(object sender, EventArgs e)
         {
-            this.DataContext = this.svm = new SettingViewModel(this.sd);
+            this.DataContext = this.svm = new SettingWindowViewModel(this.sd);
 
             this.BufferSizeTextBox.Text = this.sd.BufferSizeText;
 

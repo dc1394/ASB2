@@ -6,13 +6,12 @@
 namespace ASB2
 {
     using System;
-    using System.ComponentModel;
     using MyLogic;
 
     /// <summary>
     /// SettingWindowに対応するView
     /// </summary>
-    internal sealed class SettingViewModel : ASB2.BindableBase
+    internal sealed class SettingWindowViewModel : BindableBase
     {
         #region フィールド
 
@@ -39,7 +38,7 @@ namespace ASB2
         /// コンストラクタ
         /// </summary>
         /// <param name="sd">保存された設定情報のオブジェクト</param>
-        internal SettingViewModel(SaveDataManage.SaveData sd)
+        internal SettingWindowViewModel(SaveDataManage.SaveData sd)
         {
             this.bufferSizeText = sd.BufferSizeText;
 
@@ -61,16 +60,6 @@ namespace ASB2
         #region プロパティ
 
         /// <summary>
-        /// バッファサイズの文字列
-        /// </summary>
-        public String BufferSizeText
-        {
-            get => this.bufferSizeText;
-
-            set => this.SetProperty(ref this.bufferSizeText, value);
-        }
-
-        /// <summary>
         /// デフォルトのバッファサイズ
         /// </summary>
         public Int32 DefaultBufferSize { get; }
@@ -79,16 +68,6 @@ namespace ASB2
         /// デフォルトのタイマの更新間隔
         /// </summary>
         public Int32 DefaultTimerInterval { get; }
-
-        /// <summary>
-        /// タイマの更新間隔
-        /// </summary>
-        public String TimerIntervalText
-        {
-            get => this.timerIntervalText;
-
-            set => this.SetProperty(ref this.timerIntervalText, value);
-        }
 
         /// <summary>
         /// 最小化のときの状態

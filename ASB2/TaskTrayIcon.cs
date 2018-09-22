@@ -77,9 +77,9 @@ namespace ASB2
             // ウィンドウに接続
             if (this.targetWindow != null)
             {
-                this.targetWindow.Closing += new CancelEventHandler(this.Target_Closing);
-                this.targetWindow.IsVisibleChanged += new DependencyPropertyChangedEventHandler(this.Target_IsVisibleChanged);
-                this.targetWindow.StateChanged += new EventHandler(this.Target_StateChanged);
+                this.targetWindow.Closing += this.Target_Closing;
+                this.targetWindow.IsVisibleChanged += this.Target_IsVisibleChanged;
+                this.targetWindow.StateChanged += this.Target_StateChanged;
             }
         }
 
@@ -255,6 +255,7 @@ namespace ASB2
                             break;
 
                         default:
+                            Debug.Assert(false, "SaveData.Minimizeが異常！");
                             break;
                     }
 

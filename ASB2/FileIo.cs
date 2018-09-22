@@ -25,12 +25,12 @@ namespace ASB2
         /// <summary>
         /// ループした回数
         /// </summary>
-        private static Int64 loopNum = 0;
+        private static Int64 loopNum;
 
         /// <summary>
         /// 書き込まれたバイト数の合計
         /// </summary>
-        private static Int64 totalWroteBytes = 0;
+        private static Int64 totalWroteBytes;
 
         /// <summary>
         /// バッファとディスクとの間で処理を行うデリゲート
@@ -347,8 +347,6 @@ namespace ASB2
         {
             using (var bw = new BinaryWriter(new FileStream(this.Filename, FileMode.Create, FileAccess.Write, FileShare.None)))
             {
-                var ct = this.Cts.Token;
-
                 try
                 {
                     var max = this.FileSize / this.bufferSize;

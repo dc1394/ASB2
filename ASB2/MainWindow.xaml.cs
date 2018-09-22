@@ -18,7 +18,7 @@ namespace ASB2
     /// <summary>
     /// MainWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow
     {
         #region フィールド
 
@@ -73,6 +73,11 @@ namespace ASB2
         private static readonly Double Mega = (Double)Pow.pow(2L, 20U);
 
         /// <summary>
+        /// 設定情報保存クラスのオブジェクト
+        /// </summary>
+        private readonly SaveDataManage.SaveDataManage sdm = new SaveDataManage.SaveDataManage();
+
+        /// <summary>
         /// 時間計測用のストップウォッチオブジェクト
         /// </summary>
         private readonly Stopwatch sw = new Stopwatch();
@@ -90,27 +95,27 @@ namespace ASB2
         /// <summary>
         /// 直前に計測した読み込み済みバイト
         /// </summary>
-        private Double beforeReadByte = 0.0;
+        private Double beforeReadByte;
 
         /// <summary>
         /// ストップウォッチで計測した、直前の経過時間
         /// </summary>
-        private Double beforeTime = 0.0;
+        private Double beforeTime;
 
         /// <summary>
         /// 直前に計測した書き込み済みバイト
         /// </summary>
-        private Double beforeWroteByte = 0.0;
+        private Double beforeWroteByte;
 
         /// <summary>
         /// タイマーオブジェクト
         /// </summary>
-        private DispatcherTimer dispatcherTimer = null;
+        private DispatcherTimer dispatcherTimer;
 
         /// <summary>
         /// 一時ファイル読み書きオブジェクト
         /// </summary>
-        private FileIo fio = null;
+        private FileIo fio;
 
         /// <summary>
         /// 対応するView
@@ -125,12 +130,7 @@ namespace ASB2
         /// <summary>
         /// タスクトレイアイコンオブジェクト
         /// </summary>
-        private TaskTrayIcon tti = null;
-
-        /// <summary>
-        /// 設定情報保存クラスのオブジェクト
-        /// </summary>
-        private SaveDataManage.SaveDataManage sdm = new SaveDataManage.SaveDataManage();
+        private TaskTrayIcon tti;
 
         #endregion フィールド
 
@@ -330,10 +330,10 @@ namespace ASB2
             // アイコンにコンテキストメニューを追加する
             ToolStripItem[] newcontitemary =
             {
-                new ToolStripMenuItem("開始", null, new EventHandler(this.RightClick_開始)),
-                new ToolStripMenuItem("停止", null, new EventHandler(this.RightClick_停止)),
-                new ToolStripMenuItem("開く", null, new EventHandler(this.RightClick_開く)),
-                new ToolStripMenuItem("終了", null, new EventHandler(this.RightClick_終了))
+                new ToolStripMenuItem("開始", null, this.RightClick_開始),
+                new ToolStripMenuItem("停止", null, this.RightClick_停止),
+                new ToolStripMenuItem("開く", null, this.RightClick_開く),
+                new ToolStripMenuItem("終了", null, this.RightClick_終了)
             };
 
             var menuStrip = new ContextMenuStrip();
@@ -353,7 +353,7 @@ namespace ASB2
 
             // プログレスバー設定
             this.ProgressBar.Minimum = 0.0;
-            this.ProgressBar.Maximum = this.mwvm.IsVerify ? (Double)tmpFileSize * 2 : (Double)tmpFileSize;
+            this.ProgressBar.Maximum = this.mwvm.IsVerify ? (Double)tmpFileSize * 2.0 : (Double)tmpFileSize;
 
             Int32.TryParse(this.sdm.SaveData.BufferSizeText, out Int32 bufsize);
 

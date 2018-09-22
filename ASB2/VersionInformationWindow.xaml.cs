@@ -15,7 +15,7 @@ namespace ASB2
     /// <summary>
     /// VersionInformationWindow.xaml の相互作用ロジック
     /// </summary>
-    public partial class VersionInformationWindow : Window
+    public partial class VersionInformationWindow
     {
         #region 構築
 
