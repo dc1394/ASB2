@@ -7,6 +7,7 @@
 #include "memwork.h"
 
 #include "myrandom/myrandsfmt.h"
+#include <array>                    // for std::array
 #include <bitset>                   // for std::bitset
 #include <cassert>                  // for assert
 #include <functional>               // for std::plus
@@ -15,10 +16,7 @@
 #include <emmintrin.h>              // for _mm_cmpeq_epi32, _mm_load_si128, _mm_prefetch, _mm_stream_si128
 #include <smmintrin.h>              // for _mm_cmpeq_epi64
 #include <immintrin.h>              // for _mm256_load_si256, _mm256_store_si256, _mm256_sub_epi64, _mm256_testz_si256
-
-#ifdef __INTEL_COMPILER
-    #include <zmmintrin.h>          // for _mm512_cmpeq_epu64_mask, _mm512_load_si512, _mm512_store_si512
-#endif
+#include <zmmintrin.h>              // for _mm512_cmpeq_epu64_mask, _mm512_load_si512, _mm512_store_si512
 
 #include <tbb/parallel_for.h>       // for tbb::blocked_range
 #include <tbb/parallel_reduce.h>    // for tbb::parallel_reduce
@@ -81,11 +79,9 @@ AvailSIMDtype isAvailableSIMDtype()
         f_7_ebx = data[7][1];
     }
 
-#ifdef __INTEL_COMPILER
     if (f_7_ebx[16]) {
         return AvailSIMDtype::AVAILAVX512;
     }
-#endif
 
     if (f_7_ebx[5]) {
         return AvailSIMDtype::AVAILAVX2;
@@ -110,7 +106,6 @@ bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t 
     return true;
 }
 
-#ifdef __INTEL_COMPILER
 bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2)
 {
     // 実際に1回のループで1024バイトずつ比較
@@ -122,7 +117,6 @@ bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_
 
     return true;
 }
-#endif
 
 DLLEXPORT std::int32_t __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_t const * p2, std::uint32_t size)
 {
@@ -141,10 +135,8 @@ DLLEXPORT std::int32_t __stdcall memcmpsimd(std::uint8_t const * p1, std::uint8_
     case AvailSIMDtype::AVAILAVX2:
         return memcmpAVX2(cmploopnum, p1, p2) ? 1 : 0;
 
-#ifdef __INTEL_COMPILER
     case AvailSIMDtype::AVAILAVX512:
         return memcmpAVX512(cmploopnum, p1, p2) ? 1 : 0;
-#endif
 
     default:
         assert(!"AvailSIMDtypeがあり得ない値になっている！");
@@ -215,7 +207,6 @@ DLLEXPORT std::int32_t __stdcall memcmpparallelsimd(std::uint8_t const * p1, std
             std::plus<>());
         break;
 
-#ifdef __INTEL_COMPILER
     case AvailSIMDtype::AVAILAVX512:
         result = tbb::parallel_reduce(
             tbb::blocked_range<std::uint32_t>(0, cmploopnum),
@@ -228,7 +219,6 @@ DLLEXPORT std::int32_t __stdcall memcmpparallelsimd(std::uint8_t const * p1, std
             },
             std::plus<>());
         break;
-#endif
 
     default:
         assert(!"AvailSIMDtypeがあり得ない値になっている！");
@@ -364,7 +354,6 @@ void memfillAVX2(std::uint8_t * p, std::uint32_t size)
     }
 }
 
-#ifdef __INTEL_COMPILER
 void memfillAVX512(std::uint8_t * p, std::uint32_t size)
 {
     // 1回のループで書き込む回数（2048バイト（16384ビット）ずつ）
@@ -409,7 +398,6 @@ void memfillAVX512(std::uint8_t * p, std::uint32_t size)
         *d = mr.myrand();
     }
 }
-#endif
 
 DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size)
 {
@@ -423,11 +411,9 @@ DLLEXPORT void __stdcall memfillsimd(std::uint8_t * p, std::uint32_t size)
         memfillAVX2(p, size);
         break;
 
-#ifdef __INTEL_COMPILER
     case AvailSIMDtype::AVAILAVX512:
         memfillAVX512(p, size);
         break;
-#endif
 
     default:
         assert(!"switchのdefaultに来てしまった！");

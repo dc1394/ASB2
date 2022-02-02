@@ -9,7 +9,6 @@
 
 #pragma once
 
-#include <array>    // for std::array
 #include <cstdint>  // for std::int32_t
 #include <utility>  // for std::pair
 
@@ -74,7 +73,6 @@ AvailSIMDtype isAvailableSIMDtype();
 */
 bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2);
 
-#ifdef __INTEL_COMPILER
 //! A global function.
 /*!
     AVX-512命令を使ってメモリの内容を比較する
@@ -84,7 +82,6 @@ bool memcmpAVX2(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t 
     \return メモリの内容が一致したかどうか
 */
 bool memcmpAVX512(std::uint32_t cmploopnum, std::uint8_t const * p1, std::uint8_t const * p2);
-#endif
 
 //! A global function.
 /*!
@@ -127,7 +124,6 @@ DLLEXPORT std::int32_t __stdcall memcmpparallelsimd(std::uint8_t const * p1, std
 */
 bool memcmpuseAVX2(std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2);
 
-#ifdef __INTEL_COMPILER
 //! A global function.
 /*!
     メモリの内容を、AVX-512命令を使って比較する
@@ -137,7 +133,7 @@ bool memcmpuseAVX2(std::uint32_t index, std::uint8_t const * p1, std::uint8_t co
     \return メモリの内容が一致したかどうか
 */
 bool memcmpuseAVX512(std::uint32_t index, std::uint8_t const * p1, std::uint8_t const * p2);
-#endif
+
 
 //! A global function.
 /*!
@@ -158,7 +154,6 @@ bool memcmpuseSSE(bool availableSSE41, std::uint32_t index, std::uint8_t const *
 */
 void memfillAVX2(std::uint8_t * p, std::uint32_t size);
 
-#ifdef __INTEL_COMPILER
 //! A global function.
 /*!
     メモリの内容をAVX512命令を使い乱数で埋める
@@ -166,7 +161,6 @@ void memfillAVX2(std::uint8_t * p, std::uint32_t size);
     \param size 比較するメモリのサイズ
 */
 void memfillAVX512(std::uint8_t * p, std::uint32_t size);
-#endif
 
 //! A global function.
 /*!

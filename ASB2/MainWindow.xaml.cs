@@ -346,6 +346,7 @@ namespace ASB2
         /// 実際に一時ファイルの読み書き処理を行う
         /// </summary>
         /// <param name="tmpFileSize">一時ファイルのバイト数（単位はKiB）</param>
+        /// <returns>終了状態のTask </returns>
         private Task<FileIo.終了状態> PreparationAndStart(Int64 tmpFileSize)
         {
             // タイトル等変更
@@ -386,6 +387,7 @@ namespace ASB2
         /// <summary>
         /// 処理を開始する
         /// </summary>
+        /// <returns>Task </returns>
         private async Task RunAsync()
         {
             Int64.TryParse(this.mwvm.TempFileSizeText, out Int64 tmpFileSize);

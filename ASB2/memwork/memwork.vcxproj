@@ -22,49 +22,52 @@
     <ProjectGuid>{92819C50-762E-442E-921C-905FFE7216B5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MemWork</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 2022</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
+    <PlatformToolset>Intel C++ Compiler 2022</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>Intel C++ Compiler 18.0</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\..\..\Visual Studio Settings\プロパティシート\Microsoft.Cpp.Win32.user.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\..\..\Visual Studio Settings\プロパティシート\Microsoft.Cpp.Win32.user.props" />
   </ImportGroup>
   <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\..\..\..\Visual Studio Settings\プロパティシート\Microsoft.Cpp.x64.user.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -92,7 +95,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>tbb.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy "C:\Program Files (x86)\Microsoft SDKs\F#\10.1\Framework\v4.0\FSharp.Core.dll" D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Debug
@@ -137,9 +139,12 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
       <LoopUnrolling>4</LoopUnrolling>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <FunctionLevelLinking>true</FunctionLevelLinking>
-      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
       <CCppSupport>Cpp17Support</CCppSupport>
-      <Optimization>MaxSpeedHighLevel</Optimization>
+      <GenerateAlternateCodePaths>CORE512</GenerateAlternateCodePaths>
+      <UseProcessorExtensions>CORE512</UseProcessorExtensions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <Optimization>Full</Optimization>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -150,7 +155,7 @@ copy C:\mylib64\tbb2018_20180411oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_
     <PostBuildEvent>
       <Command>copy ..\..\Release\memwork.dll ..\bin\x86\Release
 copy ..\Document\readme.txt ..\bin\x86\Release
-copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
+copy C:\mylib64\tbb\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x86\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -167,24 +172,23 @@ copy C:\mylib64\tbb2018_20180618oss\bin\ia32\vc14\tbb.dll D:\DATA\PROGRAM\My_Win
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
-      <Optimization>MaxSpeedHighLevel</Optimization>
       <GenerateAlternateCodePaths>CORE512</GenerateAlternateCodePaths>
       <UseProcessorExtensions>CORE512</UseProcessorExtensions>
-      <CCppSupport>Cpp17Support</CCppSupport>
-      <AdditionalOptions>/Qvc14 %(AdditionalOptions)</AdditionalOptions>
+      <CCppSupport>Cpp20Support</CCppSupport>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <Optimization>Full</Optimization>
+      <EnableEnhancedInstructionSet>AdvancedVectorExtensions512</EnableEnhancedInstructionSet>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\IntelSWTools\compilers_and_libraries_2018.3.210\windows\compiler\lib\intel64_win;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libirng.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>copy ..\..\x64\Release\memwork.dll ..\bin\x64\Release
 copy ..\Document\readme.txt ..\bin\x64\Release
-copy C:\mylib64\tbb2018_20180618oss\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release</Command>
+copy C:\mylib64\tbb\bin\intel64\vc14\tbb.dll D:\DATA\PROGRAM\My_WinProjects\ASB2\ASB2\bin\x64\Release</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

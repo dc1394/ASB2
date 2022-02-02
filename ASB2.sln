@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27703.2042
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASB2", "ASB2\ASB2.csproj", "{EA51F850-6F46-4BE9-867E-C3F83E459890}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -55,7 +55,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
-		VisualSVNWorkingCopyRoot = .
 		SolutionGuid = {350086CF-0C97-4712-8DF7-BCEF389838AE}
+		VisualSVNWorkingCopyRoot = .
 	EndGlobalSection
 EndGlobal

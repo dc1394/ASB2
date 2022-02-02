@@ -1,5 +1,5 @@
 ﻿//-----------------------------------------------------------------------
-// <copyright file="SettingViewModel.cs" company="dc1394's software">
+// <copyright file="SettingWindowViewModel.cs" company="dc1394's software">
 //     Copyright © 2014-2018 @dc1394 All Rights Reserved.
 // </copyright>
 //-----------------------------------------------------------------------
